@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="HumanResourcesManagementSystemFinal.Views.LoginControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="400">
+
+    <!-- Lưu ý: DataContext sẽ được Window cha gán xuống, hoặc tự gán trong code-behind -->
+
+    <Grid Margin="40">
+        <StackPanel VerticalAlignment="Center" Height="370">
+
+            <TextBlock Text="Xin chào!" FontSize="28" FontWeight="Bold" Foreground="#102f76" Margin="0,0,0,5"/>
+            <TextBlock Text="Vui lòng đăng nhập để tiếp tục." FontSize="14" Foreground="#FF00174C" Margin="0,0,0,30"/>
+
+            <!-- USERNAME -->
+            <TextBlock Text="Tên đăng nhập" FontWeight="SemiBold" Foreground="#102f76" Margin="0,0,0,8"/>
+            <Border CornerRadius="8" BorderThickness="1" BorderBrush="#E5E7EB" Background="#F9FAFB" Height="45">
+                <TextBox Text="{Binding LoginVM.Username, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14" VerticalContentAlignment="Center" Padding="10,0"
+                         Background="Transparent" BorderThickness="0"/>
+            </Border>
+
+            <!-- PASSWORD -->
+            <TextBlock Text="Mật khẩu" FontWeight="SemiBold" Foreground="#102f76" Margin="0,20,0,8"/>
+            <Border CornerRadius="8" BorderThickness="1" BorderBrush="#E5E7EB" Background="#F9FAFB" Height="45">
+                <PasswordBox x:Name="txtPass"
+                             FontSize="14" VerticalContentAlignment="Center" Padding="10,0"
+                             Background="Transparent" BorderThickness="0"/>
+            </Border>
+
+            <!-- FORGOT PASSWORD LINK -->
+            <!-- Command này sẽ gọi hàm chuyển View trong MainLoginViewModel -->
+            <Button Command="{Binding SwitchToForgotCommand}"
+                    Content="Quên mật khẩu?" 
+                    HorizontalAlignment="Right" Margin="0,10,0,0"
+                    Background="Transparent" BorderThickness="0" 
+                    Foreground="#102f76" Cursor="Hand" FontSize="13"/>
+
+            <!-- LOGIN BUTTON -->
+            <Button Command="{Binding LoginVM.LoginCommand}" 
+                    CommandParameter="{Binding ElementName=txtPass}"
+                    Content="ĐĂNG NHẬP"
+                    Height="50" Margin="0,25,0,0"
+                    Background="#102f76" Foreground="#f9f8f6"
+                    FontSize="16" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+            <!-- EXIT BUTTON -->
+            <Button Command="{Binding LoginVM.ExitCommand}"
+                    Content="Thoát chương trình" 
+                    HorizontalAlignment="Center" Margin="0,20,0,0"
+                    Background="Transparent" BorderThickness="0" 
+                    Foreground="#666" Cursor="Hand" FontSize="13"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

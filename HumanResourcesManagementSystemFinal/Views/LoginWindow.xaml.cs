@@ -2,49 +2,62 @@
 using System.Windows.Input;
 using HumanResourcesManagementSystemFinal.ViewModels;
 
-namespace HumanResourcesManagementSystemFinal.Views
+namespace HumanResourcesManagementSystemFinal.Views;
+
+public partial class LoginWindow : Window
 {
-    public partial class LoginWindow : Window
+    public LoginWindow()
     {
-        public LoginWindow()
+        InitializeComponent();
+
+        // Mở màn hình đăng nhập ngay khi chạy
+        ShowLogin();
+    }
+
+    // --- HÀM 1: HIỂN THỊ MÀN HÌNH ĐĂNG NHẬP ---
+    public void ShowLogin()
+    {
+        var loginVM = new LoginViewModel();
+
+        // Sửa đoạn này:
+        loginVM.NavigateToForgotPasswordAction = () =>
         {
-            InitializeComponent();
-            // Mặc định khi mở lên sẽ hiện màn hình Đăng nhập
-            ShowLoginView();
-        }
+            // 2. Nếu hiện bảng Bước 1 mà KHÔNG hiện bảng này -> Lỗi kết nối Action
+            MessageBox.Show("Bước 2: Window đang chuyển trang!", "Debug");
+            ShowForgotPassword();
+        };
 
-        // --- HÀM CHUYỂN TRANG (Sửa lỗi CS1061) ---
+        var loginView = new LoginControl();
+        loginView.DataContext = loginVM;
+        MainFrame.Content = loginView;
+    }
 
-        public void ShowLoginView()
-        {
-            // Hiển thị UserControl Login
-            var view = new LoginControl();
-            // Gán ViewModel mới hoặc dùng lại cái cũ tùy logic của bạn
-            view.DataContext = new LoginViewModel();
-            MainContent.Content = view;
-        }
+    // --- HÀM 2: HIỂN THỊ MÀN HÌNH QUÊN MẬT KHẨU ---
+    public void ShowForgotPassword()
+    {
+        // 1. Tạo ViewModel
+        var forgotVM = new ForgotPasswordViewModel();
 
-        public void ShowForgotPasswordView()
-        {
-            // Hiển thị UserControl Quên mật khẩu
-            var view = new ForgotPasswordControl();
-            view.DataContext = new ForgotPasswordViewModel();
-            MainContent.Content = view;
-        }
+        // 2. Gán sự kiện: Khi ViewModel bảo "Quay lại", thì chạy hàm ShowLogin
+        forgotVM.NavigateToLoginAction = () => ShowLogin();
 
-        // --- SỰ KIỆN GIAO DIỆN ---
+        // 3. Tạo View và gán DataContext
+        var forgotView = new ForgotPasswordControl();
+        forgotView.DataContext = forgotVM;
 
-        // Xử lý nút Đóng (Sửa lỗi CS1061 CloseButton_Click)
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+        // 4. Đưa vào màn hình chính
+        MainFrame.Content = forgotView;
+    }
 
-        // Xử lý kéo thả cửa sổ
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-            this.DragMove();
-        }
+    // --- CÁC SỰ KIỆN CƠ BẢN ---
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Application.Current.Shutdown();
+    }
+
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonDown(e);
+        this.DragMove();
     }
 }

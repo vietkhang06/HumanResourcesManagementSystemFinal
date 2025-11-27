@@ -1,25 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HumanResourcesManagementSystemFinal.Views;
+using System;
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class ForgotPasswordViewModel : ObservableObject
 {
-    // Biến tham chiếu đến ViewModel cha để thực hiện chuyển trang
-    private readonly LoginWindow _mainViewModel;
+    // --- NAVIGATOR ---
+    public Action? NavigateToLoginAction { get; set; }
 
-    // Constructor nhận ViewModel cha
-    public ForgotPasswordViewModel(LoginWindow mainViewModel)
-    {
-        _mainViewModel = mainViewModel;
-    }
-
-    // Constructor mặc định để tránh lỗi Design-time (nếu cần)
+    // Constructor chuẩn, không cần tham số LoginViewModel nữa
     public ForgotPasswordViewModel() { }
 
-    // Biến lưu Email người dùng nhập
     [ObservableProperty]
     private string _email = string.Empty;
 
@@ -27,14 +20,11 @@ public partial class ForgotPasswordViewModel : ObservableObject
     [RelayCommand]
     private void SwitchToLogin()
     {
-        // Gọi hàm của cha để chuyển về màn hình Login
-        if (_mainViewModel != null)
-        {
-            _mainViewModel.ShowLoginView();
-        }
+        // Báo hiệu cho cha biết là muốn quay về
+        NavigateToLoginAction?.Invoke();
     }
 
-    // --- LỆNH: GỬI YÊU CẦU RESET MẬT KHẨU ---
+    // --- LỆNH: GỬI YÊU CẦU ---
     [RelayCommand]
     private void SendResetLink()
     {
@@ -44,12 +34,10 @@ public partial class ForgotPasswordViewModel : ObservableObject
             return;
         }
 
-        // TODO: Thêm logic gửi email thật ở đây
-        // Ví dụ: Kiểm tra email có tồn tại trong DB không, sau đó gửi mã OTP...
+        // Logic gửi mail giả lập
+        MessageBox.Show($"Đã gửi yêu cầu đến: {Email}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
-        MessageBox.Show($"Đã gửi yêu cầu đặt lại mật khẩu đến: {Email}\nVui lòng kiểm tra hộp thư.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-
-        // Sau khi gửi xong, có thể tự động quay lại màn hình đăng nhập
+        // Gửi xong thì tự động quay về đăng nhập
         SwitchToLogin();
     }
 }

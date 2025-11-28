@@ -11,28 +11,20 @@ namespace HumanResourcesManagementSystemFinal
 {
     public partial class App : Application
     {
-        // Sự kiện này chạy đầu tiên khi bấm Start
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // 1. Khởi tạo Database
+            // Khởi tạo Database
             SeedDatabase();
 
-            // 2. Cấu hình MVVM thủ công
-            // Tạo ViewModel trước
+            // Cấu hình MVVM thủ công
+            // Tạo ViewModel 
             var loginVM = new LoginViewModel();
-
-            // SỬA LỖI CS1729: Dùng constructor mặc định và gán DataContext sau
-            // Cách này an toàn hơn nếu bạn chưa kịp sửa constructor bên LoginWindow.xaml.cs
             var loginWindow = new LoginWindow();
             loginWindow.DataContext = loginVM;
-
-            // 3. QUAN TRỌNG NHẤT: Phải lệnh cho nó hiện lên
             loginWindow.Show();
         }
-
-        // Hàm tạo dữ liệu mẫu (Giữ nguyên logic cũ của bạn)
         private void SeedDatabase()
         {
             try
@@ -74,11 +66,7 @@ namespace HumanResourcesManagementSystemFinal
                             FirstName = "Quản Trị",
                             LastName = "Viên",
                             Email = "admin@hrms.com",
-
-                            // SỬA LỖI CS0117: Thay Status (string) bằng IsActive (bool)
                             IsActive = true,
-                            // Status = "Active", // <-- Dòng này gây lỗi vì Model không có thuộc tính Status
-
                             Gender = "Other",
                             HireDate = DateTime.Now,
                             Position = managerPos

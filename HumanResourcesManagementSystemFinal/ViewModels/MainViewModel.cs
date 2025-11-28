@@ -1,41 +1,102 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HumanResourcesManagementSystemFinal.Models; // Để dùng Account
-using HumanResourcesManagementSystemFinal.Views; // Để mở lại Login
+using HumanResourcesManagementSystemFinal.Models; // Để nhận Account từ Login
+using HumanResourcesManagementSystemFinal.Views;  // Để new các UserControl (HomeControl...)
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    // Lưu thông tin người đang đăng nhập
-    [ObservableProperty]
-    private string _welcomeMessage = "Xin chào!";
+    // --- 1. CÁC BIẾN QUẢN LÝ TRẠNG THÁI ---
 
-    // Constructor nhận vào Account từ màn hình Login gửi sang
+    // Tiêu đề trang (Thay đổi khi bấm Menu)
+    [ObservableProperty]
+    private string _pageTitle = "Trang Chủ";
+
+    // Nội dung chính (Thay đổi View động)
+    [ObservableProperty]
+    private object _currentView;
+
+    // --- 2. CONSTRUCTOR (KHỞI TẠO) ---
+
+    // Constructor chính: Nhận thông tin tài khoản từ màn hình Login
     public MainViewModel(Account currentAccount)
     {
-        if (currentAccount != null)
-        {
-            // Lấy tên hiển thị (ưu tiên tên nhân viên, nếu null thì lấy username)
-            string name = currentAccount.Employee?.FullName ?? currentAccount.Username;
-            string role = currentAccount.Role?.RoleName ?? "N/A";
-            WelcomeMessage = $"Xin chào, {name} ({role})";
-        }
+        // Bạn có thể dùng biến currentAccount để hiển thị "Xin chào Admin" nếu muốn
+        // Ví dụ: PageTitle = $"Xin chào {currentAccount.Username}";
+
+        // Mặc định khi mở lên là vào Trang Chủ
+        // LƯU Ý: Đảm bảo bạn đã tạo file Views/HomeControl.xaml
+        CurrentView = new HomeControl();
     }
 
-    // Constructor mặc định (để tránh lỗi Design-time XAML)
-    public MainViewModel() { }
-
-    // --- HÀM ĐĂNG XUẤT ---
-    [RelayCommand]
-    private void Logout(Window currentWindow)
+    // Constructor mặc định (Bắt buộc phải có để tránh lỗi Design-time trong XAML)
+    public MainViewModel()
     {
-        // 1. Mở lại màn hình Login
-        var loginWindow = new LoginWindow();
-        loginWindow.Show();
+        CurrentView = new HomeControl();
+    }
 
-        // 2. Đóng Dashboard hiện tại
-        currentWindow.Close();
+    // --- 3. CÁC LỆNH ĐIỀU HƯỚNG (NAVIGATION COMMANDS) ---
+
+    [RelayCommand]
+    private void NavigateHome()
+    {
+        PageTitle = "Trang Chủ";
+        CurrentView = new HomeControl();
+    }
+
+    [RelayCommand]
+    private void NavigateEmployee()
+    {
+        PageTitle = "Quản Lý Nhân Viên";
+        // SAU NÀY BẠN TẠO FILE EmployeeControl.xaml THÌ BỎ COMMENT DÒNG DƯỚI:
+        // CurrentView = new EmployeeControl(); 
+    }
+
+    [RelayCommand]
+    private void NavigateDepartment()
+    {
+        PageTitle = "Phòng Ban & Vị Trí";
+        // CurrentView = new DepartmentControl();
+    }
+
+    [RelayCommand]
+    private void NavigatePayroll()
+    {
+        PageTitle = "Tính Lương (Admin)";
+        // CurrentView = new PayrollControl();
+    }
+
+    [RelayCommand]
+    private void NavigateProfile()
+    {
+        PageTitle = "Hồ Sơ Của Tôi";
+        // CurrentView = new ProfileControl();
+    }
+
+    [RelayCommand]
+    private void NavigateTimeSheet()
+    {
+        PageTitle = "Chấm Công";
+        // CurrentView = new TimeSheetControl();
+    }
+
+    // --- 4. LỆNH ĐĂNG XUẤT (FIX LỖI XAML) ---
+
+    // Thay vì dùng (Window window), ta dùng (object parameter) để tránh lỗi kiểm tra kiểu dữ liệu của XAML
+    [RelayCommand]
+    private void Logout(object parameter)
+    {
+        // Kiểm tra xem tham số truyền vào có đúng là Window không
+        if (parameter is Window currentWindow)
+        {
+            // 1. Mở lại màn hình Login
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+
+            // 2. Đóng Dashboard hiện tại
+            currentWindow.Close();
+        }
     }
 }

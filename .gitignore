@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# --- Bắt buộc theo dõi file Database này ---
+!HRMS_Pro.db
+!**/HRMS_Pro.db

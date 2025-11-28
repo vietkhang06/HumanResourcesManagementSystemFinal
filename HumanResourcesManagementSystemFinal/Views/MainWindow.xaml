@@ -5,63 +5,133 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
         mc:Ignorable="d"
-        Title="HRMS Pro - Dashboard" Height="700" Width="1200"
+        Title="Hệ Thống Quản Lý Nhân Sự" Height="650" Width="1100"
         WindowStartupLocation="CenterScreen"
-        Background="#F3F4F6">
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip"
+        MouseDown="Window_MouseDown">
 
     <d:Window.DataContext>
         <vm:MainViewModel/>
     </d:Window.DataContext>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="MenuButtonStyle">
+            <Setter Property="Foreground" Value="#1A3D64"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="20,0,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                              VerticalAlignment="Center" 
+                                              Margin="{TemplateBinding Padding}"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1A3D64"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-        <Border Grid.Column="0" Background="#102f76">
-            <StackPanel>
-                <TextBlock Text="HRMS PRO" Foreground="White" FontSize="24" FontWeight="Bold" 
-                           HorizontalAlignment="Center" Margin="0,30,0,50"/>
+    <Border Background="#F9F8F6" CornerRadius="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.2"/>
+        </Border.Effect>
 
-                <Button Content="🏠  Tổng quan" Height="50" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="30,0" FontSize="16" Cursor="Hand"/>
-                <Button Content="👥  Nhân viên" Height="50" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="30,0" FontSize="16" Cursor="Hand"/>
-                <Button Content="🏢  Phòng ban" Height="50" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="30,0" FontSize="16" Cursor="Hand"/>
-                <Button Content="💰  Lương thưởng" Height="50" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="30,0" FontSize="16" Cursor="Hand"/>
-            </StackPanel>
-        </Border>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+            <Border Grid.Column="0" Background="White" CornerRadius="20,0,0,20" Panel.ZIndex="1">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="3" BlurRadius="15" Opacity="0.15"/>
+                </Border.Effect>
                 <Grid>
-                    <TextBlock Text="{Binding WelcomeMessage}" 
-                               VerticalAlignment="Center" HorizontalAlignment="Left" 
-                               Margin="20,0,0,0" FontSize="16" FontWeight="SemiBold" Foreground="#374151"/>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <Button Content="Đăng xuất" 
+                    <StackPanel Grid.Row="0" Margin="0,40,0,30">
+                        <TextBlock Text="HRMS PRO" Foreground="#1A3D64" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Management System" Foreground="#BDC3C7" FontSize="12" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1">
+                        <Button Content="🏠   Trang Chủ" 
+                                Command="{Binding NavigateHomeCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
+                        <Button Content="👥   Quản Lý Nhân Viên" 
+                                Command="{Binding NavigateEmployeeCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
+                        <Button Content="🏢   Phòng Ban &amp; Vị Trí" 
+                                Command="{Binding NavigateDepartmentCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
+                        <Button Content="💰   Tính Lương (Admin)" 
+                                Command="{Binding NavigatePayrollCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
+                        <Button Content="👤   Hồ Sơ Của Tôi" 
+                                Command="{Binding NavigateProfileCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
+                        <Button Content="📅   Chấm Công" 
+                                Command="{Binding NavigateTimeSheetCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+                    </StackPanel>
+
+                    <Button Grid.Row="2" Content="🚪   Đăng Xuất" 
                             Command="{Binding LogoutCommand}"
                             CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                            HorizontalAlignment="Right" Margin="0,0,20,0"
-                            Padding="15,5" Background="#EF4444" Foreground="White" FontWeight="Bold" BorderThickness="0">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
+                            Background="#B43F3F" Foreground="White" Height="50" FontSize="16" BorderThickness="0"
+                            Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="0,0,0,20">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
                     </Button>
                 </Grid>
             </Border>
 
-            <ContentControl Grid.Row="1" Margin="20">
-                <TextBlock Text="Chào mừng đến với hệ thống quản trị nhân sự!" 
-                           FontSize="20" Foreground="#9CA3AF" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </ContentControl>
+            <Grid Grid.Column="1">
+                <Grid VerticalAlignment="Top" Height="50">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,15,0">
+                        <Button Content="—" Width="30" Height="30" Background="Transparent" BorderThickness="0" FontSize="14" Click="btnMinimize_Click" Foreground="#1A3D64"/>
+                        <Button Content="✕" Width="30" Height="30" Background="Transparent" BorderThickness="0" FontSize="16" FontWeight="Bold" Foreground="#B43F3F" Click="btnClose_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding PageTitle}" 
+                               VerticalAlignment="Center" HorizontalAlignment="Left" Margin="30,0,0,0" 
+                               FontSize="22" FontWeight="SemiBold" Foreground="#1A3D64"/>
+                </Grid>
+
+                <ContentControl Content="{Binding CurrentView}" Margin="20,60,20,20"/>
+            </Grid>
         </Grid>
-    </Grid>
+    </Border>
 </Window>

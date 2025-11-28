@@ -1,12 +1,9 @@
 ﻿<Application x:Class="HumanResourcesManagementSystemFinal.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:HumanResourcesManagementSystemFinal">
-
-    <!-- XÓA DÒNG StartupUri="LoginWindow.xaml" HOẶC "MainWindow.xaml" ĐI -->
-    <!-- Vì ta đã xử lý OnStartup trong App.xaml.cs rồi -->
-
+             xmlns:local="clr-namespace:HumanResourcesManagementSystemFinal"
+             StartupUri="Views/LoginWindow.xaml"
+             ShutdownMode="OnLastWindowClose">
     <Application.Resources>
-        <!-- Tài nguyên dùng chung -->
     </Application.Resources>
 </Application>

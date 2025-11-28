@@ -21,9 +21,7 @@ public partial class LoginWindow : Window
 
         // Sửa đoạn này:
         loginVM.NavigateToForgotPasswordAction = () =>
-        {
-            // 2. Nếu hiện bảng Bước 1 mà KHÔNG hiện bảng này -> Lỗi kết nối Action
-            MessageBox.Show("Bước 2: Window đang chuyển trang!", "Debug");
+        { 
             ShowForgotPassword();
         };
 

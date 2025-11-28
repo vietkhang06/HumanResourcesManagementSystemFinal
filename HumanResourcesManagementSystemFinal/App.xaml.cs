@@ -95,7 +95,7 @@ namespace HumanResourcesManagementSystemFinal
                                 EmployeeId = empAdmin.Id,
                                 Username = "admin",
                                 PasswordHash = "123",
-                                RoleId = adminRole.Id,
+                                RoleId = adminRole.RoleId,
                                 IsActive = true
                             };
 

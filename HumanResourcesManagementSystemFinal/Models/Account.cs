@@ -7,7 +7,7 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Account
 {
     [Key]
-    public int Id { get; set; }
+    public int AccountId { get; set; }
 
     [Required]
     [StringLength(50)]
@@ -23,7 +23,7 @@ public class Account
     [ForeignKey("RoleId")]
     public virtual Role Role { get; set; } = null!;
 
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
     [ForeignKey("EmployeeId")]
     public virtual Employee Employee { get; set; } = null!;
 }

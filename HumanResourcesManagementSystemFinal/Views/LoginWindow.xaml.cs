@@ -9,17 +9,11 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
-
-        // Mở màn hình đăng nhập ngay khi chạy
         ShowLogin();
     }
-
-    // --- HÀM 1: HIỂN THỊ MÀN HÌNH ĐĂNG NHẬP ---
     public void ShowLogin()
     {
         var loginVM = new LoginViewModel();
-
-        // Sửa đoạn này:
         loginVM.NavigateToForgotPasswordAction = () =>
         { 
             ShowForgotPassword();
@@ -29,25 +23,14 @@ public partial class LoginWindow : Window
         loginView.DataContext = loginVM;
         MainFrame.Content = loginView;
     }
-
-    // --- HÀM 2: HIỂN THỊ MÀN HÌNH QUÊN MẬT KHẨU ---
     public void ShowForgotPassword()
     {
-        // 1. Tạo ViewModel
         var forgotVM = new ForgotPasswordViewModel();
-
-        // 2. Gán sự kiện: Khi ViewModel bảo "Quay lại", thì chạy hàm ShowLogin
         forgotVM.NavigateToLoginAction = () => ShowLogin();
-
-        // 3. Tạo View và gán DataContext
         var forgotView = new ForgotPasswordControl();
         forgotView.DataContext = forgotVM;
-
-        // 4. Đưa vào màn hình chính
         MainFrame.Content = forgotView;
     }
-
-    // --- CÁC SỰ KIỆN CƠ BẢN ---
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();

@@ -1,0 +1,208 @@
+﻿<UserControl x:Class="HumanResourcesManagementSystemFinal.Views.Department_Position_Control"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000" Background="Transparent">
+
+    <UserControl.DataContext>
+        <vm:Department_PositionViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#718096"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,0,0,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Height" Value="45"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F7FAFC"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,15,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="🏢 Danh Sách Phòng Ban" Grid.Row="0" Margin="20,20,0,10"
+                           FontSize="18" FontWeight="Bold" Foreground="#1A3D64"/>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}"
+                         BorderThickness="0" Background="Transparent" Margin="10,0"
+                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Margin" Value="0,5"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="border" Background="#F7FAFC" CornerRadius="8" Padding="15" Cursor="Hand" BorderThickness="1" BorderBrush="Transparent">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#EBF8FF"/>
+                                                <Setter TargetName="border" Property="BorderBrush" Value="#4299E1"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#EDF2F7"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="White">
+                                    <TextBlock Text="📍" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock Text="{Binding DepartmentName}" FontWeight="Bold" Foreground="#2D3748"/>
+
+                                    <TextBlock Text="{Binding Location}" FontSize="11" Foreground="#718096" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Button Grid.Row="2" Command="{Binding AddDepartmentCommand}" Margin="20" Height="45"
+                        Background="#2D3748" Foreground="White" FontWeight="Bold" Content="➕ Thêm Phòng Ban" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Background="White" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
+            </Border.Effect>
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="💼 Các Chức Vụ / Vị Trí" FontSize="18" FontWeight="Bold" Foreground="#1A3D64"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="Thuộc phòng ban: " Foreground="#718096"/>
+                            <TextBlock Text="{Binding SelectedDepartment.DepartmentName, TargetNullValue='(Chưa chọn)'}" FontWeight="Bold" Foreground="#3182CE"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button HorizontalAlignment="Right" Command="{Binding AddPositionCommand}"
+                            Background="#3182CE" Foreground="White" Height="40" Padding="15,0" BorderThickness="0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="➕ Thêm Vị Trí" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Positions}" AutoGenerateColumns="False" 
+                          CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
+                          Background="White" BorderThickness="0" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="MÃ VT" Binding="{Binding Id}" Width="80" Foreground="#718096"/>
+
+                        <DataGridTemplateColumn Header="TÊN CHỨC VỤ" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#2D3748"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="MÔ TẢ CÔNG VIỆC" Binding="{Binding JobDescription}" Width="3*" Foreground="#4A5568"/>
+
+                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="✏️" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"/>
+                                        <Button Content="🗑️" Background="Transparent" BorderThickness="0" Cursor="Hand" Foreground="#E53E3E"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Border Grid.Row="1" Background="White" Opacity="0.9">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedDepartment}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="👈" FontSize="40" HorizontalAlignment="Center" Foreground="#CBD5E0"/>
+                        <TextBlock Text="Vui lòng chọn một phòng ban bên trái" FontSize="16" Foreground="#718096" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

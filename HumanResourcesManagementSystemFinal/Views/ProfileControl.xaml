@@ -4,6 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             
+             xmlns:converters="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
+             
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1000" Background="Transparent">
 
@@ -12,21 +15,26 @@
     </UserControl.DataContext>
 
     <UserControl.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBool"/>
+        <converters:BooleanToTextConverter x:Key="BoolToText"/>
+
         <Style TargetType="TextBox">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="5,0"/>
             <Setter Property="Height" Value="35"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="FontSize" Value="14"/>
             <Style.Triggers>
                 <Trigger Property="IsReadOnly" Value="True">
-                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
                     <Setter Property="Foreground" Value="#2D3748"/>
                 </Trigger>
                 <Trigger Property="IsReadOnly" Value="False">
-                    <Setter Property="Background" Value="#F7FAFC"/>
+                    <Setter Property="Background" Value="#FFFFFF"/>
+                    <Setter Property="BorderThickness" Value="1"/>
                     <Setter Property="BorderBrush" Value="#3182CE"/>
+                    <Setter Property="Foreground" Value="Black"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -42,24 +50,17 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
             </Border.Effect>
+
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <Border Height="120" VerticalAlignment="Top" CornerRadius="10,10,0,0" Background="#1A3D64"/>
 
-                <Border Grid.Row="0" Height="120" CornerRadius="10,10,0,0" Background="#1A3D64"/>
+                <StackPanel VerticalAlignment="Top" Margin="0,55,0,0">
 
-                <Grid Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Bottom" Margin="0,0,0,0">
-                    <Border Width="130" Height="130" CornerRadius="65" Background="White" BorderThickness="4" BorderBrush="White">
+                    <Border Width="130" Height="130" CornerRadius="65" Background="White" BorderThickness="4" BorderBrush="White" HorizontalAlignment="Center">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="10" Opacity="0.2"/>
                         </Border.Effect>
                         <Grid>
-                            <Image Source="/Images/png1.png" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                            <Border Background="Black" CornerRadius="65" Opacity="0"/>
                             <Grid.OpacityMask>
                                 <VisualBrush>
                                     <VisualBrush.Visual>
@@ -67,35 +68,42 @@
                                     </VisualBrush.Visual>
                                 </VisualBrush>
                             </Grid.OpacityMask>
+                            <Image Source="/Images/png1.png" Stretch="UniformToFill" Width="122" Height="122"/>
                         </Grid>
                     </Border>
-                </Grid>
 
-                <StackPanel Grid.Row="1" Margin="0,70,0,30" HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding CurrentUser.FullName}" FontSize="22" FontWeight="Bold" Foreground="#2D3748" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentUser.Position.Title}" FontSize="14" Foreground="#718096" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                    <StackPanel Margin="0,15,0,30" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding CurrentUser.FullName, Mode=OneWay}" 
+                                   FontSize="22" FontWeight="Bold" Foreground="#2D3748" 
+                                   HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
 
-                    <Border Background="#EBF8FF" CornerRadius="15" Padding="15,5" HorizontalAlignment="Center" Margin="0,15,0,0">
-                        <TextBlock Text="{Binding AccountRole}" Foreground="#2B6CB0" FontWeight="Bold" FontSize="12"/>
-                    </Border>
-                </StackPanel>
+                        <TextBlock Text="{Binding CurrentUser.Position.Title}" 
+                                   FontSize="14" Foreground="#718096" 
+                                   HorizontalAlignment="Center" Margin="0,5,0,0"/>
 
-                <StackPanel Grid.Row="2" Margin="30,0">
-                    <TextBlock Text="THÔNG TIN LIÊN HỆ" FontSize="12" FontWeight="Bold" Foreground="#A0AEC0" Margin="0,0,0,15"/>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBlock Text="📧" Width="30" FontSize="16"/>
-                        <TextBlock Text="{Binding CurrentUser.Email}" VerticalAlignment="Center" Foreground="#4A5568"/>
+                        <Border Background="#EBF8FF" CornerRadius="15" Padding="15,5" 
+                                HorizontalAlignment="Center" Margin="0,15,0,0">
+                            <TextBlock Text="{Binding AccountRole}" Foreground="#2B6CB0" FontWeight="Bold" FontSize="12"/>
+                        </Border>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBlock Text="📱" Width="30" FontSize="16"/>
-                        <TextBlock Text="{Binding CurrentUser.PhoneNumber}" VerticalAlignment="Center" Foreground="#4A5568"/>
-                    </StackPanel>
+                    <StackPanel Margin="30,0">
+                        <TextBlock Text="LIÊN HỆ" FontSize="12" FontWeight="Bold" Foreground="#A0AEC0" Margin="0,0,0,15"/>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBlock Text="🏢" Width="30" FontSize="16"/>
-                        <TextBlock Text="{Binding CurrentUser.Department.DepartmentName}" VerticalAlignment="Center" Foreground="#4A5568"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="📧" Width="30" FontSize="16"/>
+                            <TextBlock Text="{Binding CurrentUser.Email}" VerticalAlignment="Center" Foreground="#4A5568"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="📱" Width="30" FontSize="16"/>
+                            <TextBlock Text="{Binding CurrentUser.PhoneNumber}" VerticalAlignment="Center" Foreground="#4A5568"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="🏢" Width="30" FontSize="16"/>
+                            <TextBlock Text="{Binding CurrentUser.Department.DepartmentName}" VerticalAlignment="Center" Foreground="#4A5568"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -107,59 +115,60 @@
             </Border.Effect>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="40">
-
                     <Grid Margin="0,0,0,30">
                         <StackPanel>
                             <TextBlock Text="Hồ Sơ Chi Tiết" FontSize="20" FontWeight="Bold" Foreground="#1A3D64"/>
-                            <TextBlock Text="Quản lý thông tin cá nhân và bảo mật" FontSize="12" Foreground="#718096" Margin="0,5,0,0"/>
+                            <TextBlock Text="Quản lý thông tin cá nhân" FontSize="12" Foreground="#718096" Margin="0,5,0,0"/>
                         </StackPanel>
-
-                        <Button Command="{Binding ToggleEditCommand}" 
-                                HorizontalAlignment="Right" VerticalAlignment="Top"
-                                Background="#3182CE" Foreground="White" BorderThickness="0" 
-                                Padding="20,8" Cursor="Hand">
+                        <Button Command="{Binding ToggleEditCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" Background="#3182CE" Foreground="White" BorderThickness="0" Padding="20,8" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="6"/>
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BooleanToTextConverter}, FallbackValue='✏️ Chỉnh Sửa'}"/>
+                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BoolToText}, ConverterParameter='Lưu Thay Đổi|✏️ Chỉnh Sửa'}" FontWeight="Bold"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
                     <TextBlock Text="👤 Thông Tin Cá Nhân" FontSize="16" FontWeight="Bold" Foreground="#2D3748" Margin="0,0,0,20"/>
-                    <Grid>
+                    <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,20">
-                            <TextBlock Text="Họ và Tên" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.FullName}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"/>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Họ &amp; Tên Đệm" Foreground="#718096" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding CurrentUser.LastName}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Grid.Row="0" Margin="0,0,0,20">
-                            <TextBlock Text="Ngày Sinh" Foreground="#718096" Margin="0,0,0,5"/>
-                            <DatePicker SelectedDate="{Binding CurrentUser.DateOfBirth}" IsEnabled="{Binding IsEditing}" BorderThickness="0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,0,20">
-                            <TextBlock Text="Giới Tính" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.Gender}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,0,0,20">
-                            <TextBlock Text="Địa Chỉ" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.Address}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"/>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Tên" Foreground="#718096" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding CurrentUser.FirstName}" FontWeight="Bold" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
                     </Grid>
+
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Email" Foreground="#718096" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding CurrentUser.Email}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Số Điện Thoại" Foreground="#718096" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding CurrentUser.PhoneNumber}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Địa Chỉ" Foreground="#718096" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding CurrentUser.Address}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                    </StackPanel>
 
                     <Separator Background="#EDF2F7" Margin="0,10,0,30"/>
 
@@ -170,57 +179,19 @@
                             <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,20">
+                        <StackPanel Grid.Column="0" Margin="0,0,0,20">
                             <TextBlock Text="Mã Nhân Viên" Foreground="#718096" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding CurrentUser.Id}" IsReadOnly="True" Background="#F7FAFC" Foreground="#A0AEC0"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Grid.Row="0" Margin="0,0,0,20">
+                        <StackPanel Grid.Column="2" Margin="0,0,0,20">
                             <TextBlock Text="Ngày Vào Làm" Foreground="#718096" Margin="0,0,0,5"/>
                             <DatePicker SelectedDate="{Binding CurrentUser.HireDate}" IsEnabled="False" BorderThickness="0"/>
                         </StackPanel>
-
-                        <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,0,20">
-                            <TextBlock Text="Phòng Ban" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.Department.DepartmentName}" IsReadOnly="True" Background="#F7FAFC"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,0,0,20">
-                            <TextBlock Text="Chức Vụ" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.Position.Title}" IsReadOnly="True" Background="#F7FAFC"/>
-                        </StackPanel>
                     </Grid>
-
-                    <Separator Background="#EDF2F7" Margin="0,10,0,30"/>
-
-                    <TextBlock Text="🔒 Bảo Mật Tài Khoản" FontSize="16" FontWeight="Bold" Foreground="#2D3748" Margin="0,0,0,20"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Tên Đăng Nhập" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding Username}" IsReadOnly="True" FontWeight="Bold"/>
-                        </StackPanel>
-
-                        <Button Grid.Column="2" Command="{Binding ChangePasswordCommand}"
-                                Content="Đổi Mật Khẩu" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                Background="#EDF2F7" Foreground="#2D3748" FontWeight="SemiBold"
-                                Padding="20,8" BorderThickness="0" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                    </Grid>
-
+                    <StackPanel>
+                        <TextBlock Text="Phòng Ban" Foreground="#718096" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding CurrentUser.Department.DepartmentName}" IsReadOnly="True" Background="#F7FAFC"/>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Border>

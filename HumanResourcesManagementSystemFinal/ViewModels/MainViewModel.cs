@@ -55,14 +55,14 @@ public partial class MainViewModel : ObservableObject
     private void NavigateProfile()
     {
         PageTitle = "Hồ Sơ Của Tôi";
-        // CurrentView = new ProfileControl();
+        CurrentView = new ProfileControl();
     }
 
     [RelayCommand]
     private void NavigateTimeSheet()
     {
         PageTitle = "Chấm Công";
-        // CurrentView = new TimeSheetControl();
+        CurrentView = new TimeSheetControl();
     }
 
     [RelayCommand]

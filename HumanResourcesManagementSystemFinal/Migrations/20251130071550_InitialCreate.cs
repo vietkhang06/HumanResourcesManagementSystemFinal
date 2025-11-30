@@ -63,6 +63,7 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     FirstName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Address = table.Column<string>(type: "TEXT", nullable: true),
                     Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),

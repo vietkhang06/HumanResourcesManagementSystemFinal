@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManagementSystemFinal.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251130064609_AddAddressColumn")]
-    partial class AddAddressColumn
+    [Migration("20251130071550_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

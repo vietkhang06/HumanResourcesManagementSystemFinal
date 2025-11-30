@@ -89,7 +89,7 @@
                                 Command="{Binding NavigateDepartmentCommand}"
                                 Style="{StaticResource MenuButtonStyle}"/>
 
-                        <Button Content="💰   Tính Lương (Admin)" 
+                        <Button Content="💰   Tính Lương" 
                                 Command="{Binding NavigatePayrollCommand}"
                                 Style="{StaticResource MenuButtonStyle}"/>
 

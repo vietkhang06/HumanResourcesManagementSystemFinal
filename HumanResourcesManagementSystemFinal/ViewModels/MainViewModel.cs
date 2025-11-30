@@ -34,20 +34,21 @@ public partial class MainViewModel : ObservableObject
     private void NavigateEmployee()
     {
         PageTitle = "Quản Lý Nhân Viên";
+        CurrentView = new ManageEmployeeControl();
     }
 
     [RelayCommand]
     private void NavigateDepartment()
     {
         PageTitle = "Phòng Ban & Vị Trí";
-        // CurrentView = new DepartmentControl();
+        CurrentView = new Views.Department_Position_Control();
     }
 
     [RelayCommand]
     private void NavigatePayroll()
     {
-        PageTitle = "Tính Lương (Admin)";
-        // CurrentView = new PayrollControl();
+        PageTitle = "Tính Lương";
+        CurrentView = new PayrollControl();
     }
 
     [RelayCommand]

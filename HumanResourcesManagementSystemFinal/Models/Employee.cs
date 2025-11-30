@@ -23,7 +23,7 @@ public class Employee
     public string FullName => $"{LastName} {FirstName}";
 
     public DateTime? DateOfBirth { get; set; }
-
+    public string? Address { get; set; }
     [StringLength(10)]
     public string Gender { get; set; } = "Other";
 

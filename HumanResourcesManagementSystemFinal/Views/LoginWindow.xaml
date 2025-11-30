@@ -15,32 +15,47 @@
             <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0" Color="#202020"/>
         </Border.Effect>
 
+        <Border.OpacityMask>
+            <VisualBrush>
+                <VisualBrush.Visual>
+                    <Border Background="Black" CornerRadius="25"
+                            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
+                            Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                </VisualBrush.Visual>
+            </VisualBrush>
+        </Border.OpacityMask>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.2*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" CornerRadius="25,0,0,25" ClipToBounds="True">
-                <Grid>
-                    <Image Source="/Images/png1.png" HorizontalAlignment="Right" Stretch="UniformToFill">
-                        <Image.Effect>
-                            <BlurEffect Radius="15" KernelType="Gaussian"/>
-                        </Image.Effect>
-                    </Image>
-                    <Rectangle>
-                        <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1"/>
-                        </Rectangle.Fill>
-                    </Rectangle>
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Border Width="80" Height="80" Background="White" CornerRadius="40" Margin="0,0,0,20" Opacity="0.9">
-                            <TextBlock Text="HR" FontSize="30" FontWeight="Bold" Foreground="#102f76" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="HRMS PRO" FontSize="36" FontWeight="Bold" Foreground="#f9f8f6" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <Grid Grid.Column="0">
+                <Image Source="/Images/png1.png" HorizontalAlignment="Right" Stretch="UniformToFill">
+                    <Image.Effect>
+                        <BlurEffect Radius="15" KernelType="Gaussian"/>
+                    </Image.Effect>
+                </Image>
+
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Border Width="80" Height="80" Background="White" CornerRadius="40" Margin="0,0,0,20" Opacity="0.9">
+                        <TextBlock Text="HR" FontSize="30" FontWeight="Bold" Foreground="#102f76" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="HRMS PRO" FontSize="36" FontWeight="Bold" Foreground="#f9f8f6" HorizontalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect ShadowDepth="2" BlurRadius="5" Opacity="0.5"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
 
             <Grid Grid.Column="1">
                 <Button Click="CloseButton_Click" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"

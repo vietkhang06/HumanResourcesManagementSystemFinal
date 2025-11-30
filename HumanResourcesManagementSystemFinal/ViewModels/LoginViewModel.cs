@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HumanResourcesManagementSystemFinal.Data; 
+using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Views;
-using Microsoft.EntityFrameworkCore;           
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq; // <--- Cần thêm cái này để dùng .ToList()
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,22 +36,24 @@ public partial class LoginViewModel : ObservableObject
         {
             using var context = new DataContext();
             var account = await context.Accounts
-                .Include(a => a.Role) 
+                .Include(a => a.Role)
                 .FirstOrDefaultAsync(u => u.Username == Username && u.PasswordHash == password);
+
             if (account != null)
             {
-                foreach (Window window in Application.Current.Windows)
-                {
-                    if (window.DataContext == this || window.GetType().Name == "LoginWindow")
-                    {
-                        window.Close();
-                        break;
-                    }
-                }
                 var mainViewModel = new MainViewModel(account);
                 var dashboard = new MainWindow();
-                dashboard.DataContext = mainViewModel; // Gán ViewModel cho View
+                dashboard.DataContext = mainViewModel;
                 dashboard.Show();
+                var openWindows = Application.Current.Windows.Cast<Window>().ToList();
+
+                foreach (var window in openWindows)
+                {
+                    if (window != dashboard)
+                    {
+                        window.Close();
+                    }
+                }
             }
             else
             {

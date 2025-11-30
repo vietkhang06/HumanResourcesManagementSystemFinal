@@ -14,16 +14,10 @@ namespace HumanResourcesManagementSystemFinal
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            // Khởi tạo Database
             SeedDatabase();
-
-            // Cấu hình MVVM thủ công
-            // Tạo ViewModel 
             var loginVM = new LoginViewModel();
             var loginWindow = new LoginWindow();
             loginWindow.DataContext = loginVM;
-            loginWindow.Show();
         }
         private void SeedDatabase()
         {

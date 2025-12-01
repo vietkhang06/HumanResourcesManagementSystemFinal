@@ -18,6 +18,8 @@
     </d:Window.DataContext>
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
         <Style TargetType="Button" x:Key="MenuButtonStyle">
             <Setter Property="Foreground" Value="#1A3D64"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -83,15 +85,18 @@
 
                         <Button Content="👥   Quản Lý Nhân Viên" 
                                 Command="{Binding NavigateEmployeeCommand}"
-                                Style="{StaticResource MenuButtonStyle}"/>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="🏢   Phòng Ban &amp; Vị Trí" 
                                 Command="{Binding NavigateDepartmentCommand}"
-                                Style="{StaticResource MenuButtonStyle}"/>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="💰   Tính Lương" 
                                 Command="{Binding NavigatePayrollCommand}"
-                                Style="{StaticResource MenuButtonStyle}"/>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="👤   Hồ Sơ Của Tôi" 
                                 Command="{Binding NavigateProfileCommand}"

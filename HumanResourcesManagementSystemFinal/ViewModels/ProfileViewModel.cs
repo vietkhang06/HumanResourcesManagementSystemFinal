@@ -20,7 +20,6 @@ public partial class ProfileViewModel : ObservableObject
 
     private void LoadUserProfile()
     {
-        // Dữ liệu giả lập
         CurrentUser = new Employee
         {
             Id = 1,
@@ -28,9 +27,6 @@ public partial class ProfileViewModel : ObservableObject
             LastName = "Nguyễn Văn",
             Email = "admin@hrms.com",
             PhoneNumber = "0901234567",
-            // Lưu ý: Đảm bảo Model Employee của bạn có các trường này
-            // Address = "TP.HCM", 
-            // HireDate = DateTime.Now,
             Department = new Department { DepartmentName = "Ban Giám Đốc" },
             Position = new Position { Title = "System Admin" } // Đã sửa PositionName -> Title
         };
@@ -49,6 +45,5 @@ public partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     private void ChangePassword()
     {
-        // Logic đổi mật khẩu
     }
 }

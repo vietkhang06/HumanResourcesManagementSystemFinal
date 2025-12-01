@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:HumanResourcesManagementSystemFinal.Views" 
         mc:Ignorable="d"
-        Title="Hệ thống Đăng nhập" Height="550" Width="900"
+        Title="Hệ thống Đăng nhập" Height="450" Width="650"
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent">
@@ -27,8 +27,8 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.2*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
@@ -58,11 +58,15 @@
             </Grid>
 
             <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="7*"/>
+                    <RowDefinition Height="18*"/>
+                </Grid.RowDefinitions>
                 <Button Click="CloseButton_Click" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
                         Width="30" Height="30" Margin="0,15,15,0" Panel.ZIndex="100"
                         Background="Transparent" BorderThickness="0" Foreground="#999" FontSize="16" Cursor="Hand"/>
 
-                <ContentControl x:Name="MainFrame" />
+                <ContentControl x:Name="MainFrame" Grid.RowSpan="2" />
             </Grid>
         </Grid>
     </Border>

@@ -1,0 +1,244 @@
+﻿<UserControl x:Class="HumanResourcesManagementSystemFinal.Views.EmployeeHomeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000" Background="Transparent">
+
+    <d:UserControl.DataContext>
+        <vm:EmployeeHomeViewModel/>
+    </d:UserControl.DataContext>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,30">
+                <TextBlock Text="{Binding WelcomeMessage}" FontSize="26" FontWeight="Bold" Foreground="#1A3D64"/>
+                <TextBlock Text="Chúc bạn một ngày làm việc hiệu quả!" Foreground="#718096" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1" Margin="0,0,0,30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="White" CornerRadius="12" Margin="0,0,15,0" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.05"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Background="#E6FFFA" CornerRadius="8" Width="30" Height="30">
+                                <TextBlock Text="⏰" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Vào Ca Lúc" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#718096" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding TodayCheckInTime}" FontSize="28" FontWeight="Bold" Foreground="#2C7A7B"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="White" CornerRadius="12" Margin="0,0,15,0" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.05"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Background="#EBF8FF" CornerRadius="8" Width="30" Height="30">
+                                <TextBlock Text="📅" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Công Tháng Này" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#718096" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding DaysWorkedThisMonth, StringFormat={}{0} ngày}" FontSize="28" FontWeight="Bold" Foreground="#2B6CB0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="White" CornerRadius="12" Margin="0,0,15,0" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.05"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Background="#FEFCBF" CornerRadius="8" Width="30" Height="30">
+                                <TextBlock Text="🏖️" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Phép Còn Lại" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#718096" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RemainingLeaveDays}" FontSize="28" FontWeight="Bold" Foreground="#D69E2E"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="White" CornerRadius="12" Margin="0,0,0,0" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.05"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Background="#FFF5F5" CornerRadius="8" Width="30" Height="30">
+                                <TextBlock Text="🎉" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Nghỉ Lễ Tiếp Theo" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#718096" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding NextHoliday}" FontSize="28" FontWeight="Bold" Foreground="#E53E3E"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="25" Margin="0,0,20,0">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.05"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="📋 Trạng Thái Đơn Của Tôi" FontSize="18" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,20"/>
+
+                        <DataGrid ItemsSource="{Binding MyLeaveRequests}" AutoGenerateColumns="False" 
+                                  CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="Horizontal" 
+                                  Background="White" BorderThickness="0" HeadersVisibility="Column">
+
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#718096"/>
+                                    <Setter Property="Padding" Value="10"/>
+                                </Style>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Padding" Value="10"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Lý Do" Binding="{Binding Reason}" Width="1.5*" FontWeight="SemiBold"/>
+
+                                <DataGridTemplateColumn Header="Thời Gian" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding StartDate, StringFormat=dd/MM}"/>
+                                                <Run Text="-"/>
+                                                <Run Text="{Binding EndDate, StringFormat=dd/MM}"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="Trạng Thái" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="10" Padding="10,4" HorizontalAlignment="Left">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#FEFCBF"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Approved">
+                                                                <Setter Property="Background" Value="#C6F6D5"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Rejected">
+                                                                <Setter Property="Background" Value="#FED7D7"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#744210"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Approved">
+                                                                    <Setter Property="Foreground" Value="#22543D"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Rejected">
+                                                                    <Setter Property="Foreground" Value="#9B2C2C"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Lối Tắt" FontSize="18" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,15"/>
+
+                    <Button Height="80" Background="#1A3D64" BorderThickness="0" Cursor="Hand" Margin="0,0,0,15">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="White" Opacity="0.2">
+                                            <TextBlock Text="⏱" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="White"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
+                                            <TextBlock Text="Vào Chấm Công" FontWeight="Bold" Foreground="White" FontSize="16"/>
+                                            <TextBlock Text="Ghi nhận giờ làm việc" FontSize="12" Foreground="#A0AEC0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button Height="80" Background="White" BorderThickness="0" Cursor="Hand">
+                        <Button.Effect>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.05"/>
+                        </Button.Effect>
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="#FFF5F5">
+                                            <TextBlock Text="📝" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
+                                            <TextBlock Text="Tạo Đơn Xin Nghỉ" FontWeight="Bold" Foreground="#2D3748" FontSize="16"/>
+                                            <TextBlock Text="Phép năm, ốm đau..." FontSize="12" Foreground="#718096"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

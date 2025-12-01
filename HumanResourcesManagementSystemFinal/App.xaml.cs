@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.ViewModels;
-using HumanResourcesManagementSystemFinal.Views; // Thêm namespace này để tìm thấy LoginWindow
+using HumanResourcesManagementSystemFinal.Views; 
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using HumanResourcesManagementSystemFinal.Models;
@@ -27,7 +27,6 @@ namespace HumanResourcesManagementSystemFinal
                 {
                     context.Database.EnsureCreated();
 
-                    // Tạo Role
                     if (!context.Roles.Any())
                     {
                         context.Roles.AddRange(
@@ -36,8 +35,6 @@ namespace HumanResourcesManagementSystemFinal
                         );
                         context.SaveChanges();
                     }
-
-                    // Tạo Chức Vụ
                     if (!context.Positions.Any())
                     {
                         context.Positions.AddRange(
@@ -49,11 +46,19 @@ namespace HumanResourcesManagementSystemFinal
                         );
                         context.SaveChanges();
                     }
-
-                    // Tạo Admin
+                    if (!context.Departments.Any())
+                    {
+                        context.Departments.AddRange(
+                            new Department { DepartmentName = "Phòng IT", Location = "Tầng 3" },
+                            new Department { DepartmentName = "Phòng Nhân Sự", Location = "Tầng 2" },
+                            new Department { DepartmentName = "Phòng Kinh Doanh", Location = "Tầng 1" }
+                        );
+                        context.SaveChanges();
+                    }
                     if (!context.Employees.Any(e => e.Email == "admin@hrms.com"))
                     {
                         var managerPos = context.Positions.FirstOrDefault(p => p.Title == "Manager");
+                        var itDept = context.Departments.FirstOrDefault(d => d.DepartmentName == "Phòng IT");
 
                         var empAdmin = new Employee
                         {
@@ -63,9 +68,9 @@ namespace HumanResourcesManagementSystemFinal
                             IsActive = true,
                             Gender = "Other",
                             HireDate = DateTime.Now,
-                            Position = managerPos
+                            PositionId = managerPos?.Id,   
+                            DepartmentId = itDept?.Id    
                         };
-
                         context.Employees.Add(empAdmin);
                         context.SaveChanges();
 
@@ -80,8 +85,42 @@ namespace HumanResourcesManagementSystemFinal
                                 RoleId = adminRole.RoleId,
                                 IsActive = true
                             };
-
                             context.Accounts.Add(accAdmin);
+                            context.SaveChanges();
+                        }
+                    }
+
+                    if (!context.Employees.Any(e => e.Email == "user@test.com"))
+                    {
+                        var juniorPos = context.Positions.FirstOrDefault(p => p.Title == "Junior");
+                        var hrDept = context.Departments.FirstOrDefault(d => d.DepartmentName == "Phòng Nhân Sự");
+
+                        var testEmp = new Employee
+                        {
+                            FirstName = "User",
+                            LastName = "Test",
+                            Email = "user@test.com",
+                            PhoneNumber = "0988888888",
+                            IsActive = true,
+                            HireDate = DateTime.Now,
+                            PositionId = juniorPos?.Id,
+                            DepartmentId = hrDept?.Id
+                        };
+                        context.Employees.Add(testEmp);
+                        context.SaveChanges();
+
+                        var empRole = context.Roles.FirstOrDefault(r => r.RoleName == "Employee");
+                        if (empRole != null)
+                        {
+                            var userAccount = new Account
+                            {
+                                Username = "user",
+                                PasswordHash = "123",
+                                IsActive = true,
+                                EmployeeId = testEmp.Id,
+                                RoleId = empRole.RoleId
+                            };
+                            context.Accounts.Add(userAccount);
                             context.SaveChanges();
                         }
                     }

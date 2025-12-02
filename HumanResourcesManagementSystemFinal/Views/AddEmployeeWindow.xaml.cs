@@ -34,10 +34,12 @@ namespace HumanResourcesManagementSystemFinal.Views
             {
                 FirstName = txtFirstName.Text,
                 LastName = txtLastName.Text,
+                // FullName sẽ tự ghép từ FirstName + LastName (nếu Model bạn có logic đó), hoặc ghép tay ở đây
+                FullName = txtLastName.Text + " " + txtFirstName.Text,
                 Email = txtEmail.Text,
                 PhoneNumber = txtPhone.Text,
                 Address = txtAddress.Text,
-
+                 
                 // Lấy phòng ban đã chọn
                 Department = cboDepartment.SelectedItem as Department,
                 DepartmentId = (cboDepartment.SelectedItem as Department)?.Id ?? 0,

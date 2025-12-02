@@ -73,9 +73,9 @@
                     </Border>
 
                     <StackPanel Margin="0,15,0,30" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding CurrentUser.FullName, Mode=OneWay}" 
+                        <TextBlock 
                                    FontSize="22" FontWeight="Bold" Foreground="#2D3748" 
-                                   HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                                   HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"><Run Text="Gia Khang"/><LineBreak/><Run/></TextBlock>
 
                         <TextBlock Text="{Binding CurrentUser.Position.Title}" 
                                    FontSize="14" Foreground="#718096" 

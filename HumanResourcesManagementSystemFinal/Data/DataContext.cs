@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using HumanResourcesManagementSystemFinal.Models; // Nhớ using Models
+using HumanResourcesManagementSystemFinal.Models;
 
 namespace HumanResourcesManagementSystemFinal.Data
 {
@@ -7,7 +7,9 @@ namespace HumanResourcesManagementSystemFinal.Data
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=HRMS_Pro.db");
+            string path = AppDomain.CurrentDomain.BaseDirectory;
+            string dbPath = System.IO.Path.Combine(path, "HRMS_Pro.db");
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Employee> Employees { get; set; }

@@ -39,4 +39,10 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="HRMS_Pro.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

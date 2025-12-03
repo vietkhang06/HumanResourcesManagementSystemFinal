@@ -10,11 +10,14 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Data; 
+using System.Windows.Data;
+
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class ManageEmployeeViewModel : ObservableObject
     {
+        private List<Employee> _allEmployees = new List<Employee>();
+
         public ObservableCollection<Employee> Employees { get; set; } = new();
 
         public ObservableCollection<Department> Departments { get; set; } = new();
@@ -22,9 +25,45 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty]
         private string _searchText;
 
+        [ObservableProperty]
+        private Department _selectedDepartment;
+
         public ManageEmployeeViewModel()
         {
             LoadDataFromDb();
+        }
+
+        partial void OnSearchTextChanged(string value)
+        {
+            FilterEmployees();
+        }
+
+        partial void OnSelectedDepartmentChanged(Department value)
+        {
+            FilterEmployees();
+        }
+
+        private void FilterEmployees()
+        {
+            IEnumerable<Employee> query = _allEmployees;
+
+            if (SelectedDepartment != null && SelectedDepartment.Id != 0)
+            {
+                query = query.Where(e => e.DepartmentId == SelectedDepartment.Id);
+            }
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                string keyword = SearchText.ToLower();
+                query = query.Where(e => e.FullName.ToLower().Contains(keyword) ||
+                                         (e.Email != null && e.Email.ToLower().Contains(keyword)));
+            }
+
+            Employees.Clear();
+            foreach (var emp in query)
+            {
+                Employees.Add(emp);
+            }
         }
 
         private void LoadDataFromDb()
@@ -32,136 +71,124 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             using (var context = new DataContext())
             {
                 context.Database.EnsureCreated();
+
                 var dbDepts = context.Departments.ToList();
+                dbDepts.Insert(0, new Department { Id = 0, DepartmentName = "--- Tất cả phòng ban ---" });
+
                 Departments.Clear();
                 foreach (var dept in dbDepts) Departments.Add(dept);
+
+                SelectedDepartment = Departments.FirstOrDefault();
 
                 var dbEmps = context.Employees
                                     .Include(e => e.Department)
                                     .Include(e => e.Position)
-                                    .Include(e => e.Manager) 
+                                    .Include(e => e.Manager)
                                     .ToList();
 
-                Employees.Clear();
-                foreach (var emp in dbEmps) Employees.Add(emp);
+                _allEmployees = dbEmps;
+
+                FilterEmployees();
             }
         }
 
         [RelayCommand]
         private void AddEmployee()
         {
-            var potentialManagers = Employees.ToList();
+            var validDepts = Departments.Where(d => d.Id != 0).ToList();
+            var potentialManagers = _allEmployees.ToList();
 
-            var addWindow = new AddEmployeeWindow(Departments, potentialManagers);
-            bool? result = addWindow.ShowDialog();
-
-            if (result == true)
+            var addWindow = new AddEmployeeWindow(validDepts, potentialManagers);
+            if (addWindow.ShowDialog() == true)
             {
                 using (var context = new DataContext())
                 {
                     var newEmp = addWindow.NewEmployee;
+
                     int deptId = newEmp.Department.Id;
                     newEmp.Department = null;
                     newEmp.DepartmentId = deptId;
+
                     if (newEmp.Position != null)
                     {
                         var existPos = context.Positions.FirstOrDefault(p => p.Title == newEmp.Position.Title);
-                        if (existPos != null)
-                        {
-                            newEmp.Position = null; 
-                            newEmp.PositionId = existPos.Id; 
-                        }
+                        if (existPos != null) { newEmp.Position = null; newEmp.PositionId = existPos.Id; }
                     }
                     newEmp.Manager = null;
-                    var contract = new WorkContract
+
+                    newEmp.WorkContracts = new List<WorkContract>
                     {
-                        Salary = addWindow.BaseSalary,
-                        StartDate = addWindow.StartDate,
-                        EndDate = addWindow.StartDate.AddYears(1), 
-                        ContractType = "Full-Time"
+                        new WorkContract { Salary = addWindow.BaseSalary, StartDate = addWindow.StartDate, EndDate = addWindow.StartDate.AddYears(1), ContractType = "Full-Time" }
                     };
-               
-                    newEmp.WorkContracts = new List<WorkContract> { contract };
+
                     context.Employees.Add(newEmp);
                     context.SaveChanges();
-                    if (!string.IsNullOrEmpty(addWindow.SelectedImagePath))
-                    {
-                        SaveImage(newEmp.Id, addWindow.SelectedImagePath);
-                    }
-                    newEmp.Department = Departments.FirstOrDefault(d => d.Id == deptId);
-                    if (newEmp.ManagerId != null)
-                    {
-                        newEmp.Manager = Employees.FirstOrDefault(e => e.Id == newEmp.ManagerId);
-                    }
-                    if (newEmp.Position == null && newEmp.PositionId != null)
-                    {
-                        newEmp.Position = context.Positions.Find(newEmp.PositionId);
-                    }
 
-                    Employees.Add(newEmp);
+                    if (!string.IsNullOrEmpty(addWindow.SelectedImagePath)) SaveImage(newEmp.Id, addWindow.SelectedImagePath);
+
+                    newEmp.Department = Departments.FirstOrDefault(d => d.Id == deptId);
+                    if (newEmp.ManagerId != null) newEmp.Manager = _allEmployees.FirstOrDefault(e => e.Id == newEmp.ManagerId);
+                    if (newEmp.PositionId != null) newEmp.Position = context.Positions.Find(newEmp.PositionId);
+
+                    _allEmployees.Add(newEmp);
+                    FilterEmployees();
                 }
             }
         }
 
-       [RelayCommand]
+        [RelayCommand]
         private void EditEmployee(Employee emp)
         {
             if (emp == null) return;
 
-            var potentialManagers = Employees.ToList();
+            var validDepts = Departments.Where(d => d.Id != 0).ToList();
+            var potentialManagers = _allEmployees.ToList();
 
-            var editWindow = new AddEmployeeWindow(Departments, potentialManagers, emp);
-    
-            bool? result = editWindow.ShowDialog();
-
-            if (result == true)
+            var editWindow = new AddEmployeeWindow(validDepts, potentialManagers, emp);
+            if (editWindow.ShowDialog() == true)
             {
                 using (var context = new DataContext())
                 {
                     var empInDb = context.Employees.Include(e => e.Position).FirstOrDefault(e => e.Id == emp.Id);
-
                     if (empInDb != null)
                     {
-                        var updatedInfo = editWindow.NewEmployee;
+                        var updated = editWindow.NewEmployee;
 
-                        empInDb.FirstName = updatedInfo.FirstName;
-                        empInDb.LastName = updatedInfo.LastName;
-                        empInDb.Email = updatedInfo.Email;
-                        empInDb.PhoneNumber = updatedInfo.PhoneNumber;
-                        empInDb.Address = updatedInfo.Address;
-                        empInDb.DepartmentId = updatedInfo.DepartmentId;
-                        empInDb.ManagerId = updatedInfo.ManagerId;
-                        if (updatedInfo.Position != null)
+                        empInDb.FirstName = updated.FirstName;
+                        empInDb.LastName = updated.LastName;
+                        empInDb.Email = updated.Email;
+                        empInDb.PhoneNumber = updated.PhoneNumber;
+                        empInDb.Address = updated.Address;
+                        empInDb.DepartmentId = updated.DepartmentId;
+                        empInDb.ManagerId = updated.ManagerId;
+
+                        if (updated.Position != null)
                         {
-                            var existPos = context.Positions.FirstOrDefault(p => p.Title == updatedInfo.Position.Title);
+                            var existPos = context.Positions.FirstOrDefault(p => p.Title == updated.Position.Title);
                             if (existPos != null)
                             {
                                 empInDb.Position = null;
-                                empInDb.PositionId = existPos.Id; 
+                                empInDb.PositionId = existPos.Id;
                             }
                             else
                             {
-                                empInDb.Position = new Position { Title = updatedInfo.Position.Title };
+                                empInDb.Position = new Position { Title = updated.Position.Title };
                             }
                         }
 
                         context.SaveChanges();
-                        emp.FirstName = empInDb.FirstName;
-                        emp.LastName = empInDb.LastName;
-                        emp.Email = empInDb.Email;
-                        emp.PhoneNumber = empInDb.PhoneNumber;
-                        emp.Address = empInDb.Address;
-                        emp.Department = Departments.FirstOrDefault(d => d.Id == empInDb.DepartmentId);
-                        emp.Manager = Employees.FirstOrDefault(e => e.Id == empInDb.ManagerId);
-                
-                        if (empInDb.PositionId != null)
-                        {
-                            emp.Position = context.Positions.Find(empInDb.PositionId);
-                        }
-                        if (!string.IsNullOrEmpty(editWindow.SelectedImagePath))
-                        {
-                            SaveImage(emp.Id, editWindow.SelectedImagePath);
-                        }
+
+                        if (!string.IsNullOrEmpty(editWindow.SelectedImagePath)) SaveImage(emp.Id, editWindow.SelectedImagePath);
+
+                        _allEmployees = context.Employees
+                                               .Include(e => e.Department)
+                                               .Include(e => e.Position)
+                                               .Include(e => e.Manager)
+                                               .ToList();
+
+                        FilterEmployees();
+
+                        MessageBox.Show("Cập nhật thành công!", "Thông báo");
                     }
                 }
             }
@@ -171,43 +198,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void DeleteEmployee(Employee emp)
         {
             if (emp == null) return;
-
-            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn xóa {emp.FullName}?",
-                                          "Xác nhận xóa",
-                                          MessageBoxButton.YesNo,
-                                          MessageBoxImage.Warning);
-
-            if (confirm == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Xóa nhân viên {emp.FullName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 using (var context = new DataContext())
                 {
                     context.Employees.Remove(emp);
                     context.SaveChanges();
-                    Employees.Remove(emp);
+
+                    _allEmployees.Remove(emp);
+                    FilterEmployees();
+
                     DeleteImage(emp.Id);
                 }
-            }
-        }
-        partial void OnSearchTextChanged(string value)
-        {
-            var view = CollectionViewSource.GetDefaultView(Employees);
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                view.Filter = null; 
-            }
-            else
-            {
-                view.Filter = (obj) =>
-                {
-                    if (obj is Employee e)
-                    {
-                        string keyword = value.ToLower();
-                        return e.FullName.ToLower().Contains(keyword) ||
-                               (e.Email != null && e.Email.ToLower().Contains(keyword));
-                    }
-                    return false;
-                };
             }
         }
 
@@ -217,16 +219,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
                 string ext = Path.GetExtension(sourcePath);
-                string destPath = Path.Combine(folder, $"{empId}{ext}");
-
-                File.Copy(sourcePath, destPath, true);
+                File.Copy(sourcePath, Path.Combine(folder, $"{empId}{ext}"), true);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi lưu ảnh: " + ex.Message);
-            }
+            catch { }
         }
 
         private void DeleteImage(int empId)
@@ -234,13 +230,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-                string png = Path.Combine(folder, $"{empId}.png");
-                string jpg = Path.Combine(folder, $"{empId}.jpg");
-
-                if (File.Exists(png)) File.Delete(png);
-                if (File.Exists(jpg)) File.Delete(jpg);
+                if (File.Exists(Path.Combine(folder, $"{empId}.png"))) File.Delete(Path.Combine(folder, $"{empId}.png"));
+                if (File.Exists(Path.Combine(folder, $"{empId}.jpg"))) File.Delete(Path.Combine(folder, $"{empId}.jpg"));
             }
-            catch { /* Ignore error */ }
+            catch { }
         }
     }
 }

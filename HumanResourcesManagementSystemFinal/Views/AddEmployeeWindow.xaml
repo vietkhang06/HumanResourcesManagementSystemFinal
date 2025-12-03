@@ -83,16 +83,24 @@
 
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Phòng ban" Style="{StaticResource InputLabel}"/>
-                    <ComboBox x:Name="cboDepartment" Height="40" DisplayMemberPath="DepartmentName"/>
+                    <ComboBox x:Name="cboDepartment" Height="40" DisplayMemberPath="DepartmentName" FontFamily="Segoe UI" FontSize="15" FontWeight="Medium" VerticalContentAlignment="Center"/>
 
                     <TextBlock Text="Chức vụ" Style="{StaticResource InputLabel}"/>
-                    <TextBox x:Name="txtPosition"/>
+
+                    <ComboBox x:Name="cboPosition" 
+                          Height="40" 
+                          VerticalContentAlignment="Center"
+                          IsEnabled="False" 
+                          DisplayMemberPath="Title"
+                          SelectedValuePath="Title"
+                          Padding="10,0">
+                    </ComboBox>
 
                     <TextBlock Text="Mức lương cơ bản (VNĐ)" Style="{StaticResource InputLabel}" Foreground="#E53E3E"/>
                     <TextBox x:Name="txtBaseSalary" PreviewTextInput="NumberValidationTextBox"/>
 
                     <TextBlock Text="Ngày bắt đầu" Style="{StaticResource InputLabel}" Foreground="#E53E3E"/>
-                    <DatePicker x:Name="dpStartDate" Height="40" VerticalContentAlignment="Center" SelectedDate="{x:Static sys:DateTime.Now}"/>
+                    <DatePicker x:Name="dpStartDate" Height="40" VerticalContentAlignment="Center" />
                     <TextBlock Text="Người quản lý trực tiếp" Style="{StaticResource InputLabel}"/>
 
                     <ComboBox x:Name="cboManager" Height="40" Padding="10,0" VerticalContentAlignment="Center">

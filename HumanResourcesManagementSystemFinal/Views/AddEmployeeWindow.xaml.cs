@@ -2,10 +2,12 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq; // Cần thiết để dùng LINQ
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
@@ -20,43 +22,49 @@ namespace HumanResourcesManagementSystemFinal.Views
 
         private bool _isEditMode = false;
         private int _editingId = 0;
-        private IEnumerable<Employee> _managers; // Biến lưu danh sách quản lý
+        private IEnumerable<Employee> _managers;
 
-        // --- CONSTRUCTOR 1: THÊM MỚI (2 Tham số) ---
+        private readonly Dictionary<string, List<string>> _positionsByDept = new Dictionary<string, List<string>>()
+        {
+            { "Phòng IT", new List<string> { "IT Support", "Junior Developer", "Senior Developer", "Tester", "Project Manager", "IT Director" } },
+            { "Phòng Nhân Sự", new List<string> { "Thực tập sinh HR", "Chuyên viên tuyển dụng", "C&B Specialist", "Trưởng phòng Nhân sự" } },
+            { "Phòng Kinh Doanh", new List<string> { "Sales Admin", "Nhân viên Kinh doanh", "Team Leader", "Giám đốc Kinh doanh" } },
+            { "Phòng Kế Toán", new List<string> { "Kế toán viên", "Kế toán thuế", "Kế toán trưởng", "Thủ quỹ" } },
+            { "Phòng Marketing", new List<string> { "Content Creator", "Designer", "SEO Specialist", "Marketing Manager" } }
+        };
+
         public AddEmployeeWindow(IEnumerable<Department> departments, IEnumerable<Employee> managers)
         {
             InitializeComponent();
             cboDepartment.ItemsSource = departments;
 
-            // Setup danh sách quản lý
             _managers = managers;
             cboManager.ItemsSource = _managers;
 
             this.Title = "Thêm Nhân Viên Mới";
+
+            cboDepartment.SelectionChanged += CboDepartment_SelectionChanged;
         }
 
-        // --- CONSTRUCTOR 2: SỬA (3 Tham số - Đây là cái bạn đang thiếu) ---
         public AddEmployeeWindow(IEnumerable<Department> departments, IEnumerable<Employee> managers, Employee empToEdit)
-            : this(departments, managers) // Gọi lại constructor trên để nạp Dept/Managers trước
+            : this(departments, managers)
         {
+            dpStartDate.SelectedDate = DateTime.Now;
             _isEditMode = true;
-            _editingId = empToEdit.Id; // Hoặc EmployeeId tùy Model
+            _editingId = empToEdit.Id;
             this.Title = "Cập Nhật Hồ Sơ";
 
-            // 1. Điền dữ liệu cũ vào Form
             txtFirstName.Text = empToEdit.FirstName;
             txtLastName.Text = empToEdit.LastName;
             txtEmail.Text = empToEdit.Email;
             txtPhone.Text = empToEdit.PhoneNumber;
             txtAddress.Text = empToEdit.Address;
-            txtPosition.Text = empToEdit.Position != null ? empToEdit.Position.Title : "";
 
-            // 2. Chọn đúng Phòng ban cũ
             if (empToEdit.DepartmentId != null)
             {
                 foreach (Department dept in cboDepartment.ItemsSource)
                 {
-                    if (dept.Id == empToEdit.DepartmentId) // Hoặc DepartmentId
+                    if (dept.Id == empToEdit.DepartmentId)
                     {
                         cboDepartment.SelectedItem = dept;
                         break;
@@ -64,10 +72,13 @@ namespace HumanResourcesManagementSystemFinal.Views
                 }
             }
 
-            // 3. Chọn đúng Quản lý cũ (Lọc bỏ chính mình để không tự quản lý mình)
+            if (empToEdit.Position != null)
+            {
+                cboPosition.SelectedItem = empToEdit.Position.Title;
+            }
+
             if (_managers != null)
             {
-                // Loại bỏ chính nhân viên đang sửa khỏi danh sách sếp
                 var validManagers = _managers.Where(m => m.Id != empToEdit.Id).ToList();
                 cboManager.ItemsSource = validManagers;
 
@@ -84,11 +95,27 @@ namespace HumanResourcesManagementSystemFinal.Views
                 }
             }
 
-            // 4. Load Ảnh cũ
             LoadExistingImage(_editingId);
         }
 
-        // --- HÀM LOAD ẢNH ---
+        private void CboDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cboDepartment.SelectedItem is Department selectedDept)
+            {
+                cboPosition.IsEnabled = true;
+                cboPosition.ItemsSource = null;
+
+                if (_positionsByDept.ContainsKey(selectedDept.DepartmentName))
+                {
+                    cboPosition.ItemsSource = _positionsByDept[selectedDept.DepartmentName];
+                }
+                else
+                {
+                    cboPosition.ItemsSource = new List<string> { "Nhân viên", "Trưởng nhóm", "Trưởng phòng", "Thực tập sinh" };
+                }
+            }
+        }
+
         private void LoadExistingImage(int empId)
         {
             try
@@ -109,7 +136,6 @@ namespace HumanResourcesManagementSystemFinal.Views
             catch { }
         }
 
-        // --- SỰ KIỆN LƯU ---
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtFirstName.Text) || cboDepartment.SelectedItem == null)
@@ -118,9 +144,15 @@ namespace HumanResourcesManagementSystemFinal.Views
                 return;
             }
 
+            if (cboPosition.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn chức vụ!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             NewEmployee = new Employee
             {
-                Id = _isEditMode ? _editingId : 0, // Dùng Id hoặc EmployeeId
+                Id = _isEditMode ? _editingId : 0,
                 FirstName = txtFirstName.Text,
                 LastName = txtLastName.Text,
                 Email = txtEmail.Text,
@@ -128,17 +160,15 @@ namespace HumanResourcesManagementSystemFinal.Views
                 Address = txtAddress.Text,
                 IsActive = true,
 
-                DepartmentId = (cboDepartment.SelectedItem as Department).Id, // Hoặc DepartmentId
+                DepartmentId = (cboDepartment.SelectedItem as Department).Id,
                 Department = cboDepartment.SelectedItem as Department,
 
-                // Lấy Manager ID
                 ManagerId = (cboManager.SelectedItem as Employee)?.Id,
                 Manager = cboManager.SelectedItem as Employee,
 
-                Position = new Position { Title = txtPosition.Text }
+                Position = new Position { Title = cboPosition.SelectedItem.ToString() }
             };
 
-            // Lấy Lương & Ngày
             if (decimal.TryParse(txtBaseSalary.Text, out decimal salary)) BaseSalary = salary;
             else BaseSalary = 0;
 
@@ -148,7 +178,6 @@ namespace HumanResourcesManagementSystemFinal.Views
             this.Close();
         }
 
-        // --- CÁC SỰ KIỆN KHÁC (Giữ nguyên) ---
         private void UploadImageButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog { Filter = "Image files|*.png;*.jpg;*.jpeg" };

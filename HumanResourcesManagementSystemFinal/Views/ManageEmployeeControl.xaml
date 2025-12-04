@@ -64,7 +64,6 @@
             <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-
     </UserControl.Resources>
 
     <Grid>
@@ -94,21 +93,12 @@
                 </Grid>
             </Border>
 
-            <ComboBox Grid.Column="1" 
-          Margin="15,0,0,0" 
-          Width="200" 
-          Height="45" 
-          
-          ItemsSource="{Binding Departments}" 
-          DisplayMemberPath="DepartmentName"
-          
-          SelectedItem="{Binding SelectedDepartment}" 
-          
-          SelectedIndex="0"
-          FontSize="15" 
-          FontWeight="Medium" 
-          Foreground="White"
-          BorderThickness="0">
+            <ComboBox Grid.Column="1" Margin="15,0,0,0" Width="200" Height="45" 
+                      ItemsSource="{Binding Departments}" 
+                      DisplayMemberPath="DepartmentName"
+                      SelectedItem="{Binding SelectedDepartment}"
+                      SelectedIndex="0" 
+                      FontSize="15" FontWeight="Medium" Foreground="White" BorderThickness="0">
                 <ComboBox.Resources>
                     <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
                         <Grid>
@@ -209,7 +199,7 @@
                       Background="White" BorderThickness="0" HeadersVisibility="Column" RowHeight="65">
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding Id}" Width="Auto" MinWidth="80"
+                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding Id}" Width="Auto" MinWidth="70"
                                         Foreground="#718096" FontWeight="Bold"
                                         HeaderStyle="{StaticResource CenterHeaderStyle}">
                         <DataGridTextColumn.ElementStyle>
@@ -223,14 +213,14 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="40" Height="40" CornerRadius="20" Background="#EDF2F7" Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding FullName[0]}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="ExtraBold" Foreground="#2B6CB0" FontSize="16"/>
+                                    </Border>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="14" 
-                                                   TextTrimming="CharacterEllipsis" 
-                                                   ToolTip="{Binding FullName}"/>
-
+                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding FullName}"/>
                                         <TextBlock Text="{Binding Email}" FontSize="12" Foreground="#718096" Margin="0,2,0,0" 
-                                                   TextTrimming="CharacterEllipsis"
-                                                   ToolTip="{Binding Email}"/>
+                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Email}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
@@ -238,11 +228,11 @@
                     </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding Department.DepartmentName}" 
-                                        Width="Auto" MinWidth="100"
+                                        Width="Auto" MinWidth="150"
                                         Foreground="#4A5568" ElementStyle="{StaticResource SmartTextStyle}"/>
 
                     <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.Title}" 
-                                        Width="Auto" MinWidth="70"
+                                        Width="Auto" MinWidth="120"
                                         Foreground="#4A5568" FontWeight="Medium" ElementStyle="{StaticResource SmartTextStyle}"/>
 
                     <DataGridTextColumn Header="SĐT" Binding="{Binding PhoneNumber}" 

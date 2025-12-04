@@ -9,8 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="HRMS.db" />
     <None Remove="Images\png1.png" />
     <None Remove="Images\png2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="HRMS.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

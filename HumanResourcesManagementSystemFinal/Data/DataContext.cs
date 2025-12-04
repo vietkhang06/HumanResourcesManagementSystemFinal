@@ -8,7 +8,7 @@ namespace HumanResourcesManagementSystemFinal.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             string path = AppDomain.CurrentDomain.BaseDirectory;
-            string dbPath = System.IO.Path.Combine(path, "HRMS_Pro.db");
+            string dbPath = System.IO.Path.Combine(path, "HRMS.db");
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
         public DbSet<Account> Accounts { get; set; }

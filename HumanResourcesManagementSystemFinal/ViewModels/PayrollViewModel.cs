@@ -1,65 +1,117 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HumanResourcesManagementSystemFinal.Data;
-using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.Models; 
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
+using System.Windows.Media;
+using HumanResourcesManagementSystemFinal.Data;
 
-namespace HumanResourcesManagementSystemFinal.ViewModels;
-
-public partial class PayrollViewModel : ObservableObject
+namespace HumanResourcesManagementSystemFinal.ViewModels
 {
-    public ObservableCollection<PayrollDisplayItem> PayrollList { get; set; } = new();
-
-    [ObservableProperty] private int _selectedMonth = DateTime.Now.Month;
-    [ObservableProperty] private int _selectedYear = DateTime.Now.Year;
-    [ObservableProperty] private decimal _totalSalaryFund;
-
-    public PayrollViewModel()
+    public partial class PayrollViewModel : ObservableObject
     {
-        if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
+        [ObservableProperty]
+        private ObservableCollection<PayrollDTO> _payrollList;
+
+        [ObservableProperty]
+        private ObservableCollection<int> _months;
+
+        [ObservableProperty]
+        private ObservableCollection<int> _years;
+
+        [ObservableProperty]
+        private int _selectedMonth;
+
+        [ObservableProperty]
+        private int _selectedYear;
+
+        [ObservableProperty]
+        private decimal _totalSalaryFund;
+
+        public PayrollViewModel()
         {
-            return;
+            PayrollList = new ObservableCollection<PayrollDTO>();
+
+            // Khởi tạo dữ liệu cho ComboBox
+            Months = new ObservableCollection<int>(Enumerable.Range(1, 12));
+            Years = new ObservableCollection<int>(Enumerable.Range(2023, 5)); // 2023 -> 2027
+
+            // Mặc định chọn tháng hiện tại
+            SelectedMonth = DateTime.Now.Month;
+            SelectedYear = DateTime.Now.Year;
         }
-        CalculatePayroll();
-    }
 
-    [RelayCommand]
-    private void CalculatePayroll()
-    {
-        PayrollList.Clear();
-        using var context = new DataContext();
-        var contracts = context.WorkContracts
-            .Include(c => c.Employee)
-            .ThenInclude(e => e.Department)
-            .ToList();
-
-        var timeSheets = context.TimeSheets
-            .Where(t => t.Date.Month == SelectedMonth && t.Date.Year == SelectedYear)
-            .ToList();
-
-        foreach (var contract in contracts)
+        [RelayCommand]
+        private void CalculatePayroll()
         {
-            double totalHours = timeSheets
-                .Where(t => t.EmployeeId == contract.EmployeeId)
-                .Sum(t => t.HoursWorked);
-
-            double workDays = totalHours / 8.0;
-
-            var payrollItem = new PayrollDisplayItem
+            try
             {
-                EmployeeId = contract.EmployeeId,
-                FullName = contract.Employee?.FullName ?? "Unknown",
-                DepartmentName = contract.Employee?.Department?.DepartmentName ?? "N/A",
-                ContractSalary = contract.Salary,
-                TotalHoursWorked = totalHours,
-                ActualWorkDays = Math.Round(workDays, 1) // Làm tròn 1 số lẻ
-            };
+                // 1. Kết nối DB (Sửa lại DB Context theo tên class của bạn)
+                using (var context = new DataContext())
+                {
+                    var resultList = new ObservableCollection<PayrollDTO>();
 
-            PayrollList.Add(payrollItem);
+                    // 2. Lấy danh sách nhân viên đang hoạt động
+                    var employees = context.Employees
+                                           .Include(e => e.Department)
+                                           .Where(e => e.IsActive)
+                                           .ToList();
+
+                    foreach (var emp in employees)
+                    {
+                        // 3. Lấy Lương cơ bản từ Hợp đồng mới nhất
+                        // Giả sử bảng WorkContracts có EmployeeId
+                        var contract = context.WorkContracts
+                                              .Where(c => c.EmployeeId == emp.Id)
+                                              .OrderByDescending(c => c.StartDate)
+                                              .FirstOrDefault();
+
+                        decimal baseSalary = contract != null ? contract.Salary : 0;
+
+                        // 4. Đếm số ngày công trong tháng đã chọn từ TimeSheets
+                        // Giả sử bảng TimeSheets có: EmployeeId, Date (DateTime), HoursWorked
+                        var timesheets = context.TimeSheets
+                                                .Where(t => t.EmployeeId == emp.Id
+                                                         && t.Date.Month == SelectedMonth
+                                                         && t.Date.Year == SelectedYear)
+                                                .ToList();
+
+                        // Cách tính: Đếm số bản ghi chấm công (mỗi bản ghi là 1 ngày)
+                        double workDays = timesheets.Count;
+                        double totalHours = timesheets.Sum(t => t.HoursWorked);
+
+                        // 5. Áp dụng công thức: (Lương / 26) * Ngày công
+                        decimal finalSalary = 0;
+                        if (baseSalary > 0)
+                        {
+                            finalSalary = (baseSalary / 26m) * (decimal)workDays;
+                        }
+
+                        // 6. Tạo DTO
+                        resultList.Add(new PayrollDTO
+                        {
+                            EmployeeId = emp.Id,
+                            FullName = $"{emp.FirstName} {emp.LastName}",
+                            DepartmentName = emp.Department?.DepartmentName ?? "N/A",
+                            ContractSalary = baseSalary,
+                            ActualWorkDays = workDays,
+                            TotalHoursWorked = totalHours,
+                            NetSalary = Math.Round(finalSalary, 0) // Làm tròn
+                        });
+                    }
+
+                    // Cập nhật UI
+                    PayrollList = resultList;
+                    TotalSalaryFund = PayrollList.Sum(x => x.NetSalary);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tính lương: " + ex.Message);
+            }
         }
-        TotalSalaryFund = PayrollList.Sum(x => x.NetSalary);
     }
 }

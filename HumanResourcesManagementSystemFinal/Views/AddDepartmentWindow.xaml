@@ -6,7 +6,7 @@
         AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
-    <Border Background="White" CornerRadius="15" Margin="20,10,20,0">
+    <Border Background="White" CornerRadius="15" Margin="20,10,20,10">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
         </Border.Effect>

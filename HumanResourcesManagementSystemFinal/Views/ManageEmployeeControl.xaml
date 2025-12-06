@@ -64,6 +64,7 @@
             <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -93,12 +94,21 @@
                 </Grid>
             </Border>
 
-            <ComboBox Grid.Column="1" Margin="15,0,0,0" Width="200" Height="45" 
-                      ItemsSource="{Binding Departments}" 
-                      DisplayMemberPath="DepartmentName"
-                      SelectedItem="{Binding SelectedDepartment}"
-                      SelectedIndex="0" 
-                      FontSize="15" FontWeight="Medium" Foreground="White" BorderThickness="0">
+            <ComboBox Grid.Column="1" 
+          Margin="15,0,0,0" 
+          Width="200" 
+          Height="45" 
+          
+          ItemsSource="{Binding Departments}" 
+          DisplayMemberPath="DepartmentName"
+          
+          SelectedItem="{Binding SelectedDepartment}" 
+          
+          SelectedIndex="0"
+          FontSize="15" 
+          FontWeight="Medium" 
+          Foreground="White"
+          BorderThickness="0">
                 <ComboBox.Resources>
                     <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
                         <Grid>
@@ -193,18 +203,55 @@
                 <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
             </Border.Effect>
 
-            <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" 
-                      CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="Horizontal" 
-                      HorizontalGridLinesBrush="#F7F7F7" VerticalGridLinesBrush="Transparent"
-                      Background="White" BorderThickness="0" HeadersVisibility="Column" RowHeight="65">
+            <DataGrid ItemsSource="{Binding Employees}" 
+              AutoGenerateColumns="False" 
+              CanUserAddRows="False" 
+              IsReadOnly="True" 
+              GridLinesVisibility="Horizontal" 
+              HorizontalGridLinesBrush="#F7F7F7" 
+              VerticalGridLinesBrush="Transparent"
+              Background="White" 
+              BorderThickness="0" 
+              HeadersVisibility="Column" 
+              RowHeight="60">
+
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="#718096"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="10,15,10,15"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                    </Style>
+
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding Id}" Width="Auto" MinWidth="70"
-                                        Foreground="#718096" FontWeight="Bold"
-                                        HeaderStyle="{StaticResource CenterHeaderStyle}">
+                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding Id}" Width="80"
+                                Foreground="#718096" FontWeight="Bold">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource SmartTextStyle}">
+                            <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
@@ -217,49 +264,68 @@
                                         <TextBlock Text="{Binding FullName[0]}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="ExtraBold" Foreground="#2B6CB0" FontSize="16"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="14" 
-                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding FullName}"/>
-                                        <TextBlock Text="{Binding Email}" FontSize="12" Foreground="#718096" Margin="0,2,0,0" 
-                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Email}"/>
+                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Email}" FontSize="12" Foreground="#718096" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding Department.DepartmentName}" 
-                                        Width="Auto" MinWidth="150"
-                                        Foreground="#4A5568" ElementStyle="{StaticResource SmartTextStyle}"/>
-
-                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.Title}" 
-                                        Width="Auto" MinWidth="120"
-                                        Foreground="#4A5568" FontWeight="Medium" ElementStyle="{StaticResource SmartTextStyle}"/>
-
-                    <DataGridTextColumn Header="SĐT" Binding="{Binding PhoneNumber}" 
-                                        Width="Auto" MinWidth="110"
-                                        Foreground="#4A5568" HeaderStyle="{StaticResource CenterHeaderStyle}">
+                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding Department.DepartmentName}" Width="1.5*"
+                                Foreground="#4A5568">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource SmartTextStyle}">
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.Title}" Width="1.2*"
+                                Foreground="#4A5568" FontWeight="Medium">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="SĐT" Binding="{Binding PhoneNumber}" Width="120"
+                                Foreground="#4A5568">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="ĐỊA CHỈ" Binding="{Binding Address}" Width="*"
-                                        Foreground="#718096" ElementStyle="{StaticResource SmartTextStyle}"/>
+                    <DataGridTextColumn Header="ĐỊA CHỈ" Binding="{Binding Address}" Width="1.5*"
+                                Foreground="#718096">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="100" HeaderStyle="{StaticResource CenterHeaderStyle}">
+                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Button Command="{Binding DataContext.EditEmployeeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,8,0">
+                                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,8,0">
                                         <Border Background="#EBF8FF" CornerRadius="5" Width="30" Height="30">
                                             <TextBlock Text="✏️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
                                         </Border>
                                     </Button>
                                     <Button Command="{Binding DataContext.DeleteEmployeeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand">
                                         <Border Background="#FFF5F5" CornerRadius="5" Width="30" Height="30">
                                             <TextBlock Text="🗑️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Foreground="#E53E3E"/>
                                         </Border>
@@ -274,7 +340,7 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
             <TextBlock Text="{Binding Employees.Count, StringFormat='Tổng số: {0} nhân viên'}" 
-                       VerticalAlignment="Center" Foreground="#718096" Margin="0,0,20,0" FontWeight="SemiBold"/>
+               VerticalAlignment="Center" Foreground="#718096" Margin="0,0,20,0" FontWeight="SemiBold"/>
 
             <Button Content="&lt;" Width="30" Height="30" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"/>
             <Button Content="1" Width="30" Height="30" Background="#1A3D64" Foreground="White" BorderThickness="0" Margin="5,0"/>

@@ -4,13 +4,9 @@ using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Windows;
-using System.Windows.Data;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -56,7 +52,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 string keyword = SearchText.ToLower();
                 query = query.Where(e => e.FullName.ToLower().Contains(keyword) ||
-                                         (e.Email != null && e.Email.ToLower().Contains(keyword)));
+                                     (e.Email != null && e.Email.ToLower().Contains(keyword)));
             }
 
             Employees.Clear();
@@ -109,17 +105,31 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     newEmp.Department = null;
                     newEmp.DepartmentId = deptId;
 
+                    Position existPos = null;
                     if (newEmp.Position != null)
                     {
-                        var existPos = context.Positions.FirstOrDefault(p => p.Title == newEmp.Position.Title);
-                        if (existPos != null) { newEmp.Position = null; newEmp.PositionId = existPos.Id; }
+                        existPos = context.Positions.FirstOrDefault(p => p.Title == newEmp.Position.Title);
                     }
+
                     newEmp.Manager = null;
 
                     newEmp.WorkContracts = new List<WorkContract>
                     {
                         new WorkContract { Salary = addWindow.BaseSalary, StartDate = addWindow.StartDate, EndDate = addWindow.StartDate.AddYears(1), ContractType = "Full-Time" }
                     };
+
+                    if (existPos != null)
+                    {
+                        newEmp.Position = null;
+                        newEmp.PositionId = existPos.Id;
+                    }
+                    else
+                    {
+                        if (newEmp.Position != null && string.IsNullOrEmpty(newEmp.Position.JobDescription))
+                        {
+                            newEmp.Position.JobDescription = "Mô tả công việc mặc định";
+                        }
+                    }
 
                     context.Employees.Add(newEmp);
                     context.SaveChanges();
@@ -172,7 +182,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             }
                             else
                             {
-                                empInDb.Position = new Position { Title = updated.Position.Title };
+                                var newPos = new Position { Title = updated.Position.Title };
+                                if (string.IsNullOrEmpty(updated.Position.JobDescription))
+                                {
+                                    newPos.JobDescription = "Mô tả công việc mặc định";
+                                }
+                                else
+                                {
+                                    newPos.JobDescription = updated.Position.JobDescription;
+                                }
+                                empInDb.Position = newPos;
                             }
                         }
 

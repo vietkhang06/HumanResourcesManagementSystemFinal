@@ -24,7 +24,6 @@ namespace HumanResourcesManagementSystemFinal.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Parameter truyền vào dạng: "TextKhiTrue|TextKhiFalse"
             string param = parameter as string;
             if (string.IsNullOrEmpty(param)) return value.ToString();
 

@@ -11,9 +11,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public int EmployeeId { get; set; }
         public string FullName { get; set; }
         public string DepartmentName { get; set; }
-        public decimal ContractSalary { get; set; } // Map với cột Salary
-        public double TotalHoursWorked { get; set; } // Tổng giờ làm
-        public double ActualWorkDays { get; set; }   // Quy đổi ra ngày công (Giờ / 8)
+        public decimal ContractSalary { get; set; } 
+        public double TotalHoursWorked { get; set; } 
+        public double ActualWorkDays { get; set; }  
         public decimal NetSalary
         {
             get

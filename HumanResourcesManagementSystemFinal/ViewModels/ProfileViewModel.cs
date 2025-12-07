@@ -28,7 +28,7 @@ public partial class ProfileViewModel : ObservableObject
             Email = "admin@hrms.com",
             PhoneNumber = "0901234567",
             Department = new Department { DepartmentName = "Ban Giám Đốc" },
-            Position = new Position { Title = "System Admin" } // Đã sửa PositionName -> Title
+            Position = new Position { Title = "System Admin" } 
         };
 
         Username = "admin";

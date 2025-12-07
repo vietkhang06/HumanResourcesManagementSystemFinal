@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HumanResourcesManagementSystemFinal.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateLeaveRequestSchema : Migration
+    public partial class AddMissingColumns : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

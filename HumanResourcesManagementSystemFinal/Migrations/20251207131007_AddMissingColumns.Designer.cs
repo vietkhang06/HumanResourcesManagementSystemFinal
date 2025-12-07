@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManagementSystemFinal.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251207070426_UpdateLeaveRequestSchema")]
-    partial class UpdateLeaveRequestSchema
+    [Migration("20251207131007_AddMissingColumns")]
+    partial class AddMissingColumns
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

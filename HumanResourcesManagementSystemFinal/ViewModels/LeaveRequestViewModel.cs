@@ -15,13 +15,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private readonly int _currentUserId;
         private readonly string _currentUserRole;
 
-        // --- Danh sách hiển thị lên DataGrid ---
         [ObservableProperty]
         private ObservableCollection<LeaveRequest> _leaveRequests;
 
-        // --- Các trường nhập liệu (Binding với View) ---
         [ObservableProperty]
-        private string _leaveType = "Annual"; // Mặc định
+        private string _leaveType = "Annual";
 
         [ObservableProperty]
         private DateTime _startDate = DateTime.Today;
@@ -32,39 +30,47 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty]
         private string _reason;
 
-        // --- Kiểm tra quyền để ẩn/hiện nút Duyệt ---
-        public bool IsManager => _currentUserRole == "Admin" || _currentUserRole == "Manager";
+        [ObservableProperty]
+        private bool _isManager;
 
-        public LeaveRequestViewModel(LeaveRequestService service, int userId, string role)
+        public LeaveRequestViewModel(LeaveRequestService leaveService, int userId, string role)
         {
-            _leaveService = service;
+            _leaveService = leaveService;
             _currentUserId = userId;
             _currentUserRole = role;
-            _leaveRequests = new ObservableCollection<LeaveRequest>();
 
-            // Load dữ liệu ngay khi mở
+            IsManager = (role == "Admin" || role == "Manager");
+
+            _leaveRequests = new ObservableCollection<LeaveRequest>();
             LoadDataCommand.Execute(null);
         }
 
         [RelayCommand]
         public async Task LoadData()
         {
-            var list = await _leaveService.GetRequestsByRoleAsync(_currentUserId, _currentUserRole);
-            LeaveRequests = new ObservableCollection<LeaveRequest>(list);
+            try
+            {
+                var list = await _leaveService.GetRequestsByRoleAsync(_currentUserId, _currentUserRole);
+                LeaveRequests = new ObservableCollection<LeaveRequest>(list);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+            }
         }
 
         [RelayCommand]
         public async Task SubmitRequest()
         {
-            // Validate dữ liệu
             if (StartDate > EndDate)
             {
-                MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!");
+                MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi ngày tháng", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
             if (string.IsNullOrWhiteSpace(Reason))
             {
-                MessageBox.Show("Vui lòng nhập lý do!");
+                MessageBox.Show("Vui lòng nhập lý do nghỉ phép.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -78,34 +84,47 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 Status = "Pending"
             };
 
-            bool success = await _leaveService.AddRequestAsync(newRequest);
-            if (success)
+            try
             {
-                MessageBox.Show("Gửi đơn thành công!");
-                await LoadData(); // Refresh lại lưới
-                Reason = string.Empty; // Reset form
+                bool success = await _leaveService.AddRequestAsync(newRequest);
+
+                if (success)
+                {
+                    MessageBox.Show("Gửi đơn thành công!", "Thông báo");
+                    Reason = string.Empty;
+                    await LoadData();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Lỗi khi gửi đơn.");
+                MessageBox.Show($"Lỗi chi tiết: {ex.Message}", "Báo Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // Logic Duyệt đơn (Chỉ Manager/Admin bấm được)
         [RelayCommand]
         public async Task Approve(LeaveRequest request)
         {
             if (request == null) return;
-            await _leaveService.UpdateStatusAsync(request.Id, "Approved");
-            await LoadData();
+
+            var result = MessageBox.Show($"Bạn muốn DUYỆT đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Approved");
+                if (success) await LoadData();
+            }
         }
 
         [RelayCommand]
         public async Task Reject(LeaveRequest request)
         {
             if (request == null) return;
-            await _leaveService.UpdateStatusAsync(request.Id, "Rejected");
-            await LoadData();
+
+            var result = MessageBox.Show($"Bạn muốn TỪ CHỐI đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Rejected");
+                if (success) await LoadData();
+            }
         }
     }
 }

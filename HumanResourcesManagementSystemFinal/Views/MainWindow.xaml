@@ -102,6 +102,10 @@
                                 Command="{Binding NavigateProfileCommand}"
                                 Style="{StaticResource MenuButtonStyle}"/>
 
+                        <Button Content="📝   Quản Lý Nghỉ Phép" 
+                                Command="{Binding NavigateLeaveRequestCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
+
                         <Button Content="📅   Chấm Công" 
                                 Command="{Binding NavigateTimeSheetCommand}"
                                 Style="{StaticResource MenuButtonStyle}"/>

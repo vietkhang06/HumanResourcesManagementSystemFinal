@@ -66,31 +66,45 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             try
             {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-                string path = Path.Combine(folder, $"{CurrentUser.Id}.png");
+                string baseFolder = AppDomain.CurrentDomain.BaseDirectory;
+                string userImgFolder = Path.Combine(baseFolder, "Images", "EmployeeImages");
+                if (!Directory.Exists(userImgFolder)) Directory.CreateDirectory(userImgFolder);
+                string pathPng = Path.Combine(userImgFolder, $"{CurrentUser.Id}.png");
+                string pathJpg = Path.Combine(userImgFolder, $"{CurrentUser.Id}.jpg");
+                string pathDefault = Path.Combine(baseFolder, "Images", "default_user.png");
+                string finalPathToLoad = "";
 
-                if (!File.Exists(path))
+                if (File.Exists(pathPng))
                 {
-                    path = Path.Combine(folder, $"{CurrentUser.Id}.jpg");
+                    finalPathToLoad = pathPng; 
                 }
-
-                if (File.Exists(path))
+                else if (File.Exists(pathJpg))
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.UriSource = new Uri(path);
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    AvatarImage = bitmap;
+                    finalPathToLoad = pathJpg; 
                 }
                 else
                 {
-                    AvatarImage = new BitmapImage(new Uri("pack://application:,,,/Images/default_avatar.png"));
+                    if (File.Exists(pathDefault))
+                    {
+                        finalPathToLoad = pathDefault;
+                    }
+                    else
+                    {
+                        AvatarImage = null;
+                        return;
+                    }
                 }
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad; 
+                bitmap.UriSource = new Uri(finalPathToLoad);
+                bitmap.EndInit();
+                bitmap.Freeze(); 
+                AvatarImage = bitmap;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine("Lỗi load ảnh: " + ex.Message);
                 AvatarImage = null;
             }
         }
@@ -108,17 +122,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void ChangeAvatar()
         {
-            if (!IsEditing) return;
-
+            if (!IsEditing) return; 
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Image files (*.png;*.jpg)|*.png;*.jpg"
+                Filter = "Image files (*.png;*.jpg)|*.png;*.jpg" 
             };
-
             if (openFileDialog.ShowDialog() == true)
             {
                 SaveImageToFolder(CurrentUser.Id, openFileDialog.FileName);
-                LoadAvatarImage();
+                LoadAvatarImage(); 
             }
         }
 
@@ -126,31 +138,20 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
-                // ✅ BƯỚC 1: Kiểm tra null và lấy ID ra biến cục bộ (QUAN TRỌNG NHẤT)
-                // Việc này giúp EF Core hiểu đây là một con số int đơn giản, tránh lỗi LINQ
                 if (CurrentUser == null) return;
                 int userIdToFind = CurrentUser.Id;
-
                 using (var context = new DataContext())
                 {
-                    // ✅ BƯỚC 2: Dùng biến 'userIdToFind' thay vì 'CurrentUser.Id'
                     var empInDb = context.Employees.FirstOrDefault(e => e.Id == userIdToFind);
-
                     if (empInDb != null)
                     {
-                        // Cập nhật dữ liệu từ giao diện vào Database
                         empInDb.FirstName = CurrentUser.FirstName;
                         empInDb.LastName = CurrentUser.LastName;
                         empInDb.Email = CurrentUser.Email;
                         empInDb.PhoneNumber = CurrentUser.PhoneNumber;
                         empInDb.Address = CurrentUser.Address;
-
-                        // Lưu xuống DB
                         context.SaveChanges();
-
                         MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo");
-
-                        // Tự động tắt chế độ chỉnh sửa sau khi lưu xong
                         IsEditing = false;
                     }
                 }
@@ -164,12 +165,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
+                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "EmployeeImages");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                string ext = Path.GetExtension(sourcePath);
+                string ext = Path.GetExtension(sourcePath).ToLower(); 
                 string destFile = Path.Combine(folder, $"{empId}{ext}");
-
+                string oldPng = Path.Combine(folder, $"{empId}.png");
+                string oldJpg = Path.Combine(folder, $"{empId}.jpg");
+                if (File.Exists(oldPng)) File.Delete(oldPng);
+                if (File.Exists(oldJpg)) File.Delete(oldJpg);
                 File.Copy(sourcePath, destFile, true);
             }
             catch (Exception ex)

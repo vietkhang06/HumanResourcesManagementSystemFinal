@@ -34,5 +34,11 @@ namespace HumanResourcesManagementSystemFinal.Views
                 button.ContextMenu.IsOpen = true;
             }
         }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+            this.Close();
+        }
     }
 }

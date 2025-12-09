@@ -53,7 +53,7 @@
 
                 </Ellipse>
                 <TextBlock HorizontalAlignment="Center" Margin="0,420,0,0" TextWrapping="Wrap" Text="UIT - IT008.Q14" VerticalAlignment="Top" Height="20" Width="240" Foreground="White" FontSize="14" TextAlignment="Center"/>
-                <TextBlock HorizontalAlignment="Center" Margin="0,230,0,0" TextWrapping="Wrap" Text="Human Resouce Management System" VerticalAlignment="Top" Height="62" Width="240" FontSize="23" Foreground="#FFFBFBFB" FontWeight="Bold" TextAlignment="Center"/>
+                <TextBlock HorizontalAlignment="Center" Margin="0,230,0,0" TextWrapping="Wrap" Text="Human Resource Management System" VerticalAlignment="Top" Height="62" Width="240" FontSize="23" Foreground="#FFFBFBFB" FontWeight="Bold" TextAlignment="Center"/>
             </Grid>
 
             <Grid Grid.Column="1">

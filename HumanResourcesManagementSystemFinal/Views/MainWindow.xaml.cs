@@ -1,6 +1,7 @@
-﻿using System.Windows;
+﻿using HumanResourcesManagementSystemFinal.ViewModels;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
-using HumanResourcesManagementSystemFinal.ViewModels;
 
 namespace HumanResourcesManagementSystemFinal.Views
 {
@@ -22,6 +23,16 @@ namespace HumanResourcesManagementSystemFinal.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+        private void UserProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null && button.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button; 
+                button.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top; 
+                button.ContextMenu.IsOpen = true;
+            }
         }
     }
 }

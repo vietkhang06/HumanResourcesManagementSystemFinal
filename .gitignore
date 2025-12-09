@@ -365,4 +365,3 @@ FodyWeavers.xsd
 # --- Bắt buộc theo dõi file Database này ---
 !HRMS_Pro.db
 !**/HRMS_Pro.db
-/HumanResourcesManagementSystemFinal/Views/ForgotPasswordControl.xaml

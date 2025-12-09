@@ -34,6 +34,21 @@ public partial class MainViewModel : ObservableObject
         CurrentView = new HomeControl();
     }
 
+    public string CurrentUserName => _currentAccount.Employee != null ? $"{_currentAccount.Employee.FirstName} {_currentAccount.Employee.LastName}" : "Administrator";
+    public string CurrentUserJob => _currentAccount.Employee?.Position?.Title ?? "System Admin";
+    public string CurrentUserAvatar
+    {
+        get
+        {
+            if (IsAdmin) return "/Images/EmployeeImages/admin_avatar.jpg";
+            if (_currentAccount.Employee != null)
+            {
+                return $"/Images/EmployeeImages/{_currentAccount.Employee.Id}.jpg";
+            }
+            return "/Images/default_user.png";
+        }
+    }
+
     [RelayCommand]
     private void NavigateHome()
     {
@@ -117,5 +132,14 @@ public partial class MainViewModel : ObservableObject
             loginWindow.Show();
             currentWindow.Close();
         }
+    }
+    [RelayCommand]
+    private void NavigateChangePassword()
+    {
+        PageTitle = "Đổi Mật Khẩu";
+        CurrentView = new ChangePasswordControl
+        {
+            DataContext = new ChangePasswordViewModel(_currentAccount.AccountId)
+        };
     }
 }

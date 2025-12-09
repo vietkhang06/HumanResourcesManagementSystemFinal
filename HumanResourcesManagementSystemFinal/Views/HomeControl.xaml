@@ -65,10 +65,10 @@
                             <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
                         </Border.Effect>
                         <StackPanel>
-                            <TextBlock Text="🔑 Tài Khoản User" Foreground="#718096" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding TotalAccounts}" FontSize="32" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,5,0,0"/>
+                            <TextBlock Text="🕒 Đang Làm Việc" Foreground="#718096" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding AttendanceStatus}" FontSize="32" FontWeight="Bold" Foreground="#1A3D64" Margin="0,5,0,0"/>
                         </StackPanel>
-                    </Border>
+                    </Border>   
 
                     <Border Grid.Column="2" Background="White" CornerRadius="10" Margin="10,0,10,0" Padding="20">
                         <Border.Effect>

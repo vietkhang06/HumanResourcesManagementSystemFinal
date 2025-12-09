@@ -111,18 +111,71 @@
                                 Style="{StaticResource MenuButtonStyle}"/>
                     </StackPanel>
 
-                    <Button Grid.Row="2" Content="🚪   Đăng Xuất" 
-                            Command="{Binding LogoutCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                            Background="#B43F3F" Foreground="White" Height="50" FontSize="16" BorderThickness="0"
-                            Cursor="Hand">
+                    <Button Grid.Row="2" VerticalAlignment="Bottom" Margin="15,0,15,20" Height="65"
+                            Background="#FFE2EAF3" BorderThickness="0" Cursor="Hand"
+                            Click="UserProfile_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="0,0,0,20">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12" Padding="10,5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" Width="40" Height="40">
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding CurrentUserAvatar}" Stretch="UniformToFill"/>
+                                            </Ellipse.Fill>
+                                            <Ellipse.Effect>
+                                                <DropShadowEffect BlurRadius="4" Opacity="0.2" ShadowDepth="2"/>
+                                            </Ellipse.Effect>
+                                        </Ellipse>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,5,0">
+                                            <TextBlock Text="{Binding CurrentUserName}" 
+                                                       Foreground="#1A3D64" FontWeight="Bold" FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"/>
+
+                                            <TextBlock Text="{Binding CurrentUserJob}" 
+                                                       Foreground="#95A5A6" FontSize="11" 
+                                                       Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="▼" 
+                                                   Foreground="#BDC3C7" FontSize="10" 
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Border>
+
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#F0F3F4"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
+
+                        <Button.ContextMenu>
+                            <ContextMenu StaysOpen="False" Placement="Top">
+                                <ContextMenu.Resources>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="FontSize" Value="13"/>
+                                        <Setter Property="Padding" Value="10,8"/>
+                                        <Setter Property="Height" Value="35"/>
+                                        <Setter Property="Foreground" Value="#1A3D64"/>
+                                    </Style>
+                                </ContextMenu.Resources>
+
+                                <MenuItem Header="👤  Hồ sơ cá nhân" Command="{Binding NavigateProfileCommand}"/>
+                                <MenuItem Header="🔑  Đổi mật khẩu" Command="{Binding NavigateChangePasswordCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="🚪  Đăng Xuất" Foreground="#C0392B" FontWeight="Bold"
+                                          Command="{Binding LogoutCommand}"
+                                          CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
                     </Button>
                 </Grid>
             </Border>

@@ -12,7 +12,7 @@
 
     <Border Background="#f9f8f6" CornerRadius="25">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0" Color="#202020"/>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.2" Color="#202020"/>
         </Border.Effect>
 
         <Border.OpacityMask>
@@ -32,29 +32,28 @@
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
-                <Image Source="/Images/png1.png" HorizontalAlignment="Right" Stretch="UniformToFill">
+                <Image Source="/Images/png1.png" HorizontalAlignment="Center" Stretch="UniformToFill">
                     <Image.Effect>
-                        <BlurEffect Radius="15" KernelType="Gaussian"/>
+                        <BlurEffect Radius="14" KernelType="Gaussian"/>
                     </Image.Effect>
                 </Image>
 
-                <Rectangle>
-                    <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        </LinearGradientBrush>
-                    </Rectangle.Fill>
-                </Rectangle>
+                <Rectangle/>
 
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Border Width="80" Height="80" Background="White" CornerRadius="40" Margin="0,0,0,20" Opacity="0.9">
-                        <TextBlock Text="HR" FontSize="30" FontWeight="Bold" Foreground="#102f76" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="HRMS PRO" FontSize="36" FontWeight="Bold" Foreground="#f9f8f6" HorizontalAlignment="Center">
-                        <TextBlock.Effect>
-                            <DropShadowEffect ShadowDepth="2" BlurRadius="5" Opacity="0.5"/>
-                        </TextBlock.Effect>
-                    </TextBlock>
-                </StackPanel>
+                <Ellipse Width="180" Height="180" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Top" Margin="0,45,0,0">
+                    <Ellipse.Fill>
+                        <ImageBrush ImageSource="/Images/logo PRO.jpg" Stretch="UniformToFill"/>
+                    </Ellipse.Fill>
+
+                    <Ellipse.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.1" Color="White"/>
+                    </Ellipse.Effect>
+
+                </Ellipse>
+                <TextBlock HorizontalAlignment="Center" Margin="0,420,0,0" TextWrapping="Wrap" Text="UIT - IT008.Q14" VerticalAlignment="Top" Height="20" Width="240" Foreground="White" FontSize="14" TextAlignment="Center"/>
+                <TextBlock HorizontalAlignment="Center" Margin="0,230,0,0" TextWrapping="Wrap" Text="Human Resource Management System" VerticalAlignment="Top" Height="62" Width="240" FontSize="23" Foreground="#FFFBFBFB" FontWeight="Bold" TextAlignment="Center"/>
             </Grid>
 
             <Grid Grid.Column="1">

@@ -15,6 +15,7 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] private int _totalEmployees;
     [ObservableProperty] private int _totalDepartments;
     [ObservableProperty] private int _activeContracts;
+    [ObservableProperty] private string _attendanceStatus;
     public ObservableCollection<Employee> RecentEmployees { get; set; } = new();
     public ObservableCollection<Employee> ExpiringContractEmployees { get; set; } = new();
     public ObservableCollection<DepartmentStat> DepartmentStats { get; set; } = new();
@@ -33,42 +34,22 @@ public partial class HomeViewModel : ObservableObject
         _totalEmployees = context.Employees.Count(e => e.IsActive);
         _totalDepartments = context.Departments.Count();
         _activeContracts = context.WorkContracts.Count(c => c.EndDate > DateTime.Now);
-
-        var newHires = context.Employees
-            .OrderByDescending(e => e.HireDate) 
-            .Take(5)
-            .ToList();
-
+        var today = DateTime.Today;
+        var newHires = context.Employees.OrderByDescending(e => e.HireDate) .Take(5).ToList();
+        int checkedInCount = context.TimeSheets.Where(t => t.Date.Date == today && t.CheckInTime != null).Count();
         RecentEmployees.Clear();
         foreach (var item in newHires) RecentEmployees.Add(item);
         var thirtyDaysLater = DateTime.Now.AddDays(30);
-        var expiringList = context.WorkContracts
-            .Include(c => c.Employee)
-            .Where(c => c.EndDate > DateTime.Now && c.EndDate <= thirtyDaysLater)
-            .Select(c => c.Employee) 
-            .ToList();
-
+        var expiringList = context.WorkContracts.Include(c => c.Employee).Where(c => c.EndDate > DateTime.Now && c.EndDate <= thirtyDaysLater).Select(c => c.Employee) .ToList();
         ExpiringContractEmployees.Clear();
         foreach (var item in expiringList) ExpiringContractEmployees.Add(item);
-        var deptStats = context.Employees
-            .GroupBy(e => e.Department.DepartmentName)
-            .Select(g => new DepartmentStat
-            {
-                DepartmentName = g.Key,
-                Count = g.Count()
-            })
-            .ToList();
-
+        var deptStats = context.Employees.GroupBy(e => e.Department.DepartmentName).Select(g => new DepartmentStat{DepartmentName = g.Key, Count = g.Count()}).ToList();
         DepartmentStats.Clear();
         foreach (var item in deptStats) DepartmentStats.Add(item);
-        var pendings = context.LeaveRequests
-            .Include(l => l.Employee) 
-            .Where(l => l.Status == "Pending")
-            .OrderByDescending(l => l.StartDate)
-            .ToList();
-
+        var pendings = context.LeaveRequests.Include(l => l.Employee) .Where(l => l.Status == "Pending").OrderByDescending(l => l.StartDate).ToList();
         PendingLeavesList.Clear();
         foreach (var item in pendings) PendingLeavesList.Add(item);
+        _attendanceStatus = $"{checkedInCount} / {_totalEmployees}";
     }
     [RelayCommand]
     private void ApproveLeave(LeaveRequest request)

@@ -1,29 +1,46 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HumanResourcesManagementSystemFinal.Services; 
 using System;
-using System.Linq;
-using System.Net.Mail;
+using System.Threading.Tasks;
 using System.Windows;
+using HumanResourcesManagementSystemFinal.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Text.RegularExpressions; 
+using System.Windows.Input;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class ForgotPasswordViewModel : ObservableObject
 {
     public Action? NavigateToLoginAction { get; set; }
+    private readonly EmailService _emailService;
 
-    public ForgotPasswordViewModel() { }
+    public ForgotPasswordViewModel()
+    {
+        _emailService = new EmailService();
+    }
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SubmitRequestCommand))]
     private string _username = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SubmitRequestCommand))]
     private string _phoneNumber = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SubmitRequestCommand))]
     private string _emailAddress = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SubmitRequestCommand))]
     private string _cccd = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SubmitRequestCommand))]
+    private bool _isBusy = false;
 
     [RelayCommand]
     private void SwitchToLogin()
@@ -32,53 +49,103 @@ public partial class ForgotPasswordViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmitRequest))]
-    private void SubmitRequest()
+    private async Task SubmitRequestAsync()
     {
-        bool accountExists = CheckAccountExistence();
-
-        if (accountExists)
+        if (string.IsNullOrWhiteSpace(Username) ||
+            string.IsNullOrWhiteSpace(EmailAddress) ||
+            string.IsNullOrWhiteSpace(PhoneNumber))
         {
-            MessageBox.Show(
-                "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra phương thức xác thực đã đăng ký.",
-                "Thành công",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-
-            SwitchToLogin();
+            MessageBox.Show("Vui lòng nhập đầy đủ thông tin: Tên đăng nhập, Email và Số điện thoại.",
+                            "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
         }
-        else
+
+        if (!IsValidEmail(EmailAddress))
         {
-            MessageBox.Show(
-                "Thông tin xác thực không khớp với bất kỳ tài khoản nào.",
-                "Lỗi Xác thực",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error
-            );
+            MessageBox.Show("Định dạng Email không hợp lệ. Vui lòng kiểm tra lại.",
+                            "Sai định dạng", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        IsBusy = true;
+        Mouse.OverrideCursor = Cursors.Wait;
+
+        try
+        {
+            string existingPassword = null;
+            string targetEmail = "";
+
+            using (var context = new DataContext())
+            {
+                var account = await context.Accounts
+                                           .Include(a => a.Employee)
+                                           .FirstOrDefaultAsync(a => a.Username == Username);
+
+                if (account != null && account.Employee != null)
+                {
+                    string dbEmail = account.Employee.Email ?? "";
+                    string dbPhone = account.Employee.PhoneNumber ?? "";
+
+                    bool isEmailMatch = dbEmail.Trim().Equals(EmailAddress.Trim(), StringComparison.OrdinalIgnoreCase);
+                    bool isPhoneMatch = dbPhone.Trim() == PhoneNumber.Trim();
+
+                    if (isEmailMatch && isPhoneMatch)
+                    {
+                        existingPassword = account.PasswordHash;
+                        targetEmail = dbEmail;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(existingPassword))
+            {
+                await _emailService.SendPassResetEmailAsync(targetEmail, existingPassword);
+
+                MessageBox.Show($"Mật khẩu hiện tại của bạn đã được gửi tới email:\n{targetEmail}\n\nVui lòng kiểm tra hộp thư (bao gồm cả mục Spam).",
+                                "Gửi thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                SwitchToLogin();
+            }
+            else
+            {
+                MessageBox.Show("Thông tin xác thực không khớp với bất kỳ tài khoản nào trong hệ thống.\nVui lòng kiểm tra lại Tên đăng nhập, Email hoặc SĐT.",
+                                "Không tìm thấy tài khoản", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (System.Net.Mail.SmtpException smtpEx)
+        {
+            MessageBox.Show($"Lỗi gửi Email: {smtpEx.Message}\nVui lòng kiểm tra kết nối mạng hoặc cấu hình mật khẩu ứng dụng.",
+                            "Lỗi Gửi Mail", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Đã xảy ra lỗi hệ thống: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsBusy = false;
+            Mouse.OverrideCursor = null;
         }
     }
 
-    private bool CheckAccountExistence()
+    private bool IsValidEmail(string email)
     {
-        if (!string.IsNullOrWhiteSpace(Username) && Username.Equals("testuser", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        try
         {
-            return true;
+            return Regex.IsMatch(email,
+                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
         }
-
-        if (!string.IsNullOrWhiteSpace(EmailAddress) && EmailAddress.Equals("test@example.com", StringComparison.OrdinalIgnoreCase))
+        catch (RegexMatchTimeoutException)
         {
-            return true;
+            return false;
         }
-
-        return false;
     }
-
-    // Điều kiện để kích hoạt nút "GỬI YÊU CẦU"
     private bool CanSubmitRequest()
     {
-        return !string.IsNullOrWhiteSpace(Username) ||
-               !string.IsNullOrWhiteSpace(PhoneNumber) ||
-               !string.IsNullOrWhiteSpace(EmailAddress) ||
-               !string.IsNullOrWhiteSpace(Cccd);
+        return !_isBusy &&
+               !string.IsNullOrWhiteSpace(Username) &&
+               !string.IsNullOrWhiteSpace(EmailAddress);
     }
 }

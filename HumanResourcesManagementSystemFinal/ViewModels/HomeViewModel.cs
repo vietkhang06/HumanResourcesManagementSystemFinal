@@ -46,7 +46,7 @@ public partial class HomeViewModel : ObservableObject
         var deptStats = context.Employees.GroupBy(e => e.Department.DepartmentName).Select(g => new DepartmentStat{DepartmentName = g.Key, Count = g.Count()}).ToList();
         DepartmentStats.Clear();
         foreach (var item in deptStats) DepartmentStats.Add(item);
-        var pendings = context.LeaveRequests.Include(l => l.Employee) .Where(l => l.Status == "Pending").OrderByDescending(l => l.StartDate).ToList();
+        var pendings = context.LeaveRequests.Include(l => l.Employee) .Where(l => l.Status == "Đang chờ").OrderByDescending(l => l.StartDate).ToList();
         PendingLeavesList.Clear();
         foreach (var item in pendings) PendingLeavesList.Add(item);
         _attendanceStatus = $"{checkedInCount} / {_totalEmployees}";
@@ -54,13 +54,13 @@ public partial class HomeViewModel : ObservableObject
     [RelayCommand]
     private void ApproveLeave(LeaveRequest request)
     {
-        UpdateLeaveStatus(request, "Approved");
+        UpdateLeaveStatus(request, "Thông qua");
     }
 
     [RelayCommand]
     private void RejectLeave(LeaveRequest request)
     {
-        UpdateLeaveStatus(request, "Rejected");
+        UpdateLeaveStatus(request, "Từ chối");
     }
 
     private void UpdateLeaveStatus(LeaveRequest request, string newStatus)

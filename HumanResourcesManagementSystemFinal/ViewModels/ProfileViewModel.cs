@@ -23,8 +23,8 @@ public partial class ProfileViewModel : ObservableObject
         CurrentUser = new Employee
         {
             Id = 1,
-            FirstName = "Admin",
-            LastName = "Nguyễn Văn",
+            FirstName = "Nguyễn Văn",
+            LastName = "Admin",
             Email = "admin@hrms.com",
             PhoneNumber = "0901234567",
             Department = new Department { DepartmentName = "Ban Giám Đốc" },

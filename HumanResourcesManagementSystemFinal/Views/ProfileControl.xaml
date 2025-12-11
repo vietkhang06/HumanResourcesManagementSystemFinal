@@ -164,11 +164,11 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Họ &amp; Tên Đệm" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.FirstName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                            <TextBox Text="{Binding CurrentUser.LastName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Tên" Foreground="#718096" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding CurrentUser.LastName, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                            <TextBox Text="{Binding CurrentUser.FirstName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
                     </Grid>
 

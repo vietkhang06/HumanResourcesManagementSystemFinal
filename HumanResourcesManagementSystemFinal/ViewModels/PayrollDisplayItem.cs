@@ -9,17 +9,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
     public class PayrollDisplayItem
     {
         public int EmployeeId { get; set; }
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string DepartmentName { get; set; }
-        public decimal ContractSalary { get; set; } 
-        public double TotalHoursWorked { get; set; } 
-        public double ActualWorkDays { get; set; }  
+        public decimal ContractSalary { get; set; }
+        public double TotalHoursWorked { get; set; }
+        public double ActualWorkDays { get; set; }
         public decimal NetSalary
         {
             get
             {
                 if (ActualWorkDays <= 0) return 0;
                 return (ContractSalary / 26m) * (decimal)ActualWorkDays;
+            }
+        }
+        public string FullName
+        {
+            get
+            {
+                return $"{LastName} {FirstName}"; // Ví dụ: Khang Pham Ngoc Gia
             }
         }
     }

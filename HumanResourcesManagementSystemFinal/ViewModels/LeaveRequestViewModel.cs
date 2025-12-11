@@ -81,7 +81,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 StartDate = StartDate,
                 EndDate = EndDate,
                 Reason = Reason,
-                Status = "Pending"
+                Status = "Đang chờ"
             };
 
             try
@@ -109,7 +109,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var result = MessageBox.Show($"Bạn muốn DUYỆT đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Approved");
+                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Thông qua");
                 if (success) await LoadData();
             }
         }
@@ -122,7 +122,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var result = MessageBox.Show($"Bạn muốn TỪ CHỐI đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes)
             {
-                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Rejected");
+                bool success = await _leaveService.UpdateStatusAsync(request.Id, "Từ chối");
                 if (success) await LoadData();
             }
         }

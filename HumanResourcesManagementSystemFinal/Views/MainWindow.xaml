@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
-        xmlns:cnv="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
         mc:Ignorable="d"
         Title="Hệ Thống Quản Lý Nhân Sự" Height="650" Width="1100"
         WindowStartupLocation="CenterScreen"
@@ -20,8 +19,7 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <cnv:UpperCaseConverter x:Key="ToUpperCaseConverter"/>
-        
+
         <Style TargetType="Button" x:Key="MenuButtonStyle">
             <Setter Property="Foreground" Value="#1A3D64"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -81,114 +79,36 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="1">
-
                         <Button Content="🏠   Trang Chủ" 
-                                Command="{Binding NavigateHomeCommand}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="Home">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Command="{Binding NavigateHomeCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
 
                         <Button Content="👥   Quản Lý Nhân Viên" 
                                 Command="{Binding NavigateEmployeeCommand}"
-                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="Employee">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="🏢   Phòng Ban &amp; Vị Trí" 
                                 Command="{Binding NavigateDepartmentCommand}"
-                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="Department">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="💰   Tính Lương" 
                                 Command="{Binding NavigatePayrollCommand}"
-                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="Payroll">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Style="{StaticResource MenuButtonStyle}"
+                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
 
                         <Button Content="👤   Hồ Sơ Của Tôi" 
-                                Command="{Binding NavigateProfileCommand}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="Profile">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Command="{Binding NavigateProfileCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
 
-                        <Button Content="📝   Nghỉ Phép" 
-                                Command="{Binding NavigateLeaveRequestCommand}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="LeaveRequest">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                        <Button Content="📝   Quản Lý Nghỉ Phép" 
+                                Command="{Binding NavigateLeaveRequestCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
 
                         <Button Content="📅   Chấm Công" 
-                                Command="{Binding NavigateTimeSheetCommand}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="TimeSheet">
-                                            <Setter Property="Background" Value="#1A3D64"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Command="{Binding NavigateTimeSheetCommand}"
+                                Style="{StaticResource MenuButtonStyle}"/>
                     </StackPanel>
 
                     <Button Grid.Row="2" VerticalAlignment="Bottom" Margin="15,0,15,20" Height="65"
@@ -217,6 +137,7 @@
                                             <TextBlock Text="{Binding CurrentUserName}" 
                                                        Foreground="#1A3D64" FontWeight="Bold" FontSize="13"
                                                        TextTrimming="CharacterEllipsis"/>
+
                                             <TextBlock Text="{Binding CurrentUserJob}" 
                                                        Foreground="#95A5A6" FontSize="11" 
                                                        Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
@@ -227,6 +148,7 @@
                                                    VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
+
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter TargetName="border" Property="Background" Value="#F0F3F4"/>
@@ -245,6 +167,7 @@
                                         <Setter Property="Foreground" Value="#1A3D64"/>
                                     </Style>
                                 </ContextMenu.Resources>
+
                                 <MenuItem Header="👤  Hồ sơ cá nhân" Command="{Binding NavigateProfileCommand}"/>
                                 <MenuItem Header="🔑  Đổi mật khẩu" Command="{Binding NavigateChangePasswordCommand}"/>
                                 <Separator/>
@@ -264,9 +187,9 @@
                         <Button Content="✕" Width="30" Height="30" Background="Transparent" BorderThickness="0" FontSize="16" FontWeight="Bold" Foreground="#B43F3F" Click="btnClose_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="{Binding PageTitle, Converter={StaticResource ToUpperCaseConverter}}" 
-                               VerticalAlignment="Top" HorizontalAlignment="Left" Margin="19,13,0,0" 
-                               FontSize="25" FontWeight="Bold" Foreground="#8B0000"/>
+                    <TextBlock Text="{Binding PageTitle}" 
+                               VerticalAlignment="Center" HorizontalAlignment="Left" Margin="30,0,0,0" 
+                               FontSize="22" FontWeight="SemiBold" Foreground="#1A3D64"/>
                 </Grid>
 
                 <ContentControl Content="{Binding CurrentView}" Margin="20,60,20,20"/>

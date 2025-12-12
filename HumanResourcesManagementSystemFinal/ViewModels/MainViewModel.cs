@@ -11,9 +11,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string _currentPageName;
-
-    [ObservableProperty]
     private string _pageTitle = "Trang Chủ";
 
     [ObservableProperty]
@@ -69,7 +66,6 @@ public partial class MainViewModel : ObservableObject
                 DataContext = new EmployeeHomeViewModel(empId)
             };
         }
-        CurrentPageName = "Home";
     }
 
     [RelayCommand]
@@ -77,7 +73,6 @@ public partial class MainViewModel : ObservableObject
     {
         PageTitle = "Quản Lý Nhân Viên";
         CurrentView = new ManageEmployeeControl();
-        CurrentPageName = "Employee";
     }
 
     [RelayCommand]
@@ -85,7 +80,6 @@ public partial class MainViewModel : ObservableObject
     {
         PageTitle = "Phòng Ban & Vị Trí";
         CurrentView = new Department_Position_Control();
-        CurrentPageName = "Department";
     }
 
     [RelayCommand]
@@ -96,7 +90,6 @@ public partial class MainViewModel : ObservableObject
         {
             CurrentView = new PayrollControl();
         }
-        CurrentPageName = "Payroll";
     }
 
     [RelayCommand]
@@ -104,7 +97,6 @@ public partial class MainViewModel : ObservableObject
     {
         PageTitle = "Hồ Sơ Của Tôi";
         CurrentView = new ProfileControl();
-        CurrentPageName = "Profile";
     }
 
     [RelayCommand]
@@ -112,7 +104,6 @@ public partial class MainViewModel : ObservableObject
     {
         PageTitle = "Chấm Công";
         CurrentView = new TimeSheetControl();
-        CurrentPageName = "TimeSheet";
     }
 
     [RelayCommand]
@@ -130,7 +121,6 @@ public partial class MainViewModel : ObservableObject
 
         CurrentView = view;
         PageTitle = "Quản Lý Nghỉ Phép";
-        CurrentPageName = "LeaveRequest";
     }
 
     [RelayCommand]

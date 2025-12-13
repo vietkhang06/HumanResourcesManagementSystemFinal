@@ -15,6 +15,10 @@ namespace HumanResourcesManagementSystemFinal.Views
 {
     public partial class AddEmployeeWindow : Window
     {
+        public AddEmployeeWindow()
+        {
+            InitializeComponent();
+        }
         public Employee NewEmployee { get; private set; }
         public string SelectedImagePath { get; private set; }
         public decimal BaseSalary { get; private set; }

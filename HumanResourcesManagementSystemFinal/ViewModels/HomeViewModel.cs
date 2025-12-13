@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows; 
+using System.Windows;
+using System.Windows.Threading;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
@@ -16,6 +17,8 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] private int _totalDepartments;
     [ObservableProperty] private int _activeContracts;
     [ObservableProperty] private string _attendanceStatus;
+    [ObservableProperty] private string _greetingMessage = "Xin chào";
+    private DispatcherTimer _timer;
     public ObservableCollection<Employee> RecentEmployees { get; set; } = new();
     public ObservableCollection<Employee> ExpiringContractEmployees { get; set; } = new();
     public ObservableCollection<DepartmentStat> DepartmentStats { get; set; } = new();
@@ -25,6 +28,8 @@ public partial class HomeViewModel : ObservableObject
     {
         if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new DependencyObject())) return;
         LoadDashboardData();
+        UpdateGreeting();
+        StartClock();
     }
 
     [RelayCommand]
@@ -78,6 +83,33 @@ public partial class HomeViewModel : ObservableObject
             PendingLeavesList.Remove(request);
 
             MessageBox.Show($"Đã {newStatus} đơn thành công!", "Thông báo");
+        }
+    }
+    private void StartClock()
+    {
+        _timer = new DispatcherTimer();
+        _timer.Interval = TimeSpan.FromMinutes(1);
+        _timer.Tick += (s, e) => UpdateGreeting();
+        _timer.Start();
+    }
+    private void UpdateGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        if (hour >= 5 && hour < 11)
+        {
+            _greetingMessage = "Chào buổi sáng";
+        }
+        else if (hour >= 11 && hour < 13)
+        {
+            _greetingMessage = "Chào buổi trưa";
+        }
+        else if (hour >= 13 && hour < 18)
+        {
+            _greetingMessage = "Chào buổi chiều";
+        }
+        else
+        {
+            _greetingMessage = "Chào buổi tối";
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesManagementSystemFinal.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,15 @@ namespace HumanResourcesManagementSystemFinal.Views
         public HomeControl()
         {
             InitializeComponent();
+        }
+        private void BtnAddEmployee_Click(object sender, RoutedEventArgs e)
+        {
+            var addWindow = new AddEmployeeWindow();
+            bool? result = addWindow.ShowDialog();
+            if(DataContext is HomeViewModel vm)
+            {
+                vm.LoadDashboardDataCommand.Execute(null);
+            }
         }
     }
 }

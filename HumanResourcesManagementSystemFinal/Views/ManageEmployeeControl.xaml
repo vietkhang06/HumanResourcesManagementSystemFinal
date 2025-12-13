@@ -341,10 +341,6 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
             <TextBlock Text="{Binding Employees.Count, StringFormat='Tổng số: {0} nhân viên'}" 
                VerticalAlignment="Center" Foreground="#718096" Margin="0,0,20,0" FontWeight="SemiBold"/>
-
-            <Button Content="&lt;" Width="30" Height="30" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"/>
-            <Button Content="1" Width="30" Height="30" Background="#1A3D64" Foreground="White" BorderThickness="0" Margin="5,0"/>
-            <Button Content=">" Width="30" Height="30" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"/>
         </StackPanel>
     </Grid>
 </UserControl>

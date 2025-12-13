@@ -4,27 +4,88 @@ using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq; // <--- Cần thêm cái này để dùng .ToList()
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Configuration;
+using HumanResourcesManagementSystemFinal.Helpers;
+using System.Security.Cryptography;
+using System.Windows.Input;
+using HumanResourcesManagementSystemFinal;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class LoginViewModel : ObservableObject
 {
+    [ObservableProperty]
+    private string _password = string.Empty;
+
+    // CHỈ CẦN MỘT KHAI BÁO CHO TÍNH NĂNG HIDE/SHOW
+    [ObservableProperty]
+    private bool _isPasswordVisible = false;
+
+    [ObservableProperty]
+    private bool _isRememberMeChecked = false;
+
+    // KHAI BÁO ACTION CHỈ MỘT LẦN
     public Action? NavigateToForgotPasswordAction { get; set; }
 
     [ObservableProperty]
     private string _username = string.Empty;
 
-    public LoginViewModel() { }
-
-    [RelayCommand]
-    private async Task Login(object parameter)
+    public LoginViewModel()
     {
-        if (parameter is not PasswordBox passwordBox) return;
-        string password = passwordBox.Password;
+        LoadSettings();
+    }
+
+    // TẠO COMMAND ĐỂ BẬT/TẮT MẬT KHẨU
+    [RelayCommand]
+    private void TogglePasswordVisibility()
+    {
+        IsPasswordVisible = !IsPasswordVisible;
+    }
+
+    // TẢI CÀI ĐẶT
+    private void LoadSettings()
+    {
+        if (Settings.Default.RememberMe)
+        {
+            IsRememberMeChecked = true;
+            Username = Settings.Default.SavedUsername ?? string.Empty;
+
+            string encryptedPassword = Settings.Default.SavedPassword ?? string.Empty;
+            if (!string.IsNullOrEmpty(encryptedPassword))
+            {
+                Password = DataProtectionHelper.Unprotect(encryptedPassword);
+            }
+        }
+    }
+
+    // LƯU CÀI ĐẶT
+    private void SaveSettings(string rawPassword)
+    {
+        if (IsRememberMeChecked)
+        {
+            Settings.Default.SavedUsername = Username;
+            string encryptedPassword = DataProtectionHelper.Protect(rawPassword);
+            Settings.Default.SavedPassword = encryptedPassword;
+            Settings.Default.RememberMe = true;
+        }
+        else
+        {
+            Settings.Default.SavedUsername = string.Empty;
+            Settings.Default.SavedPassword = string.Empty;
+            Settings.Default.RememberMe = false;
+        }
+        Settings.Default.Save();
+    }
+
+    // LOGIN COMMAND
+    [RelayCommand]
+    private async Task Login()
+    {
+        string password = Password;
 
         if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(password))
         {
@@ -41,6 +102,8 @@ public partial class LoginViewModel : ObservableObject
 
             if (account != null)
             {
+                SaveSettings(password);
+
                 var mainViewModel = new MainViewModel(account);
                 var dashboard = new MainWindow();
                 dashboard.DataContext = mainViewModel;
@@ -66,12 +129,14 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
+    // NAVIGATE TO FORGOT PASSWORD COMMAND
     [RelayCommand]
     private void NavigateToForgotPassword()
     {
         NavigateToForgotPasswordAction?.Invoke();
     }
 
+    // EXIT COMMAND
     [RelayCommand]
     private void Exit()
     {

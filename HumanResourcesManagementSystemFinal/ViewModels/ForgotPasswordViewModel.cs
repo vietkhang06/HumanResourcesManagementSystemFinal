@@ -48,7 +48,7 @@ public partial class ForgotPasswordViewModel : ObservableObject
         NavigateToLoginAction?.Invoke();
     }
 
-    [RelayCommand(CanExecute = nameof(CanSubmitRequest))]
+    [RelayCommand]
     private async Task SubmitRequestAsync()
     {
         if (string.IsNullOrWhiteSpace(Username) ||
@@ -146,6 +146,8 @@ public partial class ForgotPasswordViewModel : ObservableObject
     {
         return !_isBusy &&
                !string.IsNullOrWhiteSpace(Username) &&
-               !string.IsNullOrWhiteSpace(EmailAddress);
+               !string.IsNullOrWhiteSpace(EmailAddress) &&
+               !string.IsNullOrWhiteSpace(PhoneNumber);
+
     }
 }

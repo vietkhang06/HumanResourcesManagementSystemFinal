@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,23 @@ namespace HumanResourcesManagementSystemFinal.Views
         public ManageEmployeeControl()
         {
             InitializeComponent();
+        }
+        private void BtnEditEmployee_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var emp = button.DataContext as Employee;
+
+            if (emp != null)
+            {
+                var editWindow = new AddEmployeeWindow(emp);
+                if (editWindow.ShowDialog() == true)
+                {
+                    if (DataContext is ManageEmployeeViewModel vm)
+                    {
+                        vm.LoadDataFromDb();
+                    }
+                }
+            }
         }
     }
 }

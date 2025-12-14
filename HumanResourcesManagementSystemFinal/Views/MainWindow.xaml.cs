@@ -1,4 +1,5 @@
-﻿using HumanResourcesManagementSystemFinal.ViewModels;
+﻿using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -39,6 +40,11 @@ namespace HumanResourcesManagementSystemFinal.Views
             var loginWindow = new LoginWindow();
             loginWindow.Show();
             this.Close();
+        }
+        public MainWindow(Employee user)
+        {
+            InitializeComponent();
+            this.DataContext = new MainViewModel(user);
         }
     }
 }

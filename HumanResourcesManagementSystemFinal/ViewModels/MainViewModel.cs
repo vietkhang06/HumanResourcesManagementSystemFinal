@@ -5,151 +5,213 @@ using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Views;
 using HumanResourcesManagementSystemFinal.Services;
 using System.Windows;
+using System.IO;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private string _currentPageName;
+    // === DỮ LIỆU NGƯỜI DÙNG ===
+    [ObservableProperty] private Employee _currentUser; // Lưu thông tin nhân viên đăng nhập
+    [ObservableProperty] private string _welcomeMessage;
 
-    [ObservableProperty]
-    private string _pageTitle = "Trang Chủ";
+    // === ĐIỀU HƯỚNG GIAO DIỆN ===
+    [ObservableProperty] private string _currentPageName;
+    [ObservableProperty] private string _pageTitle = "Trang Chủ";
+    [ObservableProperty] private object _currentView;
 
-    [ObservableProperty]
-    private object _currentView;
+    // === QUYỀN HẠN ===
+    [ObservableProperty] private bool _isAdmin;
 
-    [ObservableProperty]
-    private bool _isAdmin;
-
+    // Lưu trữ tài khoản đăng nhập (để lấy Role và EmployeeId)
     private Account _currentAccount;
 
-    public MainViewModel(Account currentAccount)
+    // 1. CONSTRUCTOR CHÍNH (Được gọi từ LoginWindow)
+    public MainViewModel(Employee loggedInUser)
     {
-        _currentAccount = currentAccount;
-        _isAdmin = currentAccount.Role?.RoleName == "Admin";
+        if (loggedInUser == null)
+        {
+            // Fallback an toàn nếu null
+            MessageBox.Show("Lỗi: Không nhận được thông tin người dùng!");
+            return;
+        }
+
+        _currentUser = loggedInUser;
+        _currentAccount = loggedInUser.Account; // Account đã được Include từ Login
+
+        // Kiểm tra quyền (Admin hoặc Manager được coi là Admin trong ngữ cảnh này)
+        IsAdmin = _currentAccount?.Role?.RoleName == "Admin" || _currentAccount?.Role?.RoleName == "Manager";
+
+        // Thiết lập lời chào
+        _welcomeMessage = $"Xin chào, {_currentUser.LastName} {_currentUser.FirstName}!";
+
+        // Điều hướng mặc định khi mở app
         NavigateHome();
     }
 
+    // 2. CONSTRUCTOR MẶC ĐỊNH (Chỉ dùng cho Design-Time hoặc Test)
     public MainViewModel()
     {
-        _isAdmin = true;
-        CurrentView = new HomeControl();
+        // Giả lập dữ liệu để Designer hiển thị được giao diện
+        IsAdmin = true;
+        PageTitle = "Trang Chủ (Design Mode)";
     }
 
-    public string CurrentUserName => _currentAccount.Employee != null ? $"{_currentAccount.Employee.FirstName} {_currentAccount.Employee.LastName}" : "Administrator";
-    public string CurrentUserJob => _currentAccount.Employee?.Position?.Title ?? "System Admin";
+    // === CÁC PROPERTY HIỂN THỊ TRÊN GIAO DIỆN ===
+    public string CurrentUserName => _currentUser != null ? $"{_currentUser.LastName} {_currentUser.FirstName}" : "Unknown User";
+
+    public string CurrentUserJob => _currentUser?.Position?.Title ?? "N/A";
+
     public string CurrentUserAvatar
     {
         get
         {
-            if (IsAdmin) return "/Images/EmployeeImages/admin_avatar.jpg";
-            if (_currentAccount.Employee != null)
+            if (_currentUser != null)
             {
-                return $"/Images/EmployeeImages/{_currentAccount.Employee.Id}.jpg";
+                // 1. Tìm ảnh theo ID nhân viên
+                string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{_currentUser.Id}.jpg");
+                if (File.Exists(imagePath)) return imagePath;
+
+                imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{_currentUser.Id}.png");
+                if (File.Exists(imagePath)) return imagePath;
             }
-            return "/Images/default_user.png";
+            // 2. Ảnh mặc định nếu không tìm thấy
+            return "/Images/default_user.png"; // Đảm bảo file này tồn tại trong project (Build Action: Content)
         }
     }
+
+    // === CÁC LỆNH ĐIỀU HƯỚNG (NAVIGATION COMMANDS) ===
 
     [RelayCommand]
     private void NavigateHome()
     {
         PageTitle = "Trang Chủ";
+        CurrentPageName = "Home";
 
-        if (_isAdmin)
+        if (IsAdmin)
         {
+            // Admin thấy Dashboard tổng quan
             CurrentView = new HomeControl();
         }
         else
         {
-            int empId = _currentAccount.EmployeeId ?? 0;
+            // Nhân viên thường thấy Dashboard cá nhân
+            int empId = _currentUser?.Id ?? 0;
             CurrentView = new EmployeeHomeControl
             {
                 DataContext = new EmployeeHomeViewModel(empId)
             };
         }
-        CurrentPageName = "Home";
     }
 
     [RelayCommand]
     private void NavigateEmployee()
     {
+        if (!IsAdmin)
+        {
+            MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         PageTitle = "Quản Lý Nhân Viên";
-        CurrentView = new ManageEmployeeControl();
         CurrentPageName = "Employee";
+        CurrentView = new ManageEmployeeControl();
     }
 
     [RelayCommand]
     private void NavigateDepartment()
     {
+        if (!IsAdmin)
+        {
+            MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         PageTitle = "Phòng Ban & Vị Trí";
-        CurrentView = new Department_Position_Control();
         CurrentPageName = "Department";
+        CurrentView = new Department_Position_Control();
     }
 
     [RelayCommand]
     private void NavigatePayroll()
     {
-        PageTitle = "Tính Lương";
-        if (_isAdmin)
+        // Có thể mở cho cả Admin và Nhân viên (nhân viên chỉ xem lương mình)
+        PageTitle = "Bảng Lương";
+        CurrentPageName = "Payroll";
+
+        if (IsAdmin)
         {
             CurrentView = new PayrollControl();
         }
-        CurrentPageName = "Payroll";
+        else
+        {
+            // Nếu có control xem lương cá nhân thì gọi ở đây
+            MessageBox.Show("Chức năng xem lương cá nhân đang phát triển.");
+        }
     }
 
     [RelayCommand]
     private void NavigateProfile()
     {
         PageTitle = "Hồ Sơ Của Tôi";
-        CurrentView = new ProfileControl();
         CurrentPageName = "Profile";
+
+        // Truyền ID người dùng vào ViewModel của Profile
+        CurrentView = new ProfileControl();
+        // Lưu ý: ProfileViewModel cần được cập nhật để nhận ID người dùng hiện tại
     }
 
     [RelayCommand]
     private void NavigateTimeSheet()
     {
         PageTitle = "Chấm Công";
-        CurrentView = new TimeSheetControl();
         CurrentPageName = "TimeSheet";
+        CurrentView = new TimeSheetControl();
     }
 
     [RelayCommand]
     public void NavigateLeaveRequest()
     {
-        var leaveService = new LeaveRequestService(new DataContext());
+        PageTitle = "Quản Lý Nghỉ Phép";
+        CurrentPageName = "LeaveRequest";
 
-        int empId = _currentAccount.EmployeeId ?? 0;
-        string role = _currentAccount.Role?.RoleName ?? "Employee";
+        var leaveService = new LeaveRequestService(new DataContext());
+        int empId = _currentUser?.Id ?? 0;
+        string role = _currentAccount?.Role?.RoleName ?? "Employee";
 
         var leaveViewModel = new LeaveRequestViewModel(leaveService, empId, role);
-
         var view = new LeaveRequestControl();
         view.DataContext = leaveViewModel;
 
         CurrentView = view;
-        PageTitle = "Quản Lý Nghỉ Phép";
-        CurrentPageName = "LeaveRequest";
     }
 
-    [RelayCommand]
-    private void Logout(object parameter)
-    {
-        if (parameter is Window currentWindow)
-        {
-            var loginWindow = new LoginWindow();
-            loginWindow.Show();
-            currentWindow.Close();
-        }
-    }
     [RelayCommand]
     private void NavigateChangePassword()
     {
         PageTitle = "Đổi Mật Khẩu";
-        CurrentView = new ChangePasswordControl
+        CurrentPageName = "ChangePassword";
+
+        if (_currentAccount != null)
         {
-            DataContext = new ChangePasswordViewModel(_currentAccount.AccountId)
-        };
+            CurrentView = new ChangePasswordControl
+            {
+                DataContext = new ChangePasswordViewModel(_currentAccount.AccountId)
+            };
+        }
+    }
+
+    // === ĐĂNG XUẤT ===
+    [RelayCommand]
+    private void Logout(object parameter)
+    {
+        var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (result == MessageBoxResult.Yes)
+        {
+            if (parameter is Window currentWindow)
+            {
+                var loginWindow = new LoginWindow();
+                loginWindow.Show();
+                currentWindow.Close();
+            }
+        }
     }
 }

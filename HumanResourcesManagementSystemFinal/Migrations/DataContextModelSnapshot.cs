@@ -61,6 +61,41 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.ChangeHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ChangeTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RecordId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TableName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("ChangeHistories");
+                });
+
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -295,6 +330,15 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.ChangeHistory", b =>
+                {
+                    b.HasOne("HumanResourcesManagementSystemFinal.Models.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Employee", b =>

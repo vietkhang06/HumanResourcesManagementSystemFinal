@@ -15,21 +15,114 @@
     <Window.Resources>
         <converters:MultiParameterConverter x:Key="MultiParamConverter"/>
 
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Border x:Name="Border" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" />
+                <Path x:Name="Arrow" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Fill="White" Data="M0,0 L4,4 L8,0" />
+            </Grid>
+        </ControlTemplate>
+
+        <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border" Background="#1A3D64" CornerRadius="6" BorderThickness="0">
+                                <Grid>
+                                    <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
+                                    <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="10,0,30,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.Foreground="White"/>
+                                </Grid>
+                            </Border>
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="6" Margin="0,5,0,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="3" Color="Black"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Margin="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                                <Setter TargetName="border" Property="Cursor" Value="Hand"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground" Value="#2D3748"/>
+                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border Name="Border" Padding="{TemplateBinding Padding}" Background="Transparent" CornerRadius="4">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="true">
+                                            <Setter TargetName="Border" Property="Background" Value="#EBF8FF"/>
+                                            <Setter Property="Foreground" Value="#1A3D64"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="true">
+                                            <Setter TargetName="Border" Property="Background" Value="#1A3D64"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="TextBox">
             <Setter Property="Height" Value="40"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
         <Style TargetType="TextBlock" x:Key="InputLabel">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#4A5568"/>
-            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Margin" Value="0,15,0,5"/>
         </Style>
     </Window.Resources>
 
     <Border Background="White" CornerRadius="15" Margin="20" Padding="30">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="20" Opacity="0.2"/>
+            <DropShadowEffect BlurRadius="20" Opacity="0.15" ShadowDepth="5"/>
         </Border.Effect>
 
         <Grid>
@@ -39,9 +132,13 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="HỒ SƠ NHÂN SỰ MỚI" FontSize="24" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,15"/>
+            <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                <TextBlock Text="HỒ SƠ NHÂN SỰ MỚI" FontSize="24" FontWeight="Bold" Foreground="#1A3D64"/>
+                <TextBlock Text="Vui lòng nhập đầy đủ thông tin bên dưới" FontSize="14" Foreground="#718096" Margin="0,5,0,0"/>
+                <Separator Margin="0,15,0,0" Background="#E2E8F0"/>
+            </StackPanel>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,15,0">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -51,12 +148,23 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel>
-                            <Border Width="120" Height="120" CornerRadius="60" BorderThickness="1" BorderBrush="#CBD5E0">
+                            <Border Width="120" Height="120" CornerRadius="60" BorderThickness="1" BorderBrush="#E2E8F0" Margin="0,20,0,0">
                                 <Border.Background>
                                     <ImageBrush ImageSource="{Binding AvatarSource}" Stretch="UniformToFill"/>
                                 </Border.Background>
                             </Border>
-                            <Button Content="Tải ảnh" Command="{Binding UploadImageCommand}" Margin="0,10,0,0" Padding="10,5"/>
+                            <Button Command="{Binding UploadImageCommand}" Margin="0,15,0,0" Padding="15,8" Background="#EDF2F7" BorderThickness="0" Cursor="Hand" Width="100">
+                                <Button.Resources>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="CornerRadius" Value="5"/>
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Path Data="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3 192 320c0 17.7 14.3 32 32 32s32-14.3 32-32l0-210.7 73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32S0 334.3 0 352l0 64c0 53 43 96 96 96l256 0c53 0 96-43 96-96l0-64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64c0 17.7-14.3 32-32 32L96 448c-17.7 0-32-14.3-32-32l0-64z" 
+                                          Fill="#4A5568" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Tải ảnh" FontWeight="SemiBold" Foreground="#4A5568" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
 
                         <Grid Grid.Column="2">
@@ -72,7 +180,7 @@
                                 <TextBlock Text="Email" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Email}"/>
                                 <TextBlock Text="Ngày sinh" Style="{StaticResource InputLabel}"/>
-                                <DatePicker SelectedDate="{Binding BirthDate}" Height="40"/>
+                                <DatePicker SelectedDate="{Binding BirthDate}" Height="40" VerticalContentAlignment="Center"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
@@ -81,7 +189,7 @@
                                 <TextBlock Text="Số điện thoại" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Phone}"/>
                                 <TextBlock Text="Giới tính" Style="{StaticResource InputLabel}"/>
-                                <ComboBox SelectedValue="{Binding Gender}" SelectedValuePath="Content" Height="40">
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" SelectedValue="{Binding Gender}" SelectedValuePath="Content">
                                     <ComboBoxItem Content="Male"/>
                                     <ComboBoxItem Content="Female"/>
                                     <ComboBoxItem Content="Other"/>
@@ -93,8 +201,8 @@
                     <TextBlock Text="Địa chỉ thường trú" Style="{StaticResource InputLabel}"/>
                     <TextBox Text="{Binding Address}"/>
 
-                    <TextBlock Text="THÔNG TIN CÔNG VIỆC" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,25,0,10"/>
-                    <Border Background="#F7FAFC" CornerRadius="8" Padding="15">
+                    <TextBlock Text="THÔNG TIN HỢP ĐỒNG" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,30,0,10"/>
+                    <Border Background="#F7FAFC" CornerRadius="8" Padding="20" BorderBrush="#E2E8F0" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -103,47 +211,49 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel>
-                                <TextBlock Text="Phòng ban" Style="{StaticResource InputLabel}"/>
-                                <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" DisplayMemberPath="DepartmentName" Height="40"/>
+                                <TextBlock Text="Phòng ban" Style="{StaticResource InputLabel}" Margin="0,0,0,5"/>
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" DisplayMemberPath="DepartmentName"/>
 
                                 <TextBlock Text="Chức vụ" Style="{StaticResource InputLabel}"/>
-                                <ComboBox ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" DisplayMemberPath="Title" Height="40"/>
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" DisplayMemberPath="Title"/>
 
                                 <TextBlock Text="Lương cơ bản *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
                                 <TextBox Text="{Binding SalaryString}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Quản lý trực tiếp" Style="{StaticResource InputLabel}"/>
-                                <ComboBox ItemsSource="{Binding Managers}" SelectedItem="{Binding SelectedManager}" DisplayMemberPath="FullName" Height="40"/>
+                                <TextBlock Text="Quản lý trực tiếp" Style="{StaticResource InputLabel}" Margin="0,0,0,5"/>
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Managers}" SelectedItem="{Binding SelectedManager}" DisplayMemberPath="FullName"/>
 
                                 <TextBlock Text="Loại hợp đồng" Style="{StaticResource InputLabel}"/>
-                                <ComboBox SelectedValue="{Binding ContractType}" SelectedValuePath="Content" Height="40">
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" SelectedValue="{Binding ContractType}" SelectedValuePath="Content">
                                     <ComboBoxItem Content="Full-time"/>
                                     <ComboBoxItem Content="Part-time"/>
                                     <ComboBoxItem Content="Internship"/>
                                 </ComboBox>
-
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition/>
+                                        <ColumnDefinition Width="10"/>
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
+
                                     <StackPanel Margin="0,0,5,0">
                                         <TextBlock Text="Ngày bắt đầu" Style="{StaticResource InputLabel}"/>
-                                        <DatePicker SelectedDate="{Binding StartDate}" Height="40"/>
+                                        <DatePicker SelectedDate="{Binding StartDate}" Height="40" VerticalContentAlignment="Center"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+
+                                    <StackPanel Grid.Column="2" Margin="5,0,0,0">
                                         <TextBlock Text="Ngày kết thúc" Style="{StaticResource InputLabel}"/>
-                                        <DatePicker SelectedDate="{Binding EndDate}" Height="40"/>
+                                        <DatePicker SelectedDate="{Binding EndDate}" Height="40" VerticalContentAlignment="Center"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <TextBlock Text="TÀI KHOẢN ĐĂNG NHẬP" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,25,0,10"/>
-                    <Border Background="#FFFFF0" CornerRadius="8" Padding="15">
+                    <TextBlock Text="TÀI KHOẢN HỆ THỐNG" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,30,0,10"/>
+                    <Border Background="#FFFFF0" CornerRadius="8" Padding="20" BorderBrush="#F6E05E" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -152,17 +262,19 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel>
-                                <TextBlock Text="Tên đăng nhập *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
+                                <TextBlock Text="Tên đăng nhập *" Style="{StaticResource InputLabel}" Foreground="#C53030" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding Username}"/>
+
                                 <TextBlock Text="Vai trò (Role)" Style="{StaticResource InputLabel}"/>
-                                <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="RoleName" Height="40"/>
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="RoleName"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Mật khẩu *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
-                                <PasswordBox x:Name="pBox" Height="40"/>
+                                <TextBlock Text="Mật khẩu *" Style="{StaticResource InputLabel}" Foreground="#C53030" Margin="0,0,0,5"/>
+                                <PasswordBox x:Name="pBox" Height="40" VerticalContentAlignment="Center" Padding="10,0"/>
+
                                 <TextBlock Text="Xác nhận mật khẩu *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
-                                <PasswordBox x:Name="pBoxConfirm" Height="40"/>
+                                <PasswordBox x:Name="pBoxConfirm" Height="40" VerticalContentAlignment="Center" Padding="10,0"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -173,11 +285,24 @@
                 <Button Content="Hủy Bỏ" 
                         Command="{Binding CancelCommand}" 
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                        Width="100" Height="40" Margin="0,0,10,0" Background="White" BorderBrush="#CBD5E0" BorderThickness="1"/>
+                        Width="100" Height="45" Margin="0,0,15,0" 
+                        Background="White" BorderBrush="#CBD5E0" BorderThickness="1" Foreground="#4A5568" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
 
                 <Button Content="💾 Lưu Hồ Sơ" 
                         Command="{Binding SaveCommand}"
-                        Width="150" Height="40" Background="#1A3D64" Foreground="White" FontWeight="Bold">
+                        Width="160" Height="45" 
+                        Background="#1A3D64" Foreground="White" FontWeight="Bold" FontSize="15" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
                     <Button.CommandParameter>
                         <MultiBinding Converter="{StaticResource MultiParamConverter}">
                             <Binding RelativeSource="{RelativeSource AncestorType=Window}"/>

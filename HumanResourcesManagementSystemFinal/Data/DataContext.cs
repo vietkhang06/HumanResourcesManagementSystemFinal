@@ -19,6 +19,7 @@ namespace HumanResourcesManagementSystemFinal.Data
         public DbSet<WorkContract> WorkContracts { get; set; }
         public DbSet<TimeSheet> TimeSheets { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
+        public DbSet<ChangeHistory> ChangeHistories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Role>().HasData(

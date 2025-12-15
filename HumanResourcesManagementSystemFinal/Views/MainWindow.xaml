@@ -215,6 +215,26 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+                        
+                        <Button Command="{Binding NavigateHistoryCommand}" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M13 3C7.48 3 3 7.48 3 13s4.48 10 10 10 10-4.48 10-10S18.52 3 13 3zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H12v6l5.25 3.15.75-1.23-4.5-2.67z" 
+                                      Style="{StaticResource MenuIconStyle}"/>
+                                <TextBlock Text="Lịch Sử Hệ Thống" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentPageName}" Value="History">
+                                            <Setter Property="Background" Value="#1A3D64"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        
                     </StackPanel>
 
                     <Button Grid.Row="2" VerticalAlignment="Bottom" Margin="15,0,15,20" Height="65"

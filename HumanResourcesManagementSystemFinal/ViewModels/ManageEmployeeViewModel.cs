@@ -90,25 +90,71 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void DeleteEmployee(Employee emp)
         {
             if (emp == null) return;
-            if (MessageBox.Show($"Xóa nhân viên {emp.FullName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?\n" +
+                                         "LƯU Ý: Tài khoản và Hợp đồng liên quan cũng sẽ bị xóa vĩnh viễn!",
+                                         "Xác nhận xóa",
+                                         MessageBoxButton.YesNo,
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
             {
-                using (var context = new DataContext())
+                try
                 {
-                    // Cần load kèm Account và Contracts để xóa (Cascade delete thủ công nếu DB chưa set)
-                    var target = context.Employees
-                        .Include(e => e.Account)
-                        .Include(e => e.WorkContracts)
-                        .FirstOrDefault(e => e.Id == emp.Id);
-
-                    if (target != null)
+                    using (var context = new DataContext())
                     {
-                        if (target.Account != null) context.Accounts.Remove(target.Account);
-                        context.WorkContracts.RemoveRange(target.WorkContracts);
-                        context.Employees.Remove(target);
-                        context.SaveChanges();
+                        // BƯỚC 1: Tìm nhân viên trong DB và LOAD KÈM dữ liệu liên quan (Include)
+                        var dbEmp = context.Employees
+                            .Include(e => e.Account)        // Load kèm Account
+                            .Include(e => e.WorkContracts)  // Load kèm Hợp đồng
+                            .FirstOrDefault(e => e.Id == emp.Id);
 
-                        LoadDataFromDb();
+                        if (dbEmp != null)
+                        {
+                            // BƯỚC 2: Xóa Tài khoản liên quan (nếu có)
+                            if (dbEmp.Account != null)
+                            {
+                                context.Accounts.Remove(dbEmp.Account);
+                            }
+
+                            // BƯỚC 3: Xóa Hợp đồng liên quan (nếu có)
+                            if (dbEmp.WorkContracts != null && dbEmp.WorkContracts.Any())
+                            {
+                                context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
+                            }
+
+                            // BƯỚC 4: Xử lý vụ Self-Referencing (Nếu nhân viên này đang là sếp của ai đó)
+                            // Set ManagerId của nhân viên cấp dưới về null để tránh lỗi khóa ngoại
+                            var subordinates = context.Employees.Where(e => e.ManagerId == dbEmp.Id).ToList();
+                            foreach (var sub in subordinates)
+                            {
+                                sub.ManagerId = null;
+                            }
+
+                            // BƯỚC 5: Xóa chính Nhân viên đó
+                            context.Employees.Remove(dbEmp);
+
+                            // BƯỚC 6: Lưu xuống DB (Commit Transaction)
+                            context.SaveChanges();
+
+                            // BƯỚC 7: Load lại giao diện
+                            LoadDataFromDb();
+
+                            MessageBox.Show("Đã xóa thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Không tìm thấy nhân viên trong CSDL. Có thể đã bị xóa trước đó.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            LoadDataFromDb(); // Load lại cho đồng bộ
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    // Bắt lỗi để App không bị đứng hình
+                    MessageBox.Show($"Không thể xóa nhân viên này.\nLỗi chi tiết: {ex.Message}\n{ex.InnerException?.Message}",
+                                    "Lỗi Hệ Thống",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
                 }
             }
         }

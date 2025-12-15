@@ -9,33 +9,17 @@ namespace HumanResourcesManagementSystemFinal.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool isVisible && isVisible)
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Collapsed;
+            bool isVisible = value is bool b && b;
+
+            if (parameter?.ToString() == "Invert")
+                isVisible = !isVisible;
+
+            return isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DependencyProperty.UnsetValue;
-        }
-    }
-
-    public class InvertedBooleanToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool isVisible && !isVisible)
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
+            return value is Visibility v && v == Visibility.Visible;
         }
     }
 }

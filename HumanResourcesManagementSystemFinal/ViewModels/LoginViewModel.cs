@@ -12,7 +12,7 @@ using System.Configuration;
 using HumanResourcesManagementSystemFinal.Helpers;
 using System.Security.Cryptography;
 using System.Windows.Input;
-using HumanResourcesManagementSystemFinal;
+using HumanResourcesManagementSystemFinal.Others;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {

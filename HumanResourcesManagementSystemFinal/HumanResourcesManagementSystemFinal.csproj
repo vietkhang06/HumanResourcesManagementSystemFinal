@@ -80,6 +80,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Update="ViewModels\ForgotPasswordViewModel.cs">
       <Generator>MSBuild:Compile</Generator>
     </Compile>
@@ -88,6 +93,10 @@
   <ItemGroup>
     <None Update="HRMS_Pro.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
 

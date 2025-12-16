@@ -44,8 +44,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             // 2. Đếm số ngày công tháng này
             var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            _daysWorkedThisMonth = context.TimeSheets
+            DaysWorkedThisMonth = context.TimeSheets
                 .Count(t => t.EmployeeId == _currentEmployeeId && t.Date >= startOfMonth);
+
 
             // 3. Kiểm tra giờ Check-in hôm nay
             var todaySheet = context.TimeSheets

@@ -144,13 +144,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         else
                         {
                             MessageBox.Show("Không tìm thấy nhân viên trong CSDL. Có thể đã bị xóa trước đó.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                            LoadDataFromDb(); // Load lại cho đồng bộ
+                            LoadDataFromDb();
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Bắt lỗi để App không bị đứng hình
                     MessageBox.Show($"Không thể xóa nhân viên này.\nLỗi chi tiết: {ex.Message}\n{ex.InnerException?.Message}",
                                     "Lỗi Hệ Thống",
                                     MessageBoxButton.OK,

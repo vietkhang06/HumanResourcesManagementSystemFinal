@@ -4,42 +4,89 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewmodels="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             xmlns:helper="clr-namespace:HumanResourcesManagementSystemFinal.Helpers" 
+             
+             xmlns:converters="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
+             
              d:DataContext="{d:DesignInstance Type=viewmodels:LoginViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="400">
 
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
+
     <Grid Margin="40">
         <StackPanel VerticalAlignment="Center">
-
-            <TextBlock Text="Xin Chào!" FontSize="28" FontWeight="Bold" Foreground="#102f76" Margin="0,0,0,10"/>
-            <TextBlock Text="Vui lòng đăng nhập để tiếp tục" Foreground="#FF020C23" Margin="0,0,0,30"/>
-
             <TextBlock Text="Tên đăng nhập" FontWeight="SemiBold" Foreground="#102f76"/>
-            <Border Height="40" Margin="0,5,0,15" 
-                    BorderBrush="#ddd" BorderThickness="1" 
-                    CornerRadius="5" Background="White">
+            <Border Height="40" Margin="0,5,0,15" BorderBrush="#ddd" BorderThickness="1" CornerRadius="5" Background="White">
                 <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
                          VerticalContentAlignment="Center" Padding="10,0"
                          BorderThickness="0" Background="Transparent"/>
             </Border>
 
             <TextBlock Text="Mật khẩu" FontWeight="SemiBold" Foreground="#102f76"/>
-            <Border Height="40" Margin="0,5,0,10" 
-                    BorderBrush="#ddd" BorderThickness="1" 
-                    CornerRadius="5" Background="White">
-                <PasswordBox x:Name="txtPassword"
-                             VerticalContentAlignment="Center" Padding="10,0"
-                             BorderThickness="0" Background="Transparent"/>
+            <Border Height="40" Margin="0,5,0,10" BorderBrush="#ddd" BorderThickness="1" CornerRadius="5" Background="White">
+                <Grid>
+                    <TextBox x:Name="txtVisiblePassword"
+                             Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVisibility}}"
+                             VerticalContentAlignment="Center" 
+                             Padding="10,0,35,0"
+                             BorderThickness="0" 
+                             Background="Transparent"
+                             
+                             Panel.ZIndex="2"
+                             IsHitTestVisible="{Binding IsPasswordVisible}"/>
+
+                    <PasswordBox x:Name="txtPassword"
+                             Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
+                             VerticalContentAlignment="Center" 
+                             Padding="10,0,35,0"
+                             BorderThickness="0" 
+                             Background="Transparent"
+                             
+                             Panel.ZIndex="1" 
+                             IsHitTestVisible="{Binding IsPasswordVisible, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
+                             
+                             helper:PasswordHelper.BindPassword="True"
+                             helper:PasswordHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Button Content="👁" 
+                            Command="{Binding TogglePasswordVisibilityCommand}"
+                            HorizontalAlignment="Right" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Margin="0,0,5,0"
+                            Width="30"
+                            VerticalAlignment="Center"
+                            ToolTip="Hiện/Ẩn mật khẩu"
+                            Foreground="#102f76"
+                            Focusable="False"  
+                            Panel.ZIndex="3"/>
+                </Grid>
             </Border>
 
-            <Button Content="Quên mật khẩu?" 
-                    Command="{Binding NavigateToForgotPasswordCommand}" 
-                    HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" 
-                    Foreground="#102f76" Cursor="Hand" Margin="0,0,0,20"/>
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Content="Ghi nhớ tôi"
+                          IsChecked="{Binding IsRememberMeChecked}"
+                          Grid.Column="0" VerticalAlignment="Center"
+                          Foreground="#102f76" FontWeight="SemiBold"/>
+
+                <Button Content="Quên mật khẩu?" 
+                        Command="{Binding NavigateToForgotPasswordCommand}" 
+                        HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" 
+                        Foreground="#102f76" Cursor="Hand" Grid.Column="1"/>
+            </Grid>
 
             <Button Content="ĐĂNG NHẬP" 
                     Command="{Binding LoginCommand}"
-                    CommandParameter="{Binding ElementName=txtPassword}"
+                    
                     Height="45" Background="#102f76" Foreground="#f9f8f6" 
                     FontSize="16" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
                 <Button.Resources>

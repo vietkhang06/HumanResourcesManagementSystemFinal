@@ -2,62 +2,47 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
-using HumanResourcesManagementSystemFinal.Views;
 using HumanResourcesManagementSystemFinal.Services;
-using System.Windows;
+using HumanResourcesManagementSystemFinal.Views;
 using System.IO;
+using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    // === DỮ LIỆU NGƯỜI DÙNG ===
-    [ObservableProperty] private Employee _currentUser; // Lưu thông tin nhân viên đăng nhập
+    [ObservableProperty] private Employee _currentUser;
     [ObservableProperty] private string _welcomeMessage;
-
-    // === ĐIỀU HƯỚNG GIAO DIỆN ===
     [ObservableProperty] private string _currentPageName;
     [ObservableProperty] private string _pageTitle = "Trang Chủ";
     [ObservableProperty] private object _currentView;
-
-    // === QUYỀN HẠN ===
     [ObservableProperty] private bool _isAdmin;
 
-    // Lưu trữ tài khoản đăng nhập (để lấy Role và EmployeeId)
     private Account _currentAccount;
 
-    // 1. CONSTRUCTOR CHÍNH (Được gọi từ LoginWindow)
     public MainViewModel(Employee loggedInUser)
     {
         if (loggedInUser == null)
         {
-            // Fallback an toàn nếu null
             MessageBox.Show("Lỗi: Không nhận được thông tin người dùng!");
             return;
         }
 
         _currentUser = loggedInUser;
-        _currentAccount = loggedInUser.Account; // Account đã được Include từ Login
+        _currentAccount = loggedInUser.Account;
 
-        // Kiểm tra quyền (Admin hoặc Manager được coi là Admin trong ngữ cảnh này)
         IsAdmin = _currentAccount?.Role?.RoleName == "Admin" || _currentAccount?.Role?.RoleName == "Manager";
-
-        // Thiết lập lời chào
         _welcomeMessage = $"Xin chào, {_currentUser.LastName} {_currentUser.FirstName}!";
 
-        // Điều hướng mặc định khi mở app
         NavigateHome();
     }
 
-    // 2. CONSTRUCTOR MẶC ĐỊNH (Chỉ dùng cho Design-Time hoặc Test)
     public MainViewModel()
     {
-        // Giả lập dữ liệu để Designer hiển thị được giao diện
         IsAdmin = true;
         PageTitle = "Trang Chủ (Design Mode)";
     }
 
-    // === CÁC PROPERTY HIỂN THỊ TRÊN GIAO DIỆN ===
     public string CurrentUserName => _currentUser != null ? $"{_currentUser.LastName} {_currentUser.FirstName}" : "Unknown User";
 
     public string CurrentUserJob => _currentUser?.Position?.Title ?? "N/A";
@@ -68,19 +53,15 @@ public partial class MainViewModel : ObservableObject
         {
             if (_currentUser != null)
             {
-                // 1. Tìm ảnh theo ID nhân viên
                 string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{_currentUser.Id}.jpg");
                 if (File.Exists(imagePath)) return imagePath;
 
                 imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{_currentUser.Id}.png");
                 if (File.Exists(imagePath)) return imagePath;
             }
-            // 2. Ảnh mặc định nếu không tìm thấy
-            return "/Images/default_user.png"; // Đảm bảo file này tồn tại trong project (Build Action: Content)
+            return "/Images/default_user.png";
         }
     }
-
-    // === CÁC LỆNH ĐIỀU HƯỚNG (NAVIGATION COMMANDS) ===
 
     [RelayCommand]
     private void NavigateHome()
@@ -90,12 +71,10 @@ public partial class MainViewModel : ObservableObject
 
         if (IsAdmin)
         {
-            // Admin thấy Dashboard tổng quan
             CurrentView = new HomeControl();
         }
         else
         {
-            // Nhân viên thường thấy Dashboard cá nhân
             int empId = _currentUser?.Id ?? 0;
             CurrentView = new EmployeeHomeControl
             {
@@ -133,7 +112,6 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void NavigatePayroll()
     {
-        // Có thể mở cho cả Admin và Nhân viên (nhân viên chỉ xem lương mình)
         PageTitle = "Bảng Lương";
         CurrentPageName = "Payroll";
 
@@ -143,7 +121,6 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
-            // Nếu có control xem lương cá nhân thì gọi ở đây
             MessageBox.Show("Chức năng xem lương cá nhân đang phát triển.");
         }
     }
@@ -153,10 +130,7 @@ public partial class MainViewModel : ObservableObject
     {
         PageTitle = "Hồ Sơ Của Tôi";
         CurrentPageName = "Profile";
-
-        // Truyền ID người dùng vào ViewModel của Profile
         CurrentView = new ProfileControl();
-        // Lưu ý: ProfileViewModel cần được cập nhật để nhận ID người dùng hiện tại
     }
 
     [RelayCommand]
@@ -199,7 +173,14 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    // === ĐĂNG XUẤT ===
+    [RelayCommand]
+    private void NavigateHistory()
+    {
+        PageTitle = "Lịch Sử Hoạt Động";
+        CurrentPageName = "History";
+        CurrentView = new ChangeHistoryControl();
+    }
+
     [RelayCommand]
     private void Logout(object parameter)
     {

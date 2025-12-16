@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using HumanResourcesManagementSystemFinal.Models;
+using System.Windows;
 using System.Windows.Input;
 
 namespace HumanResourcesManagementSystemFinal.Views
@@ -12,6 +13,17 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             InitializeComponent();
             txtTitle.Focus();
+        }
+        public AddPositionWindow(Position posToEdit = null)
+        {
+            InitializeComponent();
+            if (posToEdit != null)
+            {
+                Title = "Cập Nhật Chức Vụ";
+                lblTitle.Text = "✏️ Chỉnh Sửa Chức Vụ";
+                txtTitle.Text = posToEdit.Title;
+                txtDesc.Text = posToEdit.JobDescription;
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)

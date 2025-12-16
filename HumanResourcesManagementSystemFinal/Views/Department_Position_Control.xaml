@@ -12,6 +12,13 @@
     </UserControl.DataContext>
 
     <UserControl.Resources>
+        <Geometry x:Key="IconEdit">M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 168 255.8 302.2c-2.9 2.9-6.5 5-10.4 6.1l-58.5 16.7 16.7-58.5c1.1-3.9 3.2-7.5 6.1-10.4zM373.1 25L175.8 222.2c-8.7 8.7-15 19.4-18.3 31.1l-28.6 100c-2.4 8.4-.1 17.4 6.1 23.6s15.2 8.5 23.6 6.1l100-28.6c11.8-3.4 22.5-9.7 31.1-18.3L487 138.9c28.1-28.1 28.1-73.7 0-101.8L474.9 25C446.8-3.1 401.2-3.1 373.1 25zM88 64C39.4 64 0 103.4 0 152L0 424c0 48.6 39.4 88 88 88l272 0c48.6 0 88-39.4 88-88l0-112c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 112c0 22.1-17.9 40-40 40L88 464c-22.1 0-40-17.9-40-40l0-272c0-22.1 17.9-40 40-40l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24L88 64z</Geometry>
+        <Geometry x:Key="IconDelete">M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z</Geometry>
+        <Geometry x:Key="IconAdd">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</Geometry>
+        <Geometry x:Key="IconBuilding">M21 19H23V21H1V19H3V4C3 3.44772 3.44772 3 4 3H14C14.5523 3 15 3.44772 15 4V19H19V11H17V9H20C20.5523 9 21 9.44772 21 10V19ZM5 5V19H13V5H5ZM7 11H11V13H7V11ZM7 7H11V9H7V7Z</Geometry>
+        <Geometry x:Key="IconBriefcase">M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z</Geometry>
+        <Geometry x:Key="IconHandLeft">M21.5 13.4l-7.7-2.6c-.6-.2-1.3.1-1.5.7l-.3 1 2.3.8c.8.3 1.2 1.1.9 1.9s-1.1 1.2-1.9.9l-8.6-2.9c-1.3-.4-2-.2-2.3.1-.3.3-.4 1 .2 2.3l4.9 10.9c.7 1.6 2.3 2.6 4.1 2.6h7.9c1.9 0 3.6-1.3 4-3.2l1.6-7.9c.3-1.8-.9-3.6-2.7-4.1-.3-.1-.6-.1-.9-.1-.6 0-1.1.2-1.6.6l1.6-1z</Geometry>
+
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#718096"/>
@@ -21,14 +28,17 @@
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
         </Style>
+
         <Style TargetType="DataGridRow">
             <Setter Property="Height" Value="45"/>
+            <Setter Property="Background" Value="White"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F7FAFC"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
+
         <Style TargetType="DataGridCell">
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Template">
@@ -60,19 +70,22 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="🏢 Danh Sách Phòng Ban" Grid.Row="0" Margin="20,20,0,10"
-                           FontSize="18" FontWeight="Bold" Foreground="#1A3D64"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20,20,0,10">
+                    <Path Data="{StaticResource IconBuilding}" Fill="#1A3D64" Height="18" Width="18" Stretch="Uniform" Margin="0,0,10,0"/>
+                    <TextBlock Text="Danh Sách Phòng Ban" FontSize="18" FontWeight="Bold" Foreground="#1A3D64" VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <ListBox Grid.Row="1" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}"
-                         BorderThickness="0" Background="Transparent" Margin="10,0"
-                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+         BorderThickness="0" Background="Transparent" Margin="10,0"
+         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Margin" Value="0,5"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border x:Name="border" Background="#F7FAFC" CornerRadius="8" Padding="15" Cursor="Hand" BorderThickness="1" BorderBrush="Transparent">
+                                        <Border x:Name="border" Background="#F7FAFC" CornerRadius="8" Padding="10" Cursor="Hand" BorderThickness="1" BorderBrush="Transparent">
                                             <ContentPresenter/>
                                         </Border>
                                         <ControlTemplate.Triggers>
@@ -96,16 +109,30 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
                                 <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="White">
-                                    <TextBlock Text="📍" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18"/>
+                                    <Path Data="{StaticResource IconBuilding}" Fill="#2B6CB0" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                 </Border>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                                     <TextBlock Text="{Binding DepartmentName}" FontWeight="Bold" Foreground="#2D3748"/>
-
                                     <TextBlock Text="{Binding Location}" FontSize="11" Foreground="#718096" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,5,0" ToolTip="Sửa tên phòng"
+                            Command="{Binding DataContext.EditDepartmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}">
+                                        <Path Data="{StaticResource IconEdit}" Fill="#3182CE" Width="14" Height="14" Stretch="Uniform"/>
+                                    </Button>
+
+                                    <Button Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Xóa phòng ban"
+                            Command="{Binding DataContext.DeleteDepartmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}">
+                                        <Path Data="{StaticResource IconDelete}" Fill="#E53E3E" Width="14" Height="14" Stretch="Uniform"/>
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
@@ -113,12 +140,16 @@
                 </ListBox>
 
                 <Button Grid.Row="2" Command="{Binding AddDepartmentCommand}" Margin="20" Height="45"
-                        Background="#2D3748" Foreground="White" FontWeight="Bold" Content="➕ Thêm Phòng Ban" Cursor="Hand">
+                        Background="#1A3D64" Foreground="White" FontWeight="Bold" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="8"/>
                         </Style>
                     </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconAdd}" Fill="White" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0"/>
+                        <TextBlock Text="Thêm Phòng Ban"/>
+                    </StackPanel>
                 </Button>
             </Grid>
         </Border>
@@ -135,22 +166,27 @@
 
                 <Grid Grid.Row="0" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="💼 Các Chức Vụ / Vị Trí" FontSize="18" FontWeight="Bold" Foreground="#1A3D64"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <TextBlock Text="Thuộc phòng ban: " Foreground="#718096"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconBriefcase}" Fill="#1A3D64" Height="20" Width="20" Stretch="Uniform" Margin="0,0,10,0"/>
+                            <TextBlock Text="Các Chức Vụ / Vị Trí" FontSize="18" FontWeight="Bold" Foreground="#1A3D64" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="30,5,0,0">
+                            <TextBlock Text="Thuộc: " Foreground="#718096"/>
                             <TextBlock Text="{Binding SelectedDepartment.DepartmentName, TargetNullValue='(Chưa chọn)'}" FontWeight="Bold" Foreground="#3182CE"/>
                         </StackPanel>
                     </StackPanel>
 
                     <Button HorizontalAlignment="Right" Command="{Binding AddPositionCommand}"
-                            Background="#3182CE" Foreground="White" Height="40" Padding="15,0" BorderThickness="0" Cursor="Hand">
+                            Background="#1A3D64" Foreground="White" Height="40" Padding="15,0" BorderThickness="0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="➕ Thêm Vị Trí" FontWeight="SemiBold"/>
+                            <Path Data="{StaticResource IconAdd}" Fill="White" Width="12" Height="12" Stretch="Uniform" Margin="0,0,8,0"/>
+                            <TextBlock Text="Thêm Vị Trí" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -159,12 +195,15 @@
                           CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
                           Background="White" BorderThickness="0" HeadersVisibility="Column">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="MÃ VT" Binding="{Binding Id}" Width="80" Foreground="#718096"/>
+                        <DataGridTextColumn Header="MÃ VT" Binding="{Binding Id}" Width="60" Foreground="#718096"/>
 
                         <DataGridTemplateColumn Header="TÊN CHỨC VỤ" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#2D3748"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource IconBriefcase}" Fill="#3182CE" Width="12" Height="12" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#2D3748" VerticalAlignment="Center"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -175,8 +214,19 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Content="✏️" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"/>
-                                        <Button Content="🗑️" Background="Transparent" BorderThickness="0" Cursor="Hand" Foreground="#E53E3E"/>
+
+                                        <Button Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" ToolTip="Sửa chức vụ"
+                                                Command="{Binding DataContext.EditPositionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}">
+                                            <Path Data="{StaticResource IconEdit}" Fill="#3182CE" Width="16" Height="16" Stretch="Uniform"/>
+                                        </Button>
+
+                                        <Button Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Xóa chức vụ"
+                                                Command="{Binding DataContext.DeletePositionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}">
+                                            <Path Data="{StaticResource IconDelete}" Fill="#E53E3E" Width="16" Height="16" Stretch="Uniform"/>
+                                        </Button>
+
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -184,7 +234,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <Border Grid.Row="1" Background="White" Opacity="0.9">
+                <Border Grid.Row="1" Background="White" Opacity="0.95">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -195,13 +245,11 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="👈" FontSize="40" HorizontalAlignment="Center" Foreground="#CBD5E0"/>
-                        <TextBlock Text="Vui lòng chọn một phòng ban bên trái" FontSize="16" Foreground="#718096" Margin="0,10,0,0"/>
+                        <Path Data="{StaticResource IconHandLeft}" Fill="#CBD5E0" Width="50" Height="50" Stretch="Uniform" Margin="0,0,0,15"/>
+                        <TextBlock Text="Vui lòng chọn một phòng ban bên trái" FontSize="16" Foreground="#718096"/>
                     </StackPanel>
                 </Border>
-
             </Grid>
         </Border>
     </Grid>

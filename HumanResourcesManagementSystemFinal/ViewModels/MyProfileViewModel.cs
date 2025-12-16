@@ -145,6 +145,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     var empInDb = context.Employees.FirstOrDefault(e => e.Id == userIdToFind);
                     if (empInDb != null)
                     {
+                        // Cho nay
                         empInDb.FirstName = CurrentUser.FirstName;
                         empInDb.LastName = CurrentUser.LastName;
                         empInDb.Email = CurrentUser.Email;

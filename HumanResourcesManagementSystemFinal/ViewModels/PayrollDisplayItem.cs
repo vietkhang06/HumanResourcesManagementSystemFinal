@@ -27,7 +27,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             get
             {
-                return $"{LastName} {FirstName}"; // Ví dụ: Khang Pham Ngoc Gia
+                return $"{LastName} {FirstName}";
             }
         }
     }

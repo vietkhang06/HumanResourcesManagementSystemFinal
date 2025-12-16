@@ -44,7 +44,9 @@ namespace HumanResourcesManagementSystemFinal.Views
         public MainWindow(Employee user)
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel(user);
+            if (user?.Account == null)
+                throw new ArgumentException("Employee must have an associated Account.", nameof(user));
+            this.DataContext = new MainViewModel(user.Account);
         }
     }
 }

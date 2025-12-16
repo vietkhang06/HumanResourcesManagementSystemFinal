@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HumanResourcesManagementSystemFinal {
+namespace HumanResourcesManagementSystemFinal.Others {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

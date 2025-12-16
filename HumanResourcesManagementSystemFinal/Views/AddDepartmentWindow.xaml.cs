@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using HumanResourcesManagementSystemFinal.Models;
+using System.Windows;
 using System.Windows.Input;
 
 namespace HumanResourcesManagementSystemFinal.Views
@@ -12,6 +13,18 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             InitializeComponent();
             txtDeptName.Focus();
+        }
+        public AddDepartmentWindow(Department deptToEdit = null)
+        {
+            InitializeComponent();
+
+            if (deptToEdit != null)
+            {
+                Title = "Cập Nhật Phòng Ban";
+                txtTitle.Text = "✏️ Chỉnh Sửa Phòng Ban";
+                txtDeptName.Text = deptToEdit.DepartmentName;
+                txtLocation.Text = deptToEdit.Location;
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -40,5 +53,6 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             if (e.ButtonState == MouseButtonState.Pressed) this.DragMove();
         }
+
     }
 }

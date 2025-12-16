@@ -87,7 +87,7 @@ public partial class MainViewModel : ObservableObject
         };
         _currentAccount = new Account { Role = new Role { RoleName = "Admin" } };
         IsAdmin = true;
-        PageTitle = "Trang Chủ (Design Mode)";
+        PageTitle = "Trang Chủ";
         WelcomeMessage = "Xin chào, Design Mode Developer!";
     }
 

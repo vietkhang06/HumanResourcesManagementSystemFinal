@@ -176,7 +176,7 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Họ đệm *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
-                                <TextBox Text="{Binding LastName}"/>
+                                <TextBox Text="{Binding FirstName}"/>
                                 <TextBlock Text="Email" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Email}"/>
                                 <TextBlock Text="Ngày sinh" Style="{StaticResource InputLabel}"/>
@@ -185,7 +185,7 @@
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Tên *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
-                                <TextBox Text="{Binding FirstName}"/>
+                                <TextBox Text="{Binding LastName}"/>
                                 <TextBlock Text="Số điện thoại" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Phone}"/>
                                 <TextBlock Text="Giới tính" Style="{StaticResource InputLabel}"/>

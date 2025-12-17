@@ -24,4 +24,6 @@ public class LeaveRequest
 
     [StringLength(20)]
     public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
+
+
 }

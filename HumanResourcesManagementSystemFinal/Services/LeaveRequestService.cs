@@ -60,5 +60,34 @@ namespace HumanResourcesManagementSystemFinal.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        // Cập nhật thông tin đơn nghỉ phép
+        public async Task<bool> UpdateRequestAsync(LeaveRequest request)
+        {
+            var existingRequest = await _context.LeaveRequests.FindAsync(request.Id);
+            if (existingRequest == null) return false;
+
+            // Cập nhật các trường thông tin
+            existingRequest.LeaveType = request.LeaveType;
+            existingRequest.StartDate = request.StartDate;
+            existingRequest.EndDate = request.EndDate;
+            existingRequest.Reason = request.Reason;
+
+            // Lưu ý: Không thay đổi Status hoặc EmployeeId khi edit thông tin
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Xóa đơn nghỉ phép
+        public async Task<bool> DeleteRequestAsync(int requestId)
+        {
+            var request = await _context.LeaveRequests.FindAsync(requestId);
+            if (request == null) return false;
+
+            _context.LeaveRequests.Remove(request);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

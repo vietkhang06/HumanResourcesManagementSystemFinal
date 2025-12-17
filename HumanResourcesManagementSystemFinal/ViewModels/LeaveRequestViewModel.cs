@@ -33,6 +33,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty]
         private bool _isManager;
 
+        // Biến để lưu ID của đơn đang được sửa (null = đang tạo mới)
+        private int? _editingRequestId = null;
+
+        [ObservableProperty]
+        private string _submitButtonContent = "Gửi Đơn"; // Để thay đổi chữ nút bấm
+
         public LeaveRequestViewModel(LeaveRequestService leaveService, int userId, string role)
         {
             _leaveService = leaveService;
@@ -62,6 +68,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         public async Task SubmitRequest()
         {
+            // 1. Validate dữ liệu cơ bản
             if (StartDate > EndDate)
             {
                 MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi ngày tháng", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -74,26 +81,50 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 return;
             }
 
-            var newRequest = new LeaveRequest
-            {
-                EmployeeId = _currentUserId,
-                LeaveType = LeaveType,
-                StartDate = StartDate,
-                EndDate = EndDate,
-                Reason = Reason,
-                Status = "Đang chờ"
-            };
-
             try
             {
-                bool success = await _leaveService.AddRequestAsync(newRequest);
-
-                if (success)
+                // 2. Kiểm tra xem đang ở chế độ nào
+                if (_editingRequestId == null)
                 {
-                    MessageBox.Show("Gửi đơn thành công!", "Thông báo");
-                    Reason = string.Empty;
-                    await LoadData();
+                    // === CHẾ ĐỘ TẠO MỚI (ADD) ===
+                    var newRequest = new LeaveRequest
+                    {
+                        EmployeeId = _currentUserId,
+                        LeaveType = LeaveType,
+                        StartDate = StartDate,
+                        EndDate = EndDate,
+                        Reason = Reason,
+                        Status = "Pending" // Mặc định là chờ duyệt
+                    };
+
+                    bool success = await _leaveService.AddRequestAsync(newRequest);
+                    if (success) MessageBox.Show("Gửi đơn thành công!", "Thông báo");
                 }
+                else
+                {
+                    // === CHẾ ĐỘ CHỈNH SỬA (UPDATE) ===
+                    // Tạo object chứa thông tin cần update
+                    var updateRequest = new LeaveRequest
+                    {
+                        Id = _editingRequestId.Value, // Lấy ID đang sửa
+                        LeaveType = LeaveType,
+                        StartDate = StartDate,
+                        EndDate = EndDate,
+                        Reason = Reason
+                        // Lưu ý: Không update Status ở đây để tránh gian lận
+                    };
+
+                    bool success = await _leaveService.UpdateRequestAsync(updateRequest);
+                    if (success) MessageBox.Show("Cập nhật đơn thành công!", "Thông báo");
+
+                    // 3. Reset trạng thái về "Tạo mới" sau khi sửa xong
+                    _editingRequestId = null;
+                    SubmitButtonContent = "Gửi Đơn";
+                }
+
+                // 4. Dọn dẹp form và tải lại danh sách
+                Reason = string.Empty;
+                await LoadData();
             }
             catch (Exception ex)
             {
@@ -126,5 +157,63 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (success) await LoadData();
             }
         }
+
+        [RelayCommand]
+        public void PrepareEdit(LeaveRequest request)
+        {
+            if (request == null) return;
+
+            // Chỉ cho phép sửa khi trạng thái là "Pending" (hoặc "Đang chờ")
+            if (request.Status != "Pending" && request.Status != "Đang chờ")
+            {
+                MessageBox.Show("Chỉ có thể sửa các đơn đang chờ duyệt!", "Không thể sửa", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Đưa dữ liệu từ dòng được chọn lên form nhập liệu
+            LeaveType = request.LeaveType;
+            StartDate = request.StartDate;
+            EndDate = request.EndDate;
+            Reason = request.Reason;
+
+            // Lưu lại ID để biết đang sửa đơn nào
+            _editingRequestId = request.Id;
+
+            // Đổi giao diện nút bấm để người dùng biết đang ở chế độ Sửa
+            SubmitButtonContent = "Cập Nhật";
+        }
+
+        [RelayCommand]
+        public async Task DeleteRequest(LeaveRequest request)
+        {
+            if (request == null) return;
+
+            // Chỉ cho phép xóa khi trạng thái là Pending
+            if (request.Status != "Pending" && request.Status != "Đang chờ")
+            {
+                MessageBox.Show("Chỉ có thể xóa các đơn chưa được xử lý!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show($"Bạn có chắc muốn xóa đơn nghỉ phép này không?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    bool success = await _leaveService.DeleteRequestAsync(request.Id);
+                    if (success)
+                    {
+                        MessageBox.Show("Đã xóa đơn thành công.");
+                        await LoadData(); // Tải lại danh sách
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi xóa: " + ex.Message);
+                }
+            }
+        }
+
     }
 }

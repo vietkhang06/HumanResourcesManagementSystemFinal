@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
-using HumanResourcesManagementSystemFinal.Services; 
+using HumanResourcesManagementSystemFinal.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -50,9 +50,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
 
-        // Lưu ID người đang thực hiện thao tác (Admin)
-        // Trong thực tế, bạn nên lấy từ Session hoặc MainViewModel
-        private int _currentAdminId = 1;
+        // ID Admin đang đăng nhập (Lấy từ Session)
+        private int _currentAdminId = UserSession.CurrentEmployeeId != 0 ? UserSession.CurrentEmployeeId : 1;
 
         // --- CONSTRUCTOR ---
         public AddEmployeeViewModel()
@@ -120,7 +119,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     Roles = new ObservableCollection<Role>(context.Roles.ToList());
                     Managers = new ObservableCollection<Employee>(context.Employees.ToList());
 
-                    // Set mặc định Role là Employee/Staff
+                    // Set mặc định Role
                     var defaultRole = Roles.FirstOrDefault(r =>
                         r.RoleName.ToLower().Contains("employee") ||
                         r.RoleName.ToLower().Contains("staff") ||
@@ -151,15 +150,28 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
 
-            // 1. VALIDATION
+            // 1. VALIDATION CƠ BẢN
             if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
             {
-                MessageBox.Show("Vui lòng nhập Họ Tên.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập Họ và Tên.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            // Validate Phòng ban & Chức vụ (Để tránh lỗi Foreign Key)
+            if (SelectedDepartment == null)
+            {
+                MessageBox.Show("Vui lòng chọn Phòng ban.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (SelectedPosition == null)
+            {
+                MessageBox.Show("Vui lòng chọn Chức vụ.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (!decimal.TryParse(SalaryString, out decimal salary))
             {
-                MessageBox.Show("Lương không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Lương cơ bản phải là số.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -167,7 +179,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(pBox.Password))
                 {
-                    MessageBox.Show("Vui lòng nhập Tài khoản & Mật khẩu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Vui lòng nhập Tên đăng nhập và Mật khẩu cho nhân viên mới.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
             }
@@ -178,7 +190,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 return;
             }
 
-            // 2. XỬ LÝ DATABASE (CÓ AUDIT LOG)
+            // 2. XỬ LÝ DATABASE
             using (var context = new DataContext())
             {
                 using (var transaction = context.Database.BeginTransaction())
@@ -189,17 +201,22 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         string actionType = "";
                         string logDetails = "";
 
+                        // --- TRƯỜNG HỢP SỬA (UPDATE) ---
                         if (IsEditMode)
                         {
-                            // === UPDATE ===
                             actionType = "UPDATE";
                             empToSave = context.Employees
                                 .Include(e => e.Account)
                                 .Include(e => e.WorkContracts)
                                 .FirstOrDefault(e => e.Id == _editingEmployee.Id);
 
-                            if (empToSave == null) return;
+                            if (empToSave == null)
+                            {
+                                MessageBox.Show("Không tìm thấy nhân viên này trong CSDL.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
 
+                            // Cập nhật thông tin
                             empToSave.FirstName = FirstName;
                             empToSave.LastName = LastName;
                             empToSave.Email = Email;
@@ -207,11 +224,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             empToSave.Address = Address;
                             empToSave.DateOfBirth = BirthDate;
                             empToSave.Gender = Gender;
-                            empToSave.DepartmentId = SelectedDepartment?.Id;
-                            empToSave.PositionId = SelectedPosition?.Id;
-                            empToSave.ManagerId = SelectedManager?.Id;
+                            empToSave.DepartmentId = SelectedDepartment.Id;
+                            empToSave.PositionId = SelectedPosition.Id;
+                            empToSave.ManagerId = SelectedManager?.Id; // Có thể null
                             empToSave.HireDate = StartDate;
 
+                            // Cập nhật Hợp đồng
                             var contract = empToSave.WorkContracts.LastOrDefault();
                             if (contract != null)
                             {
@@ -232,32 +250,31 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 });
                             }
 
+                            // Cập nhật Tài khoản
                             if (empToSave.Account != null)
                             {
                                 empToSave.Account.RoleId = SelectedRole?.RoleId ?? empToSave.Account.RoleId;
                                 if (!string.IsNullOrEmpty(pBox.Password))
                                 {
-                                    empToSave.Account.PasswordHash = pBox.Password;
+                                    empToSave.Account.PasswordHash = pBox.Password; // Nên mã hóa
                                 }
                             }
-                            else if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(pBox.Password))
-                            {
-                                context.Accounts.Add(new Account
-                                {
-                                    EmployeeId = empToSave.Id,
-                                    Username = Username,
-                                    PasswordHash = pBox.Password,
-                                    RoleId = SelectedRole?.RoleId ?? 1,
-                                    IsActive = true
-                                });
-                            }
+                            // Nếu trước đó chưa có TK thì tạo mới (Optional logic)
 
-                            logDetails = $"Cập nhật thông tin nhân viên: {empToSave.LastName} {empToSave.FirstName}";
+                            logDetails = $"Cập nhật nhân viên: {empToSave.FullName}";
                         }
+                        // --- TRƯỜNG HỢP THÊM MỚI (CREATE) ---
                         else
                         {
-                            // === CREATE ===
                             actionType = "CREATE";
+
+                            // Kiểm tra trùng Username TRƯỚC KHI LƯU (Để báo lỗi đẹp hơn)
+                            if (context.Accounts.Any(a => a.Username == Username))
+                            {
+                                MessageBox.Show($"Tên đăng nhập '{Username}' đã tồn tại! Vui lòng chọn tên khác.", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                return;
+                            }
+
                             empToSave = new Employee
                             {
                                 FirstName = FirstName,
@@ -267,15 +284,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 Address = Address,
                                 DateOfBirth = BirthDate,
                                 Gender = Gender,
-                                DepartmentId = SelectedDepartment?.Id,
-                                PositionId = SelectedPosition?.Id,
+                                DepartmentId = SelectedDepartment.Id,
+                                PositionId = SelectedPosition.Id,
                                 ManagerId = SelectedManager?.Id,
                                 HireDate = StartDate,
                                 IsActive = true
                             };
                             context.Employees.Add(empToSave);
-                            context.SaveChanges(); // Lưu để lấy ID cho Employee
+                            context.SaveChanges(); // Lưu lần 1 để lấy ID
 
+                            // Thêm Hợp đồng
                             context.WorkContracts.Add(new WorkContract
                             {
                                 EmployeeId = empToSave.Id,
@@ -285,10 +303,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 EndDate = EndDate
                             });
 
-                            // Fix lỗi chọn Role mặc định
+                            // Thêm Tài khoản
                             if (SelectedRole == null)
                             {
-                                SelectedRole = Roles.FirstOrDefault(r => r.RoleName == "Employee") ?? Roles.LastOrDefault();
+                                SelectedRole = Roles.FirstOrDefault(r => r.RoleName == "Employee");
                             }
 
                             context.Accounts.Add(new Account
@@ -300,35 +318,51 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 IsActive = true
                             });
 
-                            logDetails = $"Thêm mới nhân viên: {empToSave.LastName} {empToSave.FirstName}, Chức vụ: {SelectedPosition?.Title}";
+                            logDetails = $"Thêm nhân viên mới: {LastName} {FirstName}, user: {Username}";
                         }
 
-                        // Lưu các thay đổi chính
-                        context.SaveChanges();
+                        // === LƯU THAY ĐỔI VÀO DB ===
+                        // Ghi Log Audit
+                        AuditService.LogChange(context, "Employees", actionType, empToSave.Id, _currentAdminId, logDetails);
 
-                        // Lưu ảnh
+                        context.SaveChanges(); // Lưu tất cả thay đổi còn lại
+                        transaction.Commit();
+
+                        // === LƯU ẢNH (Chỉ lưu sau khi DB thành công) ===
                         if (!string.IsNullOrEmpty(_selectedImagePath))
                         {
                             SaveImageToFolder(empToSave.Id, _selectedImagePath);
                         }
 
-                        // === GHI AUDIT LOG ===
-                        // Gọi Service để ghi lại ai làm gì
-                        AuditService.LogChange(context, "Employees", actionType, empToSave.Id, _currentAdminId, logDetails);
-
-                        // Lưu Log
-                        context.SaveChanges();
-
-                        transaction.Commit();
-                        MessageBox.Show(IsEditMode ? "Cập nhật thành công!" : "Thêm mới thành công!", "Thông báo");
+                        MessageBox.Show(IsEditMode ? "Cập nhật thành công!" : "Thêm mới thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
                         window.DialogResult = true;
                         window.Close();
                     }
+                    catch (DbUpdateException dbEx) // <--- BẮT LỖI CỤ THỂ CỦA DATABASE
+                    {
+                        transaction.Rollback();
+
+                        var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+
+                        // Kiểm tra lỗi trùng lặp (UNIQUE constraint)
+                        if (innerMessage.Contains("UNIQUE") && innerMessage.Contains("Username"))
+                        {
+                            MessageBox.Show($"Tên đăng nhập '{Username}' đã được sử dụng bởi người khác.\nVui lòng chọn tên khác.", "Lỗi trùng lặp", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        else if (innerMessage.Contains("FOREIGN KEY"))
+                        {
+                            MessageBox.Show("Lỗi liên kết dữ liệu (Phòng ban hoặc Chức vụ không hợp lệ).", "Lỗi dữ liệu", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Lỗi Database chi tiết:\n" + innerMessage, "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        MessageBox.Show("Lỗi: " + ex.Message);
+                        MessageBox.Show("Lỗi không xác định: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -344,9 +378,21 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
                 string dest = Path.Combine(folder, $"{empId}{Path.GetExtension(sourcePath)}");
+
+                // Xóa ảnh cũ nếu có
+                string[] exts = { ".png", ".jpg", ".jpeg" };
+                foreach (var ext in exts)
+                {
+                    string oldPath = Path.Combine(folder, $"{empId}{ext}");
+                    if (File.Exists(oldPath)) File.Delete(oldPath);
+                }
+
                 File.Copy(sourcePath, dest, true);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Không thể lưu ảnh: " + ex.Message);
+            }
         }
 
         private string GetImagePath(int empId)

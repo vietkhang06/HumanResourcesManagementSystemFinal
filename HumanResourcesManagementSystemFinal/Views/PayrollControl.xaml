@@ -217,9 +217,9 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding DepartmentName}" Width="1.5*" Foreground="#718096"/>
+                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding DepartmentName}" Width="1.2*" Foreground="#718096"/>
 
-                    <DataGridTextColumn Header="LƯƠNG HĐ" Binding="{Binding ContractSalary, StringFormat={}{0:N0}}" Width="140" FontWeight="SemiBold" Foreground="#4A5568">
+                    <DataGridTextColumn Header="LƯƠNG HĐ" Binding="{Binding ContractSalary, StringFormat={}{0:N0}}" Width="110" FontWeight="SemiBold" Foreground="#4A5568">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -230,12 +230,12 @@
                         <DataGridTextColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                 <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                                <Setter Property="Padding" Value="0,0,20,15"/>
+                                <Setter Property="Padding" Value="0,0,30,15"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Header="NGÀY CÔNG" Width="130">
+                    <DataGridTemplateColumn Header="NGÀY CÔNG" Width="100">
                         <DataGridTemplateColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>

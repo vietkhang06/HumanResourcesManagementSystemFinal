@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.Services; // Cần namespace này để dùng UserSession
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System.IO;
@@ -17,8 +18,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private BitmapImage _avatarImage;
         [ObservableProperty] private bool _isEditing;
 
-        // Thêm biến tạm để lưu đường dẫn ảnh mới (trước khi bấm Lưu)
+        // Biến tạm để lưu đường dẫn ảnh khi chọn (Preview)
         private string _tempAvatarPath;
+
+        // Tên thư mục chứa ảnh (Đồng bộ với AddEmployeeViewModel)
+        private const string ImageFolderName = "EmployeeImages";
 
         public MyProfileViewModel()
         {
@@ -29,15 +33,24 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
+                // 1. Lấy ID từ Session đăng nhập
                 int currentId = UserSession.CurrentEmployeeId;
+
+                if (currentId == 0)
+                {
+                    // Fallback nếu chạy Design Mode hoặc lỗi session
+                    return;
+                }
 
                 using (var context = new DataContext())
                 {
+                    // 2. Load thông tin nhân viên + Phòng ban + Chức vụ
                     CurrentUser = context.Employees
                         .Include(e => e.Department)
                         .Include(e => e.Position)
                         .FirstOrDefault(e => e.Id == currentId);
 
+                    // 3. Load Role từ bảng Account
                     var account = context.Accounts
                         .Include(a => a.Role)
                         .FirstOrDefault(a => a.EmployeeId == currentId);
@@ -45,6 +58,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     AccountRole = account?.Role?.RoleName ?? "N/A";
                 }
 
+                // 4. Load Ảnh đại diện
                 LoadAvatarImage();
             }
             catch (Exception ex)
@@ -60,13 +74,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 string baseFolder = AppDomain.CurrentDomain.BaseDirectory;
-                string userImgFolder = Path.Combine(baseFolder, "Images", "EmployeeImages");
+                string folderPath = Path.Combine(baseFolder, ImageFolderName);
 
                 // Tạo thư mục nếu chưa có
-                if (!Directory.Exists(userImgFolder)) Directory.CreateDirectory(userImgFolder);
+                if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
-                string pathPng = Path.Combine(userImgFolder, $"{CurrentUser.Id}.png");
-                string pathJpg = Path.Combine(userImgFolder, $"{CurrentUser.Id}.jpg");
+                // Ưu tiên tìm .png, sau đó .jpg
+                string pathPng = Path.Combine(folderPath, $"{CurrentUser.Id}.png");
+                string pathJpg = Path.Combine(folderPath, $"{CurrentUser.Id}.jpg");
+
+                // Ảnh mặc định (nằm trong thư mục Images của project)
                 string pathDefault = Path.Combine(baseFolder, "Images", "default_user.png");
 
                 string finalPath = "";
@@ -74,15 +91,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (File.Exists(pathPng)) finalPath = pathPng;
                 else if (File.Exists(pathJpg)) finalPath = pathJpg;
                 else if (File.Exists(pathDefault)) finalPath = pathDefault;
-                else return; // Không có ảnh nào thì thôi
+                else return; // Không có ảnh nào cả
 
-                // Load ảnh vào BitmapImage với CacheOption để không bị khóa file (giúp ghi đè được)
+                // Kỹ thuật load ảnh không khóa file (BitmapCacheOption.OnLoad)
+                // Giúp có thể ghi đè/xóa file ảnh ngay cả khi đang hiển thị
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.UriSource = new Uri(finalPath);
                 bitmap.EndInit();
-                bitmap.Freeze();
+                bitmap.Freeze(); // Tối ưu hiệu năng cho WPF
 
                 AvatarImage = bitmap;
             }
@@ -97,12 +115,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (IsEditing)
             {
-                // Nếu đang Edit mà bấm lần nữa -> Là hành động LƯU
+                // Nếu đang ở chế độ Sửa mà bấm nút -> Thực hiện LƯU
                 SaveChanges();
             }
             else
             {
-                // Bắt đầu chỉnh sửa
+                // Chuyển sang chế độ Sửa
                 IsEditing = true;
             }
         }
@@ -110,22 +128,24 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void ChangeAvatar()
         {
-            if (!IsEditing) return; // Chỉ cho đổi ảnh khi đang chế độ sửa
+            if (!IsEditing) return; // Chỉ cho phép đổi ảnh khi đang nhấn "Chỉnh sửa"
 
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+                Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                Title = "Chọn ảnh đại diện"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                // Chưa lưu ngay vào DB, chỉ lưu tạm đường dẫn để hiển thị preview
+                // Lưu tạm đường dẫn vào biến
                 _tempAvatarPath = openFileDialog.FileName;
 
-                // Hiển thị preview ngay lập tức
+                // Hiển thị Preview ngay lập tức lên giao diện
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(_tempAvatarPath);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 AvatarImage = bitmap;
             }
@@ -137,19 +157,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 if (CurrentUser == null) return;
 
-                // Validate đơn giản
+                // Validate dữ liệu
                 if (string.IsNullOrWhiteSpace(CurrentUser.FirstName) || string.IsNullOrWhiteSpace(CurrentUser.LastName))
                 {
-                    MessageBox.Show("Họ và Tên không được để trống!", "Cảnh báo");
+                    MessageBox.Show("Họ và Tên không được để trống!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
+                // 1. Lưu thông tin Text vào Database
                 using (var context = new DataContext())
                 {
                     var empInDb = context.Employees.FirstOrDefault(e => e.Id == CurrentUser.Id);
                     if (empInDb != null)
                     {
-                        // Cập nhật thông tin text
                         empInDb.FirstName = CurrentUser.FirstName;
                         empInDb.LastName = CurrentUser.LastName;
                         empInDb.Email = CurrentUser.Email;
@@ -160,20 +180,22 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     }
                 }
 
-                // Nếu có thay đổi ảnh thì lưu file thật
+                // 2. Lưu file ảnh thật (nếu có thay đổi)
                 if (!string.IsNullOrEmpty(_tempAvatarPath))
                 {
                     SaveImageToFolder(CurrentUser.Id, _tempAvatarPath);
                     _tempAvatarPath = null; // Reset biến tạm
-                    LoadAvatarImage(); // Load lại từ file vừa lưu để đảm bảo chuẩn
+
+                    // Load lại ảnh từ file vừa lưu để đảm bảo đồng bộ
+                    LoadAvatarImage();
                 }
 
-                MessageBox.Show("Cập nhật hồ sơ thành công!", "Thông báo");
+                MessageBox.Show("Cập nhật hồ sơ thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 IsEditing = false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi khi lưu: " + ex.Message);
+                MessageBox.Show("Lỗi khi lưu dữ liệu: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -181,24 +203,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "EmployeeImages");
+                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ImageFolderName);
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
                 string ext = Path.GetExtension(sourcePath).ToLower();
                 string destFile = Path.Combine(folder, $"{empId}{ext}");
 
-                // Xóa ảnh cũ (cả png và jpg để tránh trùng)
+                // Xóa ảnh cũ (cả png và jpg) để tránh tồn tại song song gây nhầm lẫn
                 string oldPng = Path.Combine(folder, $"{empId}.png");
                 string oldJpg = Path.Combine(folder, $"{empId}.jpg");
 
                 if (File.Exists(oldPng)) File.Delete(oldPng);
                 if (File.Exists(oldJpg)) File.Delete(oldJpg);
 
+                // Copy file mới vào
                 File.Copy(sourcePath, destFile, true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không thể lưu ảnh: " + ex.Message);
+                MessageBox.Show("Không thể lưu ảnh vào thư mục hệ thống: " + ex.Message);
             }
         }
     }

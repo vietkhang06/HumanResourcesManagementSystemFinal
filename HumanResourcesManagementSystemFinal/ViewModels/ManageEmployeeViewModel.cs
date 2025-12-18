@@ -65,7 +65,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 string key = SearchText.ToLower();
-                query = query.Where(e => (e.LastName + " " + e.FirstName).ToLower().Contains(key)
+                query = query.Where(e => (e.LastName +" "+ e.FirstName).ToLower().Contains(key)
                                       || (e.Email?.ToLower().Contains(key) ?? false));
             }
 

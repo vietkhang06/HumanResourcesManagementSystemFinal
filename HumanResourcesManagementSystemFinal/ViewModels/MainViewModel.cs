@@ -78,13 +78,6 @@ public partial class MainViewModel : ObservableObject
     // Constructor cho Design Mode (Không thay đổi)
     public MainViewModel()
     {
-        // Thiết lập dữ liệu giả cho chế độ Design Mode
-        CurrentUser = new Employee
-        {
-            FirstName = "Design",
-            LastName = "Mode",
-            Position = new Position { Title = "Developer" }
-        };
         _currentAccount = new Account { Role = new Role { RoleName = "Admin" } };
         IsAdmin = true;
         PageTitle = "Trang Chủ";

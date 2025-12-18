@@ -64,7 +64,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         resultList.Add(new PayrollDTO
                         {
                             EmployeeId = emp.Id,
-                            FullName = $"{emp.FirstName} {emp.LastName}",
+                            FullName = $"{emp.LastName} {emp.FirstName}", // Hien thi ten
                             DepartmentName = emp.Department?.DepartmentName ?? "N/A",
                             ContractSalary = baseSalary,
                             ActualWorkDays = workDays,

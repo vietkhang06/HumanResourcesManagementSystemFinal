@@ -21,7 +21,7 @@ public class Employee
     public string LastName { get; set; } = string.Empty;
 
     [NotMapped] // Chỉ dùng để hiển thị, không lưu DB
-    public string FullName => $"{LastName}{FirstName}";
+    public string FullName => $"{LastName} {FirstName}";
 
     public DateTime? DateOfBirth { get; set; }
     public string? Address { get; set; }

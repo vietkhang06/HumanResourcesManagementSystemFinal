@@ -1,36 +1,29 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
+using HumanResourcesManagementSystemFinal.Helpers;
+using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.Others;
+using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using System.Configuration;
-using HumanResourcesManagementSystemFinal.Helpers;
-using System.Security.Cryptography;
-using System.Windows.Input;
-using HumanResourcesManagementSystemFinal.Others;
+using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
-
     public partial class LoginViewModel : ObservableObject
     {
         [ObservableProperty]
         private string _password = string.Empty;
 
-        // CHỈ CẦN MỘT KHAI BÁO CHO TÍNH NĂNG HIDE/SHOW
-        [ObservableProperty]
+        [ObservableProperty]
         private bool _isPasswordVisible = false;
 
         [ObservableProperty]
         private bool _isRememberMeChecked = false;
 
-        // KHAI BÁO ACTION CHỈ MỘT LẦN
-        public Action? NavigateToForgotPasswordAction { get; set; }
+        public Action? NavigateToForgotPasswordAction { get; set; }
 
         [ObservableProperty]
         private string _username = string.Empty;
@@ -40,15 +33,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             LoadSettings();
         }
 
-        // TẠO COMMAND ĐỂ BẬT/TẮT MẬT KHẨU
-        [RelayCommand]
+        [RelayCommand]
         private void TogglePasswordVisibility()
         {
             IsPasswordVisible = !IsPasswordVisible;
         }
 
-        // TẢI CÀI ĐẶT
-        private void LoadSettings()
+        private void LoadSettings()
         {
             if (Settings.Default.RememberMe)
             {
@@ -63,8 +54,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // LƯU CÀI ĐẶT
-        private void SaveSettings(string rawPassword)
+        private void SaveSettings(string rawPassword)
         {
             if (IsRememberMeChecked)
             {
@@ -82,10 +72,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             Settings.Default.Save();
         }
 
-
-        // LOGIN COMMAND
-        [RelayCommand]
-        private async Task Login()
+        [RelayCommand]
+        private async Task Login(object parameter)
         {
             string password = Password;
 
@@ -98,26 +86,48 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 using var context = new DataContext();
+
                 var account = await context.Accounts
-                  .Include(a => a.Role)
-                  .FirstOrDefaultAsync(u => u.Username == Username && u.PasswordHash == password);
+                    .Include(a => a.Role)
+                    .Include(a => a.Employee)
+                        .ThenInclude(e => e.Department)
+                    .Include(a => a.Employee)
+                        .ThenInclude(e => e.Position)
+                    .FirstOrDefaultAsync(u => u.Username == Username && u.PasswordHash == password);
 
                 if (account != null)
                 {
-                    SaveSettings(password);
-
-                    var mainViewModel = new MainViewModel(account);
-                    var dashboard = new MainWindow();
-                    dashboard.DataContext = mainViewModel;
-                    dashboard.Show();
-                    var openWindows = Application.Current.Windows.Cast<Window>().ToList();
-
-                    foreach (var window in openWindows)
+                    if (account.IsActive)
                     {
-                        if (window != dashboard)
+                        UserSession.CurrentEmployeeId = account.EmployeeId ?? 0;
+                        UserSession.CurrentRole = account.Role?.RoleName;
+
+                        SaveSettings(password);
+
+                        var mainViewModel = new MainViewModel(account);
+                        var dashboard = new MainWindow();
+                        dashboard.DataContext = mainViewModel;
+                        dashboard.Show();
+
+                        if (parameter is Window loginWindow)
                         {
-                            window.Close();
+                            loginWindow.Close();
                         }
+                        else
+                        {
+                            var openWindows = Application.Current.Windows.Cast<Window>().ToList();
+                            foreach (var window in openWindows)
+                            {
+                                if (window.GetType().Name != "MainWindow")
+                                {
+                                    window.Close();
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Tài khoản đã bị khóa!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
                 else
@@ -131,15 +141,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // NAVIGATE TO FORGOT PASSWORD COMMAND
-        [RelayCommand]
+        [RelayCommand]
         private void NavigateToForgotPassword()
         {
             NavigateToForgotPasswordAction?.Invoke();
         }
 
-        // EXIT COMMAND
-        [RelayCommand]
+        [RelayCommand]
         private void Exit()
         {
             Application.Current.Shutdown();

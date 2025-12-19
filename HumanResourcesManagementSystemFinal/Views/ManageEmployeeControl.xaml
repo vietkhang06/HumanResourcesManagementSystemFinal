@@ -95,20 +95,20 @@
             </Border>
 
             <ComboBox Grid.Column="1" 
-          Margin="15,0,0,0" 
-          Width="200" 
-          Height="45" 
+                      Margin="15,0,0,0" 
+                      Width="200" 
+                      Height="45" 
           
-          ItemsSource="{Binding Departments}" 
-          DisplayMemberPath="DepartmentName"
+                      ItemsSource="{Binding Departments}" 
+                      DisplayMemberPath="DepartmentName"
           
-          SelectedItem="{Binding SelectedDepartment}" 
+                      SelectedItem="{Binding SelectedDepartment}" 
           
-          SelectedIndex="0"
-          FontSize="15" 
-          FontWeight="Medium" 
-          Foreground="White"
-          BorderThickness="0">
+                      SelectedIndex="0"
+                      FontSize="15" 
+                      FontWeight="Medium" 
+                      Foreground="White"
+                      BorderThickness="0">
                 <ComboBox.Resources>
                     <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
                         <Grid>

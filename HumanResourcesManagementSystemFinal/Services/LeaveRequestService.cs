@@ -1,6 +1,7 @@
 ﻿using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,79 +16,59 @@ namespace HumanResourcesManagementSystemFinal.Services
         {
             _context = context;
         }
-
-        public async Task<bool> AddRequestAsync(LeaveRequest request)
+        public LeaveRequestService()
         {
-            try
-            {
-                _context.LeaveRequests.Add(request);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.InnerException?.Message ?? ex.Message);
-            }
+            _context = new DataContext();
         }
-
-        public async Task<List<LeaveRequest>> GetRequestsByRoleAsync(int employeeId, string role)
+        public async Task<List<LeaveRequest>> GetRequestsByRoleAsync(int userId, string role)
         {
-            int currentId = employeeId;
-
-            var query = _context.LeaveRequests
-                .Include(l => l.Employee)
-                .AsQueryable();
-
             if (role == "Admin" || role == "Manager")
             {
-                return await query.OrderByDescending(x => x.StartDate).ToListAsync();
+                return await _context.LeaveRequests
+                                     .Include(l => l.Employee)
+                                     .OrderByDescending(l => l.StartDate)
+                                     .ToListAsync();
             }
             else
             {
-                return await query
-                    .Where(l => l.EmployeeId == currentId)
-                    .OrderByDescending(x => x.StartDate)
-                    .ToListAsync();
+                return await _context.LeaveRequests
+                                     .Include(l => l.Employee)
+                                     .Where(l => l.EmployeeId == userId)
+                                     .OrderByDescending(l => l.StartDate)
+                                     .ToListAsync();
             }
         }
-
-        public async Task<bool> UpdateStatusAsync(int requestId, string newStatus)
+        public async Task<bool> AddRequestAsync(LeaveRequest request)
         {
-            var request = await _context.LeaveRequests.FindAsync(requestId);
-            if (request == null) return false;
-
-            request.Status = newStatus;
-            await _context.SaveChangesAsync();
-            return true;
+            _context.LeaveRequests.Add(request);
+            return await _context.SaveChangesAsync() > 0;
         }
-
-        // Cập nhật thông tin đơn nghỉ phép
         public async Task<bool> UpdateRequestAsync(LeaveRequest request)
         {
-            var existingRequest = await _context.LeaveRequests.FindAsync(request.Id);
-            if (existingRequest == null) return false;
+            var item = await _context.LeaveRequests.FindAsync(request.Id);
+            if (item == null) return false;
 
-            // Cập nhật các trường thông tin
-            existingRequest.LeaveType = request.LeaveType;
-            existingRequest.StartDate = request.StartDate;
-            existingRequest.EndDate = request.EndDate;
-            existingRequest.Reason = request.Reason;
-
-            // Lưu ý: Không thay đổi Status hoặc EmployeeId khi edit thông tin
-
-            await _context.SaveChangesAsync();
-            return true;
+            item.LeaveType = request.LeaveType;
+            item.StartDate = request.StartDate;
+            item.EndDate = request.EndDate;
+            item.Reason = request.Reason;
+            return await _context.SaveChangesAsync() > 0;
         }
-
-        // Xóa đơn nghỉ phép
-        public async Task<bool> DeleteRequestAsync(int requestId)
+        public async Task<bool> UpdateStatusAsync(int id, string status)
         {
-            var request = await _context.LeaveRequests.FindAsync(requestId);
-            if (request == null) return false;
+            var item = await _context.LeaveRequests.FindAsync(id);
+            if (item == null) return false;
 
-            _context.LeaveRequests.Remove(request);
-            await _context.SaveChangesAsync();
-            return true;
+            item.Status = status;
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> DeleteRequestAsync(int id)
+        {
+            var item = await _context.LeaveRequests.FindAsync(id);
+            if (item == null) return false;
+
+            _context.LeaveRequests.Remove(item);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

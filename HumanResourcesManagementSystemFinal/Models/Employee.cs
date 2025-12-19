@@ -11,49 +11,34 @@ public class Employee
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
     [Required]
     [StringLength(50)]
     public string FirstName { get; set; } = string.Empty;
-
     [Required]
     [StringLength(50)]
     public string LastName { get; set; } = string.Empty;
 
     [NotMapped] // Chỉ dùng để hiển thị, không lưu DB
     public string FullName => $"{LastName} {FirstName}";
-
     public DateTime? DateOfBirth { get; set; }
     public string? Address { get; set; }
     [StringLength(10)]
     public string Gender { get; set; } = "Other";
-
     [StringLength(100)]
     public string? Email { get; set; }
-
     [StringLength(20)]
     public string? PhoneNumber { get; set; }
-
     public DateTime HireDate { get; set; } = DateTime.Now;
-
     public bool IsActive { get; set; } = true;
-
-    // --- Foreign Keys ---
-
     public int? PositionId { get; set; }
     [ForeignKey("PositionId")]
     public virtual Position? Position { get; set; }
-
     public int? DepartmentId { get; set; }
     [ForeignKey("DepartmentId")]
     public virtual Department? Department { get; set; }
-
-    // Self-Referencing: Người quản lý (cũng là nhân viên)
     public int? ManagerId { get; set; }
     [ForeignKey("ManagerId")]
     public virtual Employee? Manager { get; set; }
-
-    // --- Navigation Properties ---
     public virtual Account? Account { get; set; }
     public virtual ICollection<Employee> Subordinates { get; set; } = new HashSet<Employee>();
     public virtual ICollection<LeaveRequest> LeaveRequests { get; set; } = new HashSet<LeaveRequest>();

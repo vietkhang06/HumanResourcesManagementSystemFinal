@@ -17,8 +17,6 @@ public class Account
     public string PasswordHash { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
-
-    // --- Foreign Keys ---
     public int RoleId { get; set; }
     [ForeignKey("RoleId")]
     public virtual Role Role { get; set; } = null!;

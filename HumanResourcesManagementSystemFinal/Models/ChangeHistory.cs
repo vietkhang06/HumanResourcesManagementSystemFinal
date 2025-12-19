@@ -16,13 +16,12 @@ public class ChangeHistory
 
     [Required]
     [StringLength(20)]
-    public string ActionType { get; set; } = string.Empty; // Create, Update, Delete
+    public string ActionType { get; set; } = string.Empty; 
 
     public int RecordId { get; set; }
 
     public DateTime ChangeTime { get; set; } = DateTime.Now;
 
-    // Người thực hiện thay đổi
     public int? AccountId { get; set; }
     [ForeignKey("AccountId")]
     public virtual Account? Account { get; set; }

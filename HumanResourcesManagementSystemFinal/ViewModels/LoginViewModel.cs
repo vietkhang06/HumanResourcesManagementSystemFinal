@@ -94,6 +94,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     .Include(a => a.Employee)
                         .ThenInclude(e => e.Position)
                     .FirstOrDefaultAsync(u => u.Username == Username && u.PasswordHash == password);
+                AppSession.CurrentUser = account.Employee; // Lưu nhân viên
+                AppSession.CurrentRole = account.Role?.RoleName;     // Lưu quyền từ Account
 
                 if (account != null)
                 {

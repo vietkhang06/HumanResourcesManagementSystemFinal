@@ -15,7 +15,7 @@ public class LeaveRequest
     public virtual Employee Employee { get; set; } = null!;
 
     [Required]
-    public string LeaveType { get; set; } = "Annual"; // Phép năm, nghỉ ốm...
+    public string LeaveType { get; set; } = "Annual"; 
 
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
@@ -23,7 +23,7 @@ public class LeaveRequest
     public string? Reason { get; set; }
 
     [StringLength(20)]
-    public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
+    public string Status { get; set; } = "Pending";
 
 
 }

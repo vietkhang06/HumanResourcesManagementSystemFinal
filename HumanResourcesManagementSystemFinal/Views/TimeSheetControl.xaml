@@ -5,146 +5,266 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000" Background="Transparent">
+             d:DesignHeight="700" d:DesignWidth="800"
+             Background="#F7F9FC">
 
     <UserControl.DataContext>
         <vm:TimeSheetViewModel/>
     </UserControl.DataContext>
 
-    <Grid>
+    <UserControl.Resources>
+        <Geometry x:Key="IconPlay">M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z</Geometry>
+        <Geometry x:Key="IconStop">M0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96z</Geometry>
+        <Geometry x:Key="IconFileExport">M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z</Geometry>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="55"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.15" Color="Black"/>
+                            </Border.Effect>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PathIconStyle" TargetType="Path">
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="#1A3D64" CornerRadius="15" Margin="0,0,20,0">
+        <Border Grid.Column="0" Background="#1A3D64" CornerRadius="20">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="15" Opacity="0.2"/>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.25" Color="#1A3D64"/>
             </Border.Effect>
 
-            <StackPanel VerticalAlignment="Center" Margin="20">
-                <TextBlock Text="{Binding CurrentTimeStr}" 
-                           FontSize="48" FontWeight="Bold" Foreground="White" 
+            <Grid Margin="25">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="BẢNG CHẤM CÔNG" 
+                           Foreground="White" Opacity="0.7" FontSize="14" FontWeight="Bold" 
                            HorizontalAlignment="Center"/>
 
-                <TextBlock Text="{Binding CurrentDateStr}" 
-                           FontSize="16" Foreground="#A0AEC0" 
-                           HorizontalAlignment="Center" Margin="0,5,0,20"/>
+                <StackPanel Grid.Row="1" Margin="0,30,0,30">
+                    <TextBlock Text="{Binding CurrentTimeStr}" 
+                               FontSize="56" FontWeight="Bold" Foreground="White" 
+                               HorizontalAlignment="Center"
+                               FontFamily="Segoe UI"/>
+                    <TextBlock Text="{Binding CurrentDateStr}" 
+                               FontSize="16" Foreground="#A0AEC0" 
+                               HorizontalAlignment="Center" Margin="0,-5,0,0"/>
+                </StackPanel>
 
-                <Border Background="{Binding TodayStatusColor}" CornerRadius="20" 
-                        Padding="15,5" HorizontalAlignment="Center" Margin="0,0,0,40">
+                <Border Grid.Row="2" Background="{Binding TodayStatusColor}" CornerRadius="20" 
+                        Padding="20,8" HorizontalAlignment="Center" Margin="0,0,0,40"
+                        SnapsToDevicePixels="True">
                     <TextBlock Text="{Binding TodayStatusText}" 
-                               Foreground="White" FontWeight="Bold"/>
+                               Foreground="White" FontWeight="Bold" FontSize="14"/>
                 </Border>
 
-                <Button Command="{Binding CheckInCommand}" IsEnabled="{Binding CanCheckIn}"
-                        Height="60" Margin="0,0,0,15" Cursor="Hand"
-                        Background="#38A169" BorderThickness="0">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="▶" Margin="0,0,10,0" FontSize="18"/>
-                        <TextBlock Text="BẮT ĐẦU CA (Check In)" FontWeight="Bold" FontSize="16"/>
-                    </StackPanel>
-                </Button>
+                <StackPanel Grid.Row="3" VerticalAlignment="Top">
+                    <Button Command="{Binding CheckInCommand}" IsEnabled="{Binding CanCheckIn}"
+                            Style="{StaticResource ActionButtonStyle}" Background="#38A169">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconPlay}" Fill="White" Style="{StaticResource PathIconStyle}"/>
+                            <TextBlock Text="BẮT ĐẦU CA"/>
+                        </StackPanel>
+                    </Button>
 
-                <Button Command="{Binding CheckOutCommand}" IsEnabled="{Binding CanCheckOut}"
-                        Height="60" Cursor="Hand"
-                        Background="#E53E3E" BorderThickness="0">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⏹" Margin="0,0,10,0" FontSize="18"/>
-                        <TextBlock Text="KẾT THÚC CA (Check Out)" FontWeight="Bold" FontSize="16"/>
-                    </StackPanel>
-                </Button>
+                    <Button Command="{Binding CheckOutCommand}" IsEnabled="{Binding CanCheckOut}"
+                            Style="{StaticResource ActionButtonStyle}" Background="#E53E3E">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconStop}" Fill="White" Style="{StaticResource PathIconStyle}"/>
+                            <TextBlock Text="KẾT THÚC CA"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
 
-                <Grid Margin="0,40,0,0">
+                <Grid Grid.Row="4" Margin="0,20,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="#2C5282" CornerRadius="10" Padding="15" Margin="0,0,5,0">
+                    <Border Grid.Column="0" Background="#2A4365" CornerRadius="12" Padding="10">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="Giờ vào" Foreground="#A0AEC0" FontSize="12"/>
+                            <TextBlock Text="GIỜ VÀO" Foreground="#A0AEC0" FontSize="10" FontWeight="Bold"/>
                             <TextBlock Text="{Binding TodayCheckInStr}" Foreground="White" FontWeight="Bold" FontSize="20" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Background="#2C5282" CornerRadius="10" Padding="15" Margin="5,0,0,0">
+                    <Border Grid.Column="2" Background="#2A4365" CornerRadius="12" Padding="10">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="Giờ ra" Foreground="#A0AEC0" FontSize="12"/>
+                            <TextBlock Text="GIỜ RA" Foreground="#A0AEC0" FontSize="10" FontWeight="Bold"/>
                             <TextBlock Text="{Binding TodayCheckOutStr}" Foreground="White" FontWeight="Bold" FontSize="20" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
-            </StackPanel>
+            </Grid>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="15">
+        <Border Grid.Column="2" Background="White" CornerRadius="20">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="15" Opacity="0.1"/>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.05" Color="Black"/>
             </Border.Effect>
 
-            <Grid Margin="30">
+            <Grid Margin="15">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid Grid.Row="0" Margin="0,0,0,15">
                     <StackPanel>
-                        <TextBlock Text="📄 Lịch Sử Chấm Công" FontSize="24" FontWeight="Bold" Foreground="#1A3D64"/>
-                        <TextBlock Text="Tháng hiện tại" Foreground="#718096" Margin="0,5,0,0"/>
+                        <TextBlock Text="Lịch Sử" FontSize="20" FontWeight="Bold" Foreground="#2D3748"/>
+                        <TextBlock Text="30 ngày gần nhất" Foreground="#718096" FontSize="13" Margin="0,3,0,0"/>
                     </StackPanel>
-                    <Button Content="Xuất Báo Cáo" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="15,8" Background="#EDF2F7" Foreground="#2D3748" BorderThickness="0">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
+
+                    <Button HorizontalAlignment="Right" VerticalAlignment="Top" 
+                            Padding="10,6" Background="Transparent" BorderThickness="1" BorderBrush="#E2E8F0"
+                            Cursor="Hand" Command="{Binding ExportReportCommand}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                                    <StackPanel Orientation="Horizontal" Margin="{TemplateBinding Padding}">
+                                        <Path Data="{StaticResource IconFileExport}" Fill="#4A5568" 
+                                              Stretch="Uniform" Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Xuất Báo Cáo" Foreground="#4A5568" FontWeight="SemiBold" FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#F7FAFC"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
                     </Button>
                 </Grid>
 
-                <DataGrid Grid.Row="1" ItemsSource="{Binding HistoryList}" AutoGenerateColumns="False" 
-                          CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="Horizontal"
+                <DataGrid Grid.Row="1" ItemsSource="{Binding HistoryList}" 
+                          AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" 
+                          GridLinesVisibility="Horizontal" HeadersVisibility="Column"
                           Background="White" BorderThickness="0" RowHeight="50"
-                          HorizontalGridLinesBrush="#EDF2F7" HeadersVisibility="Column">
+                          HorizontalGridLinesBrush="#EDF2F7" VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                    <DataGrid.Resources>
+                        <Style TargetType="ScrollBar">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </DataGrid.Resources>
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="Foreground" Value="#718096"/>
                             <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="Padding" Value="10"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                            <Setter Property="FontSize" Value="11"/>
+                            <Setter Property="Padding" Value="5,10"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
                             <Setter Property="BorderBrush" Value="#E2E8F0"/>
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
 
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="Transparent" BorderThickness="0">
+                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.CellStyle>
+
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="NGÀY" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="*" FontWeight="SemiBold" Foreground="#2D3748"/>
+                        <DataGridTextColumn Header="NGÀY" Binding="{Binding Date, StringFormat=dd/MM}" Width="0.8*" FontSize="13" FontWeight="SemiBold" Foreground="#2D3748">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="CHECK IN" Binding="{Binding CheckInText}" Width="100" Foreground="#38A169" FontWeight="Bold"/>
-
-                        <DataGridTextColumn Header="CHECK OUT" Binding="{Binding CheckOutText}" Width="100" Foreground="#E53E3E" FontWeight="Bold"/>
-
-                        <DataGridTextColumn Header="TỔNG GIỜ" Binding="{Binding TotalHoursText}" Width="100" FontWeight="SemiBold" Foreground="#2B6CB0"/>
-
-                        <DataGridTemplateColumn Header="TRẠNG THÁI" Width="120">
+                        <DataGridTemplateColumn Header="VÀO" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="{Binding StatusColor}" CornerRadius="12" Padding="10,4" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CheckInText}" Foreground="#38A169" FontWeight="Bold" FontSize="13" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="RA" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CheckOutText}" Foreground="#E53E3E" FontWeight="Bold" FontSize="13" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="GIỜ" Width="0.8*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding TotalHoursText}" Foreground="#2B6CB0" FontWeight="SemiBold" FontSize="13" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="TRẠNG THÁI" Width="1.4*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding StatusColor}" CornerRadius="12" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

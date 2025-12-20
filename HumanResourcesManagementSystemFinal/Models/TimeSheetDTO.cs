@@ -8,6 +8,8 @@ namespace HumanResourcesManagementSystemFinal.Models
 {
     public class TimeSheetDTO
     {
+        public int EmployeeId { get; set; }
+        public string EmployeeName { get; set; }
         public DateTime Date { get; set; }
         public string CheckInText { get; set; }
         public string CheckOutText { get; set; }

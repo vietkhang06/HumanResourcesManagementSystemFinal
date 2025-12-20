@@ -3,9 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Text;
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
@@ -24,50 +23,70 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             _currentEmployeeId = employeeId;
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new DependencyObject())) return;
-            LoadEmployeeData();
+            _ = LoadEmployeeDataAsync();
         }
 
-        // Constructor mặc định cho XAML Designer
         public EmployeeHomeViewModel() { }
 
-        [RelayCommand]
-        private void LoadEmployeeData()
+        private string GetDeepErrorMessage(Exception ex)
         {
-            using var context = new DataContext();
-
-            // 1. Lấy thông tin nhân viên
-            var emp = context.Employees.Find(_currentEmployeeId);
-            if (emp != null)
+            var sb = new StringBuilder();
+            sb.AppendLine(ex.Message);
+            var inner = ex.InnerException;
+            while (inner != null)
             {
-                WelcomeMessage = $"Xin chào, {emp.LastName} {emp.FirstName}!";
+                sb.AppendLine(inner.Message);
+                inner = inner.InnerException;
             }
+            return sb.ToString();
+        }
 
-            // 2. Đếm số ngày công tháng này
-            var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            DaysWorkedThisMonth = context.TimeSheets
-                .Count(t => t.EmployeeId == _currentEmployeeId && t.Date >= startOfMonth);
-
-
-            // 3. Kiểm tra giờ Check-in hôm nay
-            var todaySheet = context.TimeSheets
-                .FirstOrDefault(t => t.EmployeeId == _currentEmployeeId && t.Date.Date == DateTime.Today);
-
-            if (todaySheet != null)
+        [RelayCommand]
+        private async Task LoadEmployeeDataAsync()
+        {
+            try
             {
-                TodayCheckInTime = todaySheet.CheckInTime.HasValue
-                    ? todaySheet.CheckInTime.Value.ToString(@"hh\:mm")
-                    : "--:--";
+                using var context = new DataContext();
+
+                var emp = await context.Employees.FindAsync(_currentEmployeeId);
+                if (emp != null)
+                {
+                    WelcomeMessage = $"Xin chào, {emp.LastName} {emp.FirstName}!";
+                }
+
+                var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                DaysWorkedThisMonth = await context.TimeSheets
+                    .AsNoTracking()
+                    .CountAsync(t => t.EmployeeId == _currentEmployeeId && t.Date >= startOfMonth);
+
+                var todaySheet = await context.TimeSheets
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.EmployeeId == _currentEmployeeId && t.Date.Date == DateTime.Today);
+
+                if (todaySheet != null)
+                {
+                    TodayCheckInTime = todaySheet.CheckInTime.HasValue
+                        ? todaySheet.CheckInTime.Value.ToString(@"hh\:mm")
+                        : "--:--";
+                }
+
+                var myRequests = await context.LeaveRequests
+                    .AsNoTracking()
+                    .Where(l => l.EmployeeId == _currentEmployeeId)
+                    .OrderByDescending(l => l.StartDate)
+                    .Take(5)
+                    .ToListAsync();
+
+                MyLeaveRequests.Clear();
+                foreach (var req in myRequests)
+                {
+                    MyLeaveRequests.Add(req);
+                }
             }
-
-            // 4. Lấy danh sách đơn xin nghỉ của tôi
-            var myRequests = context.LeaveRequests
-                .Where(l => l.EmployeeId == _currentEmployeeId)
-                .OrderByDescending(l => l.StartDate)
-                .Take(5)
-                .ToList();
-
-            MyLeaveRequests.Clear();
-            foreach (var req in myRequests) MyLeaveRequests.Add(req);
+            catch (Exception ex)
+            {
+                MessageBox.Show("Không thể tải dữ liệu trang chủ:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

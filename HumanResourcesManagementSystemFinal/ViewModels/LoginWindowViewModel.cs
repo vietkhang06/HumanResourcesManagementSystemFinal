@@ -1,13 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class LoginWindowViewModel : ObservableObject
 {
     public LoginViewModel LoginVM { get; }
     public ForgotPasswordViewModel ForgotPasswordVM { get; }
-
     private object _currentView;
+
     public object CurrentView
     {
         get => _currentView;

@@ -2,248 +2,334 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
-using HumanResourcesManagementSystemFinal.Services; // Nhớ using AuditService
+using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Diagnostics;
+using System.Text;
 using System.Windows;
 
-namespace HumanResourcesManagementSystemFinal.ViewModels
+namespace HumanResourcesManagementSystemFinal.ViewModels;
+
+public partial class Department_PositionViewModel : ObservableObject
 {
-    public partial class Department_PositionViewModel : ObservableObject
+    private Department _selectedDepartment;
+
+    public ObservableCollection<Department> Departments { get; set; } = new();
+    public ObservableCollection<Position> Positions { get; set; } = new();
+
+    public Department SelectedDepartment
     {
-        public ObservableCollection<Department> Departments { get; set; } = new();
-        public ObservableCollection<Position> Positions { get; set; } = new();
-
-        private Department _selectedDepartment;
-        public Department SelectedDepartment
+        get => _selectedDepartment;
+        set
         {
-            get => _selectedDepartment;
-            set
+            if (SetProperty(ref _selectedDepartment, value))
             {
-                if (SetProperty(ref _selectedDepartment, value))
+                _ = LoadPositionsAsync();
+            }
+        }
+    }
+
+    private int _currentAdminId = UserSession.CurrentEmployeeId != 0 ? UserSession.CurrentEmployeeId : 1;
+
+    public Department_PositionViewModel()
+    {
+        _ = LoadDepartmentsAsync();
+    }
+
+    private string GetDeepErrorMessage(Exception ex)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(ex.Message);
+
+        var inner = ex.InnerException;
+        while (inner != null)
+        {
+            sb.AppendLine(inner.Message);
+            inner = inner.InnerException;
+        }
+        return sb.ToString();
+    }
+
+    private async Task LoadDepartmentsAsync()
+    {
+        try
+        {
+            using var context = new DataContext();
+            var list = await context.Departments.AsNoTracking().ToListAsync();
+
+            Departments = new ObservableCollection<Department>(list);
+            OnPropertyChanged(nameof(Departments));
+
+            if (Departments.Count > 0 && SelectedDepartment == null)
+            {
+                SelectedDepartment = Departments[0];
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Lỗi tải danh sách phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async Task LoadPositionsAsync()
+    {
+        if (SelectedDepartment == null)
+        {
+            Positions = new ObservableCollection<Position>();
+            OnPropertyChanged(nameof(Positions));
+            return;
+        }
+
+        try
+        {
+            using var context = new DataContext();
+            var list = await context.Positions
+                .AsNoTracking()
+                .Where(p => p.DepartmentId == SelectedDepartment.Id)
+                .ToListAsync();
+
+            Positions = new ObservableCollection<Position>(list);
+            OnPropertyChanged(nameof(Positions));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Lỗi tải danh sách chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddDepartmentAsync()
+    {
+        var addWindow = new AddDepartmentWindow();
+        if (addWindow.ShowDialog() == true)
+        {
+            using var context = new DataContext();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                if (await context.Departments.AnyAsync(d => d.DepartmentName == addWindow.DeptName))
                 {
-                    LoadPositions();
-                }
-            }
-        }
-
-        public Department_PositionViewModel()
-        {
-            LoadDepartments();
-        }
-
-        private void LoadDepartments()
-        {
-            using (var context = new DataContext())
-            {
-                var dbDepts = context.Departments.ToList();
-                Departments.Clear();
-                foreach (var dept in dbDepts) Departments.Add(dept);
-
-                if (Departments.Count > 0 && SelectedDepartment == null)
-                    SelectedDepartment = Departments[0];
-            }
-        }
-
-        private void LoadPositions()
-        {
-            Positions.Clear();
-            if (SelectedDepartment == null) return;
-
-            using (var context = new DataContext())
-            {
-                var dbPositions = context.Positions
-                    .Where(p => p.Id == SelectedDepartment.Id)
-                    .ToList();
-                foreach (var pos in dbPositions) Positions.Add(pos);
-            }
-        }
-
-        // ================== QUẢN LÝ PHÒNG BAN ==================
-
-        [RelayCommand]
-        private void AddDepartment()
-        {
-            var addWindow = new AddDepartmentWindow();
-            if (addWindow.ShowDialog() == true)
-            {
-                using (var context = new DataContext())
-                {
-                    var newDept = new Department { DepartmentName = addWindow.DeptName, Location = addWindow.DeptLocation };
-                    context.Departments.Add(newDept);
-
-                    AuditService.LogChange(context, "Departments", "CREATE", 0, 1, $"Thêm phòng: {newDept.DepartmentName}");
-                    context.SaveChanges();
-
-                    Departments.Add(newDept);
-                    SelectedDepartment = newDept;
-                }
-            }
-        }
-
-        [RelayCommand]
-        private void EditDepartment(Department dept)
-        {
-            if (dept == null) return;
-            var editWindow = new AddDepartmentWindow(dept);
-            if (editWindow.ShowDialog() == true)
-            {
-                using (var context = new DataContext())
-                {
-                    var dbDept = context.Departments.Find(dept.Id);
-                    if (dbDept != null)
-                    {
-                        dbDept.DepartmentName = editWindow.DeptName;
-                        dbDept.Location = editWindow.DeptLocation;
-
-                        AuditService.LogChange(context, "Departments", "UPDATE", dept.Id, 1, $"Sửa phòng: {dbDept.DepartmentName}");
-                        context.SaveChanges();
-
-                        // Cập nhật UI
-                        dept.DepartmentName = editWindow.DeptName;
-                        dept.Location = editWindow.DeptLocation;
-
-                        // Hack nhỏ để ListBox cập nhật hiển thị
-                        var index = Departments.IndexOf(dept);
-                        Departments[index] = dept;
-                        SelectedDepartment = dept;
-                    }
-                }
-            }
-        }
-
-        [RelayCommand]
-        private void DeleteDepartment(Department dept)
-        {
-            if (dept == null) return;
-
-            // Kiểm tra ràng buộc trước khi xóa
-            using (var context = new DataContext())
-            {
-                bool hasEmployees = context.Employees.Any(e => e.DepartmentId == dept.Id);
-                bool hasPositions = context.Positions.Any(p => p.Id == dept.Id);
-
-                if (hasEmployees || hasPositions)
-                {
-                    MessageBox.Show($"Không thể xóa phòng '{dept.DepartmentName}' vì đang có Nhân viên hoặc Chức vụ trực thuộc!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Phòng ban '{addWindow.DeptName}' đã tồn tại!", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{dept.DepartmentName}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                var newDept = new Department
                 {
-                    var dbDept = context.Departments.Find(dept.Id);
-                    context.Departments.Remove(dbDept);
+                    DepartmentName = addWindow.DeptName,
+                    Location = addWindow.DeptLocation
+                };
 
-                    AuditService.LogChange(context, "Departments", "DELETE", dept.Id, 1, $"Xóa phòng: {dept.DepartmentName}");
-                    context.SaveChanges();
+                context.Departments.Add(newDept);
+                await context.SaveChangesAsync();
 
-                    Departments.Remove(dept);
-                    if (Departments.Count > 0) SelectedDepartment = Departments[0];
-                }
+                AuditService.LogChange(context, "Departments", "CREATE", newDept.Id, _currentAdminId, $"Thêm phòng: {newDept.DepartmentName}");
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                Departments.Add(newDept);
+                SelectedDepartment = newDept;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                MessageBox.Show("Không thể thêm phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+    }
 
-        // ================== QUẢN LÝ CHỨC VỤ ==================
+    [RelayCommand]
+    private async Task EditDepartmentAsync(Department dept)
+    {
+        if (dept == null) return;
+        var editWindow = new AddDepartmentWindow(dept);
 
-        [RelayCommand]
-        private void AddPosition()
+        if (editWindow.ShowDialog() == true)
         {
-            if (SelectedDepartment == null)
+            using var context = new DataContext();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                MessageBox.Show("Vui lòng chọn một phòng ban trước!", "Cảnh báo");
+                var dbDept = await context.Departments.FindAsync(dept.Id);
+                if (dbDept == null)
+                {
+                    MessageBox.Show("Phòng ban không còn tồn tại trong hệ thống.", "Lỗi dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                dbDept.DepartmentName = editWindow.DeptName;
+                dbDept.Location = editWindow.DeptLocation;
+
+                AuditService.LogChange(context, "Departments", "UPDATE", dept.Id, _currentAdminId, $"Sửa phòng: {dbDept.DepartmentName}");
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                dept.DepartmentName = editWindow.DeptName;
+                dept.Location = editWindow.DeptLocation;
+
+                var index = Departments.IndexOf(dept);
+                if (index >= 0) Departments[index] = dept;
+
+                SelectedDepartment = dept;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                MessageBox.Show("Không thể cập nhật phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteDepartmentAsync(Department dept)
+    {
+        if (dept == null) return;
+
+        try
+        {
+            using var context = new DataContext();
+
+            bool hasEmployees = await context.Employees.AnyAsync(e => e.DepartmentId == dept.Id);
+            bool hasPositions = await context.Positions.AnyAsync(p => p.DepartmentId == dept.Id);
+
+            if (hasEmployees || hasPositions)
+            {
+                MessageBox.Show($"Không thể xóa phòng '{dept.DepartmentName}' vì đang có Nhân viên hoặc Chức vụ trực thuộc!", "Ràng buộc dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var addWindow = new AddPositionWindow();
-            if (addWindow.ShowDialog() == true)
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{dept.DepartmentName}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                using (var context = new DataContext())
+                var dbDept = await context.Departments.FindAsync(dept.Id);
+                if (dbDept != null)
                 {
-                    // 1. Tự tính ID mới (Giữ nguyên cái này để không bị lỗi UNIQUE ID)
-                    int newId = 1;
-                    if (context.Positions.Any())
-                    {
-                        newId = context.Positions.Max(p => p.Id) + 1;
-                    }
-
-                    // 2. Tạo chức vụ mới
-                    var newPos = new Position
-                    {
-                        Id = newId,
-                        Title = addWindow.PosTitle,
-                        JobDescription = addWindow.JobDescription,
-
-                        // Gắn ID phòng ban vào (Vì là int? nên gán int vào vẫn nhận bình thường)
-                        DepartmentId = SelectedDepartment.Id
-                    };
-
-                    context.Positions.Add(newPos);
-
-                    // Ghi lịch sử
-                    AuditService.LogChange(context, "Positions", "CREATE", newPos.Id, 1, $"Thêm chức vụ: {newPos.Title}");
-
-                    context.SaveChanges();
-
-                    // Cập nhật giao diện
-                    Positions.Add(newPos);
-                    MessageBox.Show($"Đã thêm chức vụ '{newPos.Title}' vào phòng '{SelectedDepartment.DepartmentName}'!", "Thông báo");
+                    context.Departments.Remove(dbDept);
+                    AuditService.LogChange(context, "Departments", "DELETE", dept.Id, _currentAdminId, $"Xóa phòng: {dept.DepartmentName}");
+                    await context.SaveChangesAsync();
                 }
+
+                Departments.Remove(dept);
+                if (Departments.Count > 0) SelectedDepartment = Departments[0];
             }
         }
-
-        [RelayCommand]
-        private void EditPosition(Position pos)
+        catch (Exception ex)
         {
-            if (pos == null) return;
-            var editWindow = new AddPositionWindow(pos);
-            if (editWindow.ShowDialog() == true)
-            {
-                using (var context = new DataContext())
-                {
-                    var dbPos = context.Positions.Find(pos.Id);
-                    if (dbPos != null)
-                    {
-                        dbPos.Title = editWindow.PosTitle;
-                        dbPos.JobDescription = editWindow.JobDescription;
+            MessageBox.Show("Không thể xóa phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
-                        AuditService.LogChange(context, "Positions", "UPDATE", pos.Id, 1, $"Sửa chức vụ: {dbPos.Title}");
-                        context.SaveChanges();
-
-                        // Cập nhật UI
-                        pos.Title = editWindow.PosTitle;
-                        pos.JobDescription = editWindow.JobDescription;
-                        LoadPositions(); // Refresh lại list
-                    }
-                }
-            }
+    [RelayCommand]
+    private async Task AddPositionAsync()
+    {
+        if (SelectedDepartment == null)
+        {
+            MessageBox.Show("Vui lòng chọn một phòng ban trước!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
         }
 
-        [RelayCommand]
-        private void DeletePosition(Position pos)
+        var addWindow = new AddPositionWindow();
+        if (addWindow.ShowDialog() == true)
         {
-            if (pos == null) return;
-            using (var context = new DataContext())
+            using var context = new DataContext();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                bool hasEmp = context.Employees.Any(e => e.PositionId == pos.Id);
-                if (hasEmp)
+                var newPos = new Position
                 {
-                    MessageBox.Show($"Không thể xóa chức vụ '{pos.Title}' vì đang có nhân viên nắm giữ!", "Cảnh báo");
+                    Title = addWindow.PosTitle,
+                    JobDescription = addWindow.JobDescription,
+                    DepartmentId = SelectedDepartment.Id
+                };
+
+                context.Positions.Add(newPos);
+                await context.SaveChangesAsync();
+
+                AuditService.LogChange(context, "Positions", "CREATE", newPos.Id, _currentAdminId, $"Thêm chức vụ: {newPos.Title}");
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                Positions.Add(newPos);
+                MessageBox.Show($"Đã thêm chức vụ '{newPos.Title}' vào phòng '{SelectedDepartment.DepartmentName}'!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                MessageBox.Show("Không thể thêm chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditPositionAsync(Position pos)
+    {
+        if (pos == null) return;
+        var editWindow = new AddPositionWindow(pos);
+        if (editWindow.ShowDialog() == true)
+        {
+            using var context = new DataContext();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                var dbPos = await context.Positions.FindAsync(pos.Id);
+                if (dbPos == null)
+                {
+                    MessageBox.Show("Chức vụ không còn tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (MessageBox.Show($"Xóa chức vụ '{pos.Title}'?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    var dbPos = context.Positions.Find(pos.Id);
-                    context.Positions.Remove(dbPos);
+                dbPos.Title = editWindow.PosTitle;
+                dbPos.JobDescription = editWindow.JobDescription;
 
-                    AuditService.LogChange(context, "Positions", "DELETE", pos.Id, 1, $"Xóa chức vụ: {pos.Title}");
-                    context.SaveChanges();
+                AuditService.LogChange(context, "Positions", "UPDATE", pos.Id, _currentAdminId, $"Sửa chức vụ: {dbPos.Title}");
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                    Positions.Remove(pos);
-                }
+                pos.Title = editWindow.PosTitle;
+                pos.JobDescription = editWindow.JobDescription;
+
+                var index = Positions.IndexOf(pos);
+                if (index >= 0) Positions[index] = pos;
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                MessageBox.Show("Không thể cập nhật chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeletePositionAsync(Position pos)
+    {
+        if (pos == null) return;
+
+        try
+        {
+            using var context = new DataContext();
+            bool hasEmp = await context.Employees.AnyAsync(e => e.PositionId == pos.Id);
+
+            if (hasEmp)
+            {
+                MessageBox.Show($"Không thể xóa chức vụ '{pos.Title}' vì đang có nhân viên nắm giữ!", "Ràng buộc dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa chức vụ '{pos.Title}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                var dbPos = await context.Positions.FindAsync(pos.Id);
+                if (dbPos != null)
+                {
+                    context.Positions.Remove(dbPos);
+                    AuditService.LogChange(context, "Positions", "DELETE", pos.Id, _currentAdminId, $"Xóa chức vụ: {pos.Title}");
+                    await context.SaveChangesAsync();
+                }
+                Positions.Remove(pos);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Không thể xóa chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

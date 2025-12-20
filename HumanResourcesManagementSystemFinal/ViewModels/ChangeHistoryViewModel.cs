@@ -3,13 +3,19 @@ using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class ChangeHistoryViewModel : ObservableObject
     {
-        public ObservableCollection<ChangeHistory> Histories { get; set; } = new();
+        private ObservableCollection<ChangeHistory> _histories = new();
+        public ObservableCollection<ChangeHistory> Histories
+        {
+            get => _histories;
+            set => SetProperty(ref _histories, value);
+        }
 
         public ChangeHistoryViewModel()
         {
@@ -23,22 +29,29 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 using (var context = new DataContext())
                 {
                     var list = context.ChangeHistories
-                        .Include(h => h.Account)          // Load tài khoản thực hiện
-                        .ThenInclude(a => a.Employee)     // Load thông tin nhân viên của tài khoản đó
-                        .OrderByDescending(h => h.ChangeTime) // Mới nhất lên đầu
-                        .Take(100) // Chỉ lấy 100 dòng mới nhất để đỡ lag
+                        .AsNoTracking()
+                        .Include(h => h.Account)
+                        .ThenInclude(a => a.Employee)
+                        .OrderByDescending(h => h.ChangeTime)
+                        .Take(100)
                         .ToList();
 
-                    Histories.Clear();
-                    foreach (var item in list)
-                    {
-                        Histories.Add(item);
-                    }
+                    Histories = new ObservableCollection<ChangeHistory>(list);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải lịch sử: " + ex.Message);
+                var sb = new StringBuilder();
+                sb.AppendLine(ex.Message);
+
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    sb.AppendLine(inner.Message);
+                    inner = inner.InnerException;
+                }
+
+                MessageBox.Show("Không thể tải dữ liệu lịch sử.\nChi tiết lỗi:\n" + sb.ToString(), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -4,78 +4,38 @@ using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Windows;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private Account _currentAccount;
-
-    // Khởi tạo tạm thời với giá trị mặc định để tránh lỗi Null Reference
-    [ObservableProperty] private Employee _currentUser = new Employee();
-
+    private readonly Account _currentAccount;
+    [ObservableProperty] private Employee _currentUser = new();
     [ObservableProperty] private string _welcomeMessage;
     [ObservableProperty] private string _currentPageName;
     [ObservableProperty] private string _pageTitle = "Trang Chủ";
     [ObservableProperty] private object _currentView;
     [ObservableProperty] private bool _isAdmin;
 
-    // SỬA CONSTRUCTOR ĐỂ NHẬN ĐỐI TƯỢNG ACCOUNT TỪ LoginViewModel
     public MainViewModel(Account loggedInAccount)
     {
         if (loggedInAccount == null)
         {
-            MessageBox.Show("Lỗi: Không nhận được thông tin tài khoản!");
+            MessageBox.Show("Lỗi: Không nhận được thông tin tài khoản!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
-        // Bước 1: Lưu tài khoản hiện tại
         _currentAccount = loggedInAccount;
+        IsAdmin = _currentAccount.Role?.RoleName == "Admin" || _currentAccount.Role?.RoleName == "Manager";
 
-        // Bước 2: Lấy thông tin Employee liên quan từ DB
-        try
-        {
-            using var context = new DataContext();
-
-            var employee = context.Employees
-             .Include(e => e.Position)
-             .Include(e => e.Account)
-             .FirstOrDefault(e => e.Account.AccountId == loggedInAccount.AccountId);
-
-
-            if (employee == null)
-            {
-                MessageBox.Show("Lỗi: Không tìm thấy thông tin nhân viên liên kết với tài khoản!");
-                return;
-            }
-
-            // Gán Account đã load đầy đủ (bao gồm Role) vào Employee
-            employee.Account = loggedInAccount;
-
-            CurrentUser = employee;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Lỗi truy vấn dữ liệu nhân viên: {ex.Message}");
-            return;
-        }
-
-        // Bước 3: Thiết lập các thuộc tính View Model
-        // IsAdmin được xác định dựa trên Role của Account đã được Include trong LoginViewModel
-        IsAdmin = _currentAccount?.Role?.RoleName == "Admin" || _currentAccount?.Role?.RoleName == "Manager";
-
-        // SỬ DỤNG CurrentUser (là thuộc tính)
-        WelcomeMessage = $"Xin chào, {CurrentUser.LastName} {CurrentUser.FirstName}!";
+        _ = LoadCurrentUserAsync();
 
         NavigateHome();
     }
 
-    // Constructor cho Design Mode (Không thay đổi)
     public MainViewModel()
     {
         _currentAccount = new Account { Role = new Role { RoleName = "Admin" } };
@@ -84,30 +44,53 @@ public partial class MainViewModel : ObservableObject
         WelcomeMessage = "Xin chào, Design Mode Developer!";
     }
 
-    // THUỘC TÍNH ĐỌC (READ-ONLY PROPERTIES)
-    public string CurrentUserName => CurrentUser != null ? $"{CurrentUser.LastName} {CurrentUser.FirstName}" : "Unknown User";
+    private async Task LoadCurrentUserAsync()
+    {
+        try
+        {
+            using var context = new DataContext();
+            var employee = await context.Employees
+                .AsNoTracking()
+                .Include(e => e.Position)
+                .Include(e => e.Account)
+                .FirstOrDefaultAsync(e => e.Account.AccountId == _currentAccount.AccountId);
 
+            if (employee != null)
+            {
+                employee.Account = _currentAccount;
+                CurrentUser = employee;
+                WelcomeMessage = $"Xin chào, {CurrentUser.LastName} {CurrentUser.FirstName}!";
+                OnPropertyChanged(nameof(CurrentUserAvatar));
+                OnPropertyChanged(nameof(CurrentUserJob));
+                OnPropertyChanged(nameof(CurrentUserName));
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi tải thông tin cá nhân: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    public string CurrentUserName => CurrentUser?.Id > 0 ? $"{CurrentUser.LastName} {CurrentUser.FirstName}" : "Người dùng";
     public string CurrentUserJob => CurrentUser?.Position?.Title ?? "N/A";
 
     public string CurrentUserAvatar
     {
         get
         {
-            if (CurrentUser != null)
+            if (CurrentUser?.Id > 0)
             {
-                string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{CurrentUser.Id}.jpg");
-                if (File.Exists(imagePath)) return imagePath;
+                string baseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
+                string jpgPath = Path.Combine(baseDir, $"{CurrentUser.Id}.jpg");
+                string pngPath = Path.Combine(baseDir, $"{CurrentUser.Id}.png");
 
-                imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages", $"{CurrentUser.Id}.png");
-                if (File.Exists(imagePath)) return imagePath;
+                if (File.Exists(jpgPath)) return jpgPath;
+                if (File.Exists(pngPath)) return pngPath;
             }
             return "/Images/default_user.png";
         }
     }
 
-    // =========================================================================
-    // CÁC RELAY COMMANDS (Không thay đổi)
-    // =========================================================================
     [RelayCommand]
     private void NavigateHome()
     {
@@ -166,7 +149,7 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
-            MessageBox.Show("Chức năng xem lương cá nhân đang phát triển.");
+            MessageBox.Show("Chức năng xem lương cá nhân đang được phát triển.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
@@ -187,7 +170,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void NavigateLeaveRequest()
+    private void NavigateLeaveRequest()
     {
         PageTitle = "Quản Lý Nghỉ Phép";
         CurrentPageName = "LeaveRequest";
@@ -197,8 +180,10 @@ public partial class MainViewModel : ObservableObject
         string role = _currentAccount?.Role?.RoleName ?? "Employee";
 
         var leaveViewModel = new LeaveRequestViewModel(leaveService, empId, role);
-        var view = new LeaveRequestControl();
-        view.DataContext = leaveViewModel;
+        var view = new LeaveRequestControl
+        {
+            DataContext = leaveViewModel
+        };
 
         CurrentView = view;
     }
@@ -229,13 +214,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void Logout(object parameter)
     {
-        var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (result == MessageBoxResult.Yes)
+        if (MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             if (parameter is Window currentWindow)
             {
-                var loginWindow = new LoginWindow();
-                loginWindow.Show();
+                new LoginWindow().Show();
                 currentWindow.Close();
             }
         }

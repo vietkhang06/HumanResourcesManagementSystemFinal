@@ -203,11 +203,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         if (IsEditMode)
                         {
                             actionType = "UPDATE";
-                            empToSave = context.Employees
-                                .Include(e => e.Account)
-                                .Include(e => e.WorkContracts)
-                                .FirstOrDefault(e => e.Id == _editingEmployee.Id);
-
+                            empToSave = context.Employees.Include(e => e.Account).Include(e => e.WorkContracts).FirstOrDefault(e => e.Id == _editingEmployee.Id);
                             if (empToSave == null)
                             {
                                 MessageBox.Show("Không tìm thấy nhân viên này trong CSDL.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);

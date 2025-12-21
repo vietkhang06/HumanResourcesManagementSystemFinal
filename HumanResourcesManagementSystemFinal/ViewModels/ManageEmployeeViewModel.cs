@@ -15,7 +15,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public ObservableCollection<Department> Departments { get; set; } = new();
         [ObservableProperty] private string _searchText;
         [ObservableProperty] private Department _selectedDepartment;
-        private List<Employee> _allEmployees = new List<Employee>(); 
+        private List<Employee> _allEmployees = new List<Employee>();
 
         public ManageEmployeeViewModel()
         {
@@ -29,11 +29,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 using (var context = new DataContext())
                 {
                     var depts = context.Departments.ToList();
-                    depts.Insert(0, new Department { Id = 0, DepartmentName = "     --- Tất cả ---" });
+                    depts.Insert(0, new Department { Id = 0, DepartmentName = "      --- Tất cả ---" });
                     Departments.Clear();
                     foreach (var d in depts) Departments.Add(d);
                     SelectedDepartment = Departments.FirstOrDefault();
-                    _allEmployees = context.Employees.Include(e => e.Department).Include(e => e.Position).Include(e => e.Manager) .OrderByDescending(e => e.Id).ToList();
+                    _allEmployees = context.Employees.Include(e => e.Department).Include(e => e.Position).Include(e => e.Manager).OrderByDescending(e => e.Id).ToList();
                     FilterEmployees();
                 }
             }
@@ -53,7 +53,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 string key = SearchText.ToLower();
-                query = query.Where(e => (e.LastName +" "+ e.FirstName).ToLower().Contains(key) || (e.Email?.ToLower().Contains(key) ?? false));
+                query = query.Where(e => (e.LastName + " " + e.FirstName).ToLower().Contains(key) || (e.Email?.ToLower().Contains(key) ?? false));
             }
             Employees.Clear();
             foreach (var e in query) Employees.Add(e);
@@ -65,12 +65,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var addWindow = new AddEmployeeWindow();
             if (addWindow.ShowDialog() == true)
             {
-                LoadDataFromDb(); 
+                LoadDataFromDb();
             }
         }
 
         [RelayCommand]
-        private void DeleteEmployee(Employee emp)
+        private async Task DeleteEmployee(Employee emp)
         {
             if (emp == null) return;
             var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?\n" + "LƯU Ý: Tài khoản và Hợp đồng liên quan cũng sẽ bị xóa vĩnh viễn!", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -81,9 +81,21 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 {
                     using (var context = new DataContext())
                     {
-                        var dbEmp = context.Employees.Include(e => e.Account)        .Include(e => e.WorkContracts)  .FirstOrDefault(e => e.Id == emp.Id);
+                        var dbEmp = context.Employees.Include(e => e.Account).Include(e => e.WorkContracts).FirstOrDefault(e => e.Id == emp.Id);
                         if (dbEmp != null)
                         {
+                            int currentAccountId = AppSession.CurrentUser.Id;
+
+                            var history = new ChangeHistory
+                            {
+                                ActionType = "DELETE",
+                                TableName = "Employees",
+                                ChangeTime = DateTime.Now,
+                                AccountId = currentAccountId,
+                                Details = $"Xóa nhân viên: {dbEmp.FirstName} {dbEmp.LastName} (Mã NV: {dbEmp.Id})"
+                            };
+                            context.ChangeHistories.Add(history);
+
                             if (dbEmp.Account != null)
                             {
                                 context.Accounts.Remove(dbEmp.Account);
@@ -98,7 +110,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 sub.ManagerId = null;
                             }
                             context.Employees.Remove(dbEmp);
-                            context.SaveChanges();
+                            await context.SaveChangesAsync();
                             LoadDataFromDb();
                             MessageBox.Show("Đã xóa thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                         }

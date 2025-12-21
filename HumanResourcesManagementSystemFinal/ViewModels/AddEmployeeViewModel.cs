@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
-using HumanResourcesManagementSystemFinal.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -45,8 +44,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
-
-        private int _currentAdminId = UserSession.CurrentEmployeeId != 0 ? UserSession.CurrentEmployeeId : 1;
 
         public AddEmployeeViewModel()
         {
@@ -197,12 +194,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     try
                     {
                         Employee empToSave;
-                        string actionType = "";
-                        string logDetails = "";
+                        int currentAccountId = AppSession.CurrentUser.Id;
 
                         if (IsEditMode)
                         {
-                            actionType = "UPDATE";
                             empToSave = context.Employees.Include(e => e.Account).Include(e => e.WorkContracts).FirstOrDefault(e => e.Id == _editingEmployee.Id);
                             if (empToSave == null)
                             {
@@ -251,12 +246,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 }
                             }
 
-                            logDetails = $"Cập nhật nhân viên: {empToSave.FullName}";
+                            var history = new ChangeHistory
+                            {
+                                ActionType = "UPDATE",
+                                TableName = "Employees",
+                                ChangeTime = DateTime.Now,
+                                AccountId = currentAccountId,
+                                Details = $"Cập nhật nhân viên: {empToSave.FirstName} {empToSave.LastName} (Mã: {empToSave.Id})"
+                            };
+                            context.ChangeHistories.Add(history);
                         }
                         else
                         {
-                            actionType = "CREATE";
-
                             if (context.Accounts.Any(a => a.Username == Username))
                             {
                                 MessageBox.Show($"Tên đăng nhập '{Username}' đã tồn tại! Vui lòng chọn tên khác.", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -304,10 +305,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 IsActive = true
                             });
 
-                            logDetails = $"Thêm nhân viên mới: {LastName} {FirstName}, user: {Username}";
+                            var history = new ChangeHistory
+                            {
+                                ActionType = "CREATE",
+                                TableName = "Employees",
+                                ChangeTime = DateTime.Now,
+                                AccountId = currentAccountId,
+                                Details = $"Thêm mới nhân viên: {empToSave.FirstName} {empToSave.LastName} (Mã: {empToSave.Id})"
+                            };
+                            context.ChangeHistories.Add(history);
                         }
-
-                        AuditService.LogChange(context, "Employees", actionType, empToSave.Id, _currentAdminId, logDetails);
 
                         context.SaveChanges();
                         transaction.Commit();

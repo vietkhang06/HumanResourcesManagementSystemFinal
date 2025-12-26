@@ -8,8 +8,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -27,17 +25,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _windowTitle = "THÊM NHÂN VIÊN MỚI";
 
-        // Giữ lại FirstName/LastName để Binding với View, sau đó sẽ gộp lại khi Lưu
-        [ObservableProperty] private string _firstName;
-        [ObservableProperty] private string _lastName;
-
-        [ObservableProperty] private string _cccd; // Thêm CCCD
+        [ObservableProperty] private string _fullName;
+        [ObservableProperty] private string _cccd;
         [ObservableProperty] private string _email;
         [ObservableProperty] private string _phone;
         [ObservableProperty] private string _address;
         [ObservableProperty] private DateTime _birthDate = DateTime.Now.AddYears(-22);
         [ObservableProperty] private string _gender = "Male";
-        [ObservableProperty] private string _avatarSource = "/Images/png2.png";
+
+        [ObservableProperty] private string _avatarSource = "/Images/default_user.png";
         private string _selectedImagePath;
 
         [ObservableProperty] private Department _selectedDepartment;
@@ -57,28 +53,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             LoadComboBoxData();
         }
 
-        // --- HÀM SINH MÃ TỰ ĐỘNG NV001 ---
-        private string GenerateNewEmployeeID(DataContext context)
-        {
-            var lastEmp = context.Employees
-                .OrderByDescending(e => e.EmployeeID)
-                .FirstOrDefault();
-
-            if (lastEmp == null || string.IsNullOrEmpty(lastEmp.EmployeeID)) return "NV001";
-
-            // Giả sử mã dạng NVxxx
-            if (lastEmp.EmployeeID.Length > 2)
-            {
-                string numPart = lastEmp.EmployeeID.Substring(2);
-                if (int.TryParse(numPart, out int num))
-                {
-                    return "NV" + (num + 1).ToString("D3");
-                }
-            }
-            return "NV" + (new Random().Next(100, 999));
-        }
-        // ----------------------------------
-
         public void LoadEmployeeForEdit(Employee emp)
         {
             try
@@ -87,28 +61,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 WindowTitle = "CẬP NHẬT THÔNG TIN";
                 OnPropertyChanged(nameof(IsEditMode));
 
-                // 1. Tách FullName ra thành First/Last để hiển thị lên View
-                if (!string.IsNullOrEmpty(emp.FullName))
-                {
-                    var parts = emp.FullName.Trim().Split(' ');
-                    if (parts.Length > 0)
-                    {
-                        LastName = parts[parts.Length - 1]; // Lấy từ cuối làm Tên
-                        if (parts.Length > 1)
-                            FirstName = string.Join(" ", parts.Take(parts.Length - 1)); // Các từ trước là Họ Đệm
-                        else
-                            FirstName = "";
-                    }
-                }
-
+                _fullName = emp.FullName;
+                _cccd = emp.CCCD;
                 Email = emp.Email;
                 Phone = emp.PhoneNumber;
                 Address = emp.Address;
-                _cccd = emp.CCCD; // Load CCCD
+
                 BirthDate = emp.DateOfBirth ?? DateTime.Now;
+
                 Gender = emp.Gender;
 
-                // Load ảnh theo String ID
                 string imagePath = GetImagePath(emp.EmployeeID);
                 if (!string.IsNullOrEmpty(imagePath)) AvatarSource = imagePath;
 
@@ -130,13 +92,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         {
                             ContractType = contract.ContractType;
                             SalaryString = contract.Salary?.ToString("F0") ?? "0";
+
+                            // SỬA LỖI TƯƠNG TỰ CHO HỢP ĐỒNG
                             StartDate = contract.StartDate ?? DateTime.Now;
                             EndDate = contract.EndDate ?? DateTime.Now.AddYears(1);
                         }
 
                         if (fullEmp.Account != null)
                         {
-                            Username = fullEmp.Account.UserName; // Model mới UserName
+                            Username = fullEmp.Account.UserName;
                             SelectedRole = Roles.FirstOrDefault(r => r.RoleID == fullEmp.Account.RoleID);
                         }
                     }
@@ -159,8 +123,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     Roles = new ObservableCollection<Role>(context.Roles.ToList());
                     Managers = new ObservableCollection<Employee>(context.Employees.ToList());
 
-                    var defaultRole = Roles.FirstOrDefault(r => r.RoleName.Contains("Employee") || r.RoleName.Contains("Nhân viên"));
-                    if (defaultRole != null) SelectedRole = defaultRole;
+                    if (!IsEditMode)
+                    {
+                        var defaultRole = Roles.FirstOrDefault(r => r.RoleID == "R002" || r.RoleName.Contains("Employee"));
+                        if (defaultRole != null) SelectedRole = defaultRole;
+                    }
                 }
             }
             catch { }
@@ -185,22 +152,34 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
 
-            // Validation
-            if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
+            if (string.IsNullOrWhiteSpace(_fullName))
             {
-                MessageBox.Show("Vui lòng nhập Họ và Tên.", "Cảnh báo"); return;
+                MessageBox.Show("Vui lòng nhập Họ và Tên.", "Thiếu thông tin"); return;
             }
             if (SelectedDepartment == null || SelectedPosition == null)
             {
-                MessageBox.Show("Vui lòng chọn Phòng ban/Chức vụ.", "Cảnh báo"); return;
+                MessageBox.Show("Vui lòng chọn Phòng ban và Chức vụ.", "Thiếu thông tin"); return;
             }
             if (!decimal.TryParse(SalaryString, out decimal salary))
             {
-                MessageBox.Show("Lương phải là số.", "Cảnh báo"); return;
+                MessageBox.Show("Lương cơ bản phải là số.", "Lỗi định dạng"); return;
+            }
+            if (!IsEditMode && string.IsNullOrWhiteSpace(Username))
+            {
+                MessageBox.Show("Vui lòng nhập Tên đăng nhập.", "Thiếu thông tin"); return;
             }
 
-            // Gộp họ tên thành FullName
-            string fullName = $"{FirstName} {LastName}".Trim();
+            if (!IsEditMode || (IsEditMode && !string.IsNullOrEmpty(pBox.Password)))
+            {
+                if (string.IsNullOrEmpty(pBox.Password))
+                {
+                    MessageBox.Show("Vui lòng nhập mật khẩu.", "Thiếu thông tin"); return;
+                }
+                if (pBox.Password != pBoxConfirm.Password)
+                {
+                    MessageBox.Show("Mật khẩu xác nhận không khớp!", "Lỗi mật khẩu"); return;
+                }
+            }
 
             using (var context = new DataContext())
             {
@@ -210,7 +189,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     {
                         Employee empToSave;
 
-                        // --- TRƯỜNG HỢP UPDATE ---
                         if (IsEditMode)
                         {
                             empToSave = context.Employees
@@ -219,85 +197,50 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                             if (empToSave == null) return;
 
-                            empToSave.FullName = fullName;
-                            empToSave.CCCD = _cccd;
-                            empToSave.Email = Email;
-                            empToSave.PhoneNumber = Phone;
-                            empToSave.Address = Address;
-                            empToSave.DateOfBirth = BirthDate;
-                            empToSave.Gender = Gender;
-                            empToSave.DepartmentID = SelectedDepartment.DepartmentID;
-                            empToSave.PositionID = SelectedPosition.PositionID;
-                            empToSave.ManagerID = SelectedManager?.EmployeeID;
+                            UpdateEmployeeInfo(empToSave);
 
-                            // Update Hợp đồng mới nhất
                             var contract = empToSave.WorkContracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
                             if (contract == null)
                             {
-                                // Tạo mới nếu chưa có
-                                contract = new WorkContract
-                                {
-                                    ContractID = "HD" + empToSave.EmployeeID.Substring(2),
-                                    EmployeeID = empToSave.EmployeeID
-                                };
+                                contract = new WorkContract { ContractID = "HD" + empToSave.EmployeeID, EmployeeID = empToSave.EmployeeID };
                                 context.WorkContracts.Add(contract);
                             }
-                            contract.Salary = salary;
-                            contract.ContractType = ContractType;
-                            contract.StartDate = StartDate;
-                            contract.EndDate = EndDate;
+                            UpdateContractInfo(contract, salary);
 
-                            // Update Tài khoản
                             if (empToSave.Account != null)
                             {
                                 empToSave.Account.RoleID = SelectedRole?.RoleID ?? empToSave.Account.RoleID;
                                 if (!string.IsNullOrEmpty(pBox.Password))
-                                    empToSave.Account.Password = pBox.Password; // Lưu Password mới
+                                {
+                                    empToSave.Account.Password = pBox.Password;
+                                }
                             }
                         }
-                        // --- TRƯỜNG HỢP CREATE ---
                         else
                         {
                             if (context.Accounts.Any(a => a.UserName == Username))
                             {
-                                MessageBox.Show("Username đã tồn tại."); return;
+                                MessageBox.Show("Tên đăng nhập này đã tồn tại. Vui lòng chọn tên khác.", "Trùng lặp"); return;
                             }
 
-                            string newId = GenerateNewEmployeeID(context); // Sinh mã NVxxx
+                            string newId = GenerateNewEmployeeID(context);
 
-                            empToSave = new Employee
-                            {
-                                EmployeeID = newId,
-                                FullName = fullName,
-                                CCCD = _cccd,
-                                Email = Email,
-                                PhoneNumber = Phone,
-                                Address = Address,
-                                DateOfBirth = BirthDate,
-                                Gender = Gender,
-                                DepartmentID = SelectedDepartment.DepartmentID,
-                                PositionID = SelectedPosition.PositionID,
-                                ManagerID = SelectedManager?.EmployeeID,
-                                Status = "Active"
-                            };
+                            empToSave = new Employee { EmployeeID = newId, Status = "Active" };
+                            UpdateEmployeeInfo(empToSave);
                             context.Employees.Add(empToSave);
 
-                            // Tạo hợp đồng (Mã HD đồng bộ với mã NV)
-                            context.WorkContracts.Add(new WorkContract
+                            var newContract = new WorkContract
                             {
-                                ContractID = "HD" + newId.Substring(2),
-                                EmployeeID = newId,
-                                ContractType = ContractType,
-                                Salary = salary,
-                                StartDate = StartDate,
-                                EndDate = EndDate
-                            });
+                                ContractID = "HD" + newId,
+                                EmployeeID = newId
+                            };
+                            UpdateContractInfo(newContract, salary);
+                            context.WorkContracts.Add(newContract);
 
-                            // Tạo tài khoản (Mã TK đồng bộ với mã NV)
                             if (SelectedRole == null) SelectedRole = Roles.FirstOrDefault();
                             context.Accounts.Add(new Account
                             {
-                                UserID = "TK" + newId.Substring(2),
+                                UserID = "TK" + newId,
                                 EmployeeID = newId,
                                 UserName = Username,
                                 Password = pBox.Password,
@@ -310,16 +253,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         transaction.Commit();
 
                         if (!string.IsNullOrEmpty(_selectedImagePath))
+                        {
                             SaveImageToFolder(empToSave.EmployeeID, _selectedImagePath);
+                        }
 
-                        MessageBox.Show("Lưu thành công!");
+                        MessageBox.Show("Lưu hồ sơ thành công!", "Thông báo");
                         window.DialogResult = true;
                         window.Close();
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        MessageBox.Show("Lỗi: " + ex.Message);
+                        MessageBox.Show("Có lỗi xảy ra: " + ex.Message, "Lỗi hệ thống");
                     }
                 }
             }
@@ -328,6 +273,46 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void Cancel(Window window) => window?.Close();
 
+        private void UpdateEmployeeInfo(Employee e)
+        {
+            e.FullName = _fullName;
+            e.CCCD = _cccd;
+            e.Email = Email;
+            e.PhoneNumber = Phone;
+            e.Address = Address;
+            e.DateOfBirth = BirthDate;
+            e.Gender = Gender;
+            e.DepartmentID = SelectedDepartment?.DepartmentID;
+            e.PositionID = SelectedPosition?.PositionID;
+            e.ManagerID = SelectedManager?.EmployeeID;
+        }
+
+        private void UpdateContractInfo(WorkContract c, decimal salary)
+        {
+            c.Salary = salary;
+            c.ContractType = ContractType;
+            c.StartDate = StartDate;
+            c.EndDate = EndDate;
+        }
+
+        private string GenerateNewEmployeeID(DataContext context)
+        {
+            var lastId = context.Employees
+                .Where(e => e.EmployeeID.StartsWith("NV"))
+                .Select(e => e.EmployeeID)
+                .OrderByDescending(id => id)
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(lastId)) return "NV001";
+
+            if (int.TryParse(lastId.Substring(2), out int currentNum))
+            {
+                return "NV" + (currentNum + 1).ToString("D3");
+            }
+
+            return "NV" + DateTime.Now.Ticks.ToString().Substring(0, 5);
+        }
+
         private void SaveImageToFolder(string empId, string sourcePath)
         {
             try
@@ -335,8 +320,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                // Lưu ảnh với tên là ID nhân viên
-                string dest = Path.Combine(folder, $"{empId}{Path.GetExtension(sourcePath)}");
+                string extension = Path.GetExtension(sourcePath);
+                string dest = Path.Combine(folder, $"{empId}{extension}");
+
                 File.Copy(sourcePath, dest, true);
             }
             catch { }
@@ -350,7 +336,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             if (File.Exists(pathPng)) return pathPng;
             if (File.Exists(pathJpg)) return pathJpg;
-            return "";
+            return "/Images/default_user.png";
         }
     }
 }

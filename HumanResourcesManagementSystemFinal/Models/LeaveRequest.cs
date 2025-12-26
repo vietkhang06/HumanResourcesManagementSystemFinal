@@ -8,22 +8,37 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class LeaveRequest
 {
     [Key]
-    public int Id { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string RequestID { get; set; } = string.Empty;
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? EmployeeID { get; set; }
+    [ForeignKey("EmployeeID")]
+    public virtual Employee? Requester { get; set; }
 
-    public int EmployeeId { get; set; }
-    [ForeignKey("EmployeeId")]
-    public virtual Employee Employee { get; set; } = null!;
+    [StringLength(40)]
+    public string? LeaveType { get; set; }
 
-    [Required]
-    public string LeaveType { get; set; } = "Annual"; 
+    [Column(TypeName = "smalldatetime")]
+    public DateTime? StartDate { get; set; }
 
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    [Column(TypeName = "smalldatetime")]
+    public DateTime? EndDate { get; set; }
 
+    public int? TotalDays { get; set; }
+
+    [StringLength(200)] 
     public string? Reason { get; set; }
 
     [StringLength(20)]
     public string Status { get; set; } = "Pending";
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? ApproverID { get; set; }
+    [ForeignKey("ApproverID")]
+    public virtual Employee? Approver { get; set; }
 
-
+    [StringLength(200)]
+    public string? ManagerComment { get; set; }
 }

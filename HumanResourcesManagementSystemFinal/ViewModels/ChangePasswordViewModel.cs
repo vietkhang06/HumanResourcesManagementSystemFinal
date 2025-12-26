@@ -11,11 +11,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
     public partial class ChangePasswordViewModel : ObservableObject
     {
         private readonly AccountService _accountService;
-        private readonly int _currentAccountId;
+        private readonly string _currentUserId;
 
-        public ChangePasswordViewModel(int accountId)
+        public ChangePasswordViewModel(string userId)
         {
-            _currentAccountId = accountId;
+            _currentUserId = userId;
             _accountService = new AccountService(new DataContext());
         }
 
@@ -54,7 +54,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             try
             {
-                bool success = await _accountService.ChangePasswordAsync(_currentAccountId, oldPass, newPass);
+                bool success = await _accountService.ChangePasswordAsync(_currentUserId, oldPass, newPass);
                 if (success)
                 {
                     MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);

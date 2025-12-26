@@ -8,13 +8,25 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class WorkContract
 {
     [Key]
-    public int Id { get; set; }
-    public int EmployeeId { get; set; }
-    [ForeignKey("EmployeeId")]
-    public virtual Employee Employee { get; set; } = null!;
-    public string ContractType { get; set; } = "Full-time";
-    public DateTime StartDate { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string ContractID { get; set; } = string.Empty;
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? EmployeeID { get; set; }
+    [ForeignKey("EmployeeID")]
+    public virtual Employee? Employee { get; set; }
+
+    [StringLength(40)]
+    public string? ContractType { get; set; }
+
+    [Column(TypeName = "smalldatetime")]
+    public DateTime? StartDate { get; set; }
+
+    [Column(TypeName = "smalldatetime")]
     public DateTime? EndDate { get; set; }
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal Salary { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? Salary { get; set; }
 }

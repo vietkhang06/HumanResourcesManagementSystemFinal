@@ -77,7 +77,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         {
                             string k = Keyword.ToLower();
                             query = query.Where(h =>
-                                (h.Account != null && h.Account.Username.ToLower().Contains(k)) ||
+                                (h.Account != null && h.Account.UserName.ToLower().Contains(k)) ||
                                 h.TableName.ToLower().Contains(k) ||
                                 (h.Details != null && h.Details.ToLower().Contains(k))
                             );
@@ -194,11 +194,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 {
                                     if (item.Account.Employee != null)
                                     {
-                                        performer = $"{item.Account.Employee.FirstName} {item.Account.Employee.LastName} ({item.Account.Username})";
+                                        performer = $"{item.Account.Employee.FullName} ({item.Account.UserName})";
                                     }
                                     else
                                     {
-                                        performer = item.Account.Username;
+                                        performer = item.Account.UserName;
                                     }
                                 }
                                 worksheet.Cell(row, 2).Value = performer;

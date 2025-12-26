@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HumanResourcesManagementSystemFinal.Models;
@@ -7,21 +8,31 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Account
 {
     [Key]
-    public int AccountId { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string UserID { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(50)]
-    public string Username { get; set; } = string.Empty;
+    [StringLength(10)]
+    public string UserName { get; set; } = string.Empty;
 
     [Required]
-    public string PasswordHash { get; set; } = string.Empty;
+    [StringLength(10)] 
+    public string Password { get; set; } = string.Empty;
 
-    public bool IsActive { get; set; } = true;
-    public int RoleId { get; set; }
-    [ForeignKey("RoleId")]
-    public virtual Role Role { get; set; } = null!;
+    [StringLength(20)]
+    public string IsActive { get; set; } = "Active";
 
-    public int? EmployeeId { get; set; }
-    [ForeignKey("EmployeeId")]
-    public virtual Employee Employee { get; set; } = null!;
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? EmployeeID { get; set; }
+    [ForeignKey("EmployeeID")]
+    public virtual Employee? Employee { get; set; }
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? RoleID { get; set; }
+    [ForeignKey("RoleID")]
+    public virtual Role? Role { get; set; }
+    public virtual ICollection<ChangeHistory> ChangeHistories { get; set; } = new HashSet<ChangeHistory>();
 }

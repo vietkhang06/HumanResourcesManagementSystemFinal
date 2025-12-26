@@ -8,11 +8,16 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Position
 {
     [Key]
-    public int Id { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string PositionID { get; set; } = string.Empty;
+
     [Required]
-    [StringLength(100)]
-    public string Title { get; set; } = string.Empty;
+    [StringLength(40)]
+    public string PositionName { get; set; } = string.Empty;
+
+    [StringLength(200)]
     public string? JobDescription { get; set; }
-    public int? DepartmentId { get; set; }
+
     public virtual ICollection<Employee> Employees { get; set; } = new HashSet<Employee>();
 }

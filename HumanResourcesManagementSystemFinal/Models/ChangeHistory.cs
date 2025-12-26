@@ -4,27 +4,31 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HumanResourcesManagementSystemFinal.Models;
 
-[Table("ChangeHistories")]
+[Table("ChangeHistory")]
 public class ChangeHistory
 {
     [Key]
-    public int Id { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string LogID { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(50)]
-    public string TableName { get; set; } = string.Empty;
+    [StringLength(40)]
+    public string? TableName { get; set; }
 
-    [Required]
+    [StringLength(5)]
+    public string? RecordID { get; set; } 
+
     [StringLength(20)]
-    public string ActionType { get; set; } = string.Empty; 
+    public string? ActionType { get; set; }
 
-    public int RecordId { get; set; }
+    public DateTime ChangeTime { get; set; } = DateTime.Now; 
 
-    public DateTime ChangeTime { get; set; } = DateTime.Now;
-
-    public int? AccountId { get; set; }
-    [ForeignKey("AccountId")]
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? ChangeByUserID { get; set; }
+    [ForeignKey("ChangeByUserID")]
     public virtual Account? Account { get; set; }
 
+    [StringLength(200)]
     public string? Details { get; set; }
 }

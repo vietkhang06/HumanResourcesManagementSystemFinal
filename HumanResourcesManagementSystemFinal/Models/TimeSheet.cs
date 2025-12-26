@@ -8,12 +8,21 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class TimeSheet
 {
     [Key]
-    public int Id { get; set; }
-    public int EmployeeId { get; set; }
-    [ForeignKey("EmployeeId")]
-    public virtual Employee Employee { get; set; } = null!;
-    public DateTime Date { get; set; }
-    public TimeSpan? CheckInTime { get; set; }
-    public TimeSpan? CheckOutTime { get; set; }
-    public double HoursWorked { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string TimeSheetID { get; set; } = string.Empty;
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? EmployeeID { get; set; }
+    [ForeignKey("EmployeeID")]
+    public virtual Employee? Employee { get; set; }
+
+    [Column(TypeName = "smalldatetime")]
+    public DateTime WorkDate { get; set; }
+
+    public TimeSpan? TimeIn { get; set; }
+    public TimeSpan? TimeOut { get; set; }
+
+    public double? ActualHours { get; set; }
 }

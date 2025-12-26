@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
         xmlns:converters="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
-        Title="Thêm Nhân Viên" Height="630" Width="750"
+        Title="{Binding WindowTitle}" Height="680" Width="750"
         WindowStartupLocation="CenterScreen" WindowStyle="None" 
         AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
@@ -133,7 +133,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                <TextBlock Text="HỒ SƠ NHÂN SỰ MỚI" FontSize="24" FontWeight="Bold" Foreground="#1A3D64"/>
+                <TextBlock Text="{Binding WindowTitle}" FontSize="24" FontWeight="Bold" Foreground="#1A3D64"/>
                 <TextBlock Text="Vui lòng nhập đầy đủ thông tin bên dưới" FontSize="14" Foreground="#718096" Margin="0,5,0,0"/>
                 <Separator Margin="0,15,0,0" Background="#E2E8F0"/>
             </StackPanel>
@@ -177,8 +177,10 @@
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Họ đệm *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
                                 <TextBox Text="{Binding FirstName}"/>
+
                                 <TextBlock Text="Email" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Email}"/>
+
                                 <TextBlock Text="Ngày sinh" Style="{StaticResource InputLabel}"/>
                                 <DatePicker SelectedDate="{Binding BirthDate}" Height="40" VerticalContentAlignment="Center"/>
                             </StackPanel>
@@ -186,8 +188,13 @@
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Tên *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
                                 <TextBox Text="{Binding LastName}"/>
+
                                 <TextBlock Text="Số điện thoại" Style="{StaticResource InputLabel}"/>
                                 <TextBox Text="{Binding Phone}"/>
+
+                                <TextBlock Text="CCCD/CMND" Style="{StaticResource InputLabel}"/>
+                                <TextBox Text="{Binding CCCD}"/>
+
                                 <TextBlock Text="Giới tính" Style="{StaticResource InputLabel}"/>
                                 <ComboBox Style="{StaticResource BlueComboBoxStyle}" SelectedValue="{Binding Gender}" SelectedValuePath="Content">
                                     <ComboBoxItem Content="Male"/>
@@ -215,8 +222,7 @@
                                 <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" DisplayMemberPath="DepartmentName"/>
 
                                 <TextBlock Text="Chức vụ" Style="{StaticResource InputLabel}"/>
-                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" DisplayMemberPath="Title"/>
-
+                                <ComboBox Style="{StaticResource BlueComboBoxStyle}" ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" DisplayMemberPath="PositionName"/>
                                 <TextBlock Text="Lương cơ bản *" Style="{StaticResource InputLabel}" Foreground="#C53030"/>
                                 <TextBox Text="{Binding SalaryString}"/>
                             </StackPanel>
@@ -231,6 +237,7 @@
                                     <ComboBoxItem Content="Part-time"/>
                                     <ComboBoxItem Content="Internship"/>
                                 </ComboBox>
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition/>

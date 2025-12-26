@@ -8,7 +8,7 @@ namespace HumanResourcesManagementSystemFinal.Models
 {
     public static class UserSession
     {
-        public static int CurrentEmployeeId { get; set; } = 5;
+        public static int CurrentEmployeeId { get; set; } = 1;
         public static string CurrentRole { get; set; }
     }
 }

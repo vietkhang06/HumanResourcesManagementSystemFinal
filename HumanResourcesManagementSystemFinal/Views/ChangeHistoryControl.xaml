@@ -322,20 +322,13 @@
                                         </Border>
 
                                         <StackPanel VerticalAlignment="Center">
-                                            <TextBlock FontWeight="SemiBold" Foreground="#2D3748" FontSize="13">
-                                                <TextBlock.Text>
-                                                    <MultiBinding StringFormat="{}{0} {1}" FallbackValue="Hệ thống">
-                                                        <Binding Path="Account.Employee.FirstName" />
-                                                        <Binding Path="Account.Employee.LastName" />
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                            </TextBlock>
+                                            <TextBlock FontWeight="SemiBold" Foreground="#2D3748" FontSize="13" Text="{Binding Account.Employee.FullName, FallbackValue='Hệ thống'}"/>
 
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="ID: " FontSize="10" Foreground="#A0AEC0"/>
-                                                <TextBlock Text="{Binding Account.EmployeeId, TargetNullValue='--', FallbackValue='--'}" FontSize="10" Foreground="#A0AEC0"/>
+                                                <TextBlock Text="{Binding Account.EmployeeID, TargetNullValue='--', FallbackValue='--'}" FontSize="10" Foreground="#A0AEC0"/>
                                                 <TextBlock Text=" • " FontSize="10" Foreground="#A0AEC0"/>
-                                                <TextBlock Text="{Binding Account.Username, TargetNullValue='System', FallbackValue='System'}" FontSize="10" Foreground="#A0AEC0"/>
+                                                <TextBlock Text="{Binding Account.UserName, TargetNullValue='System', FallbackValue='System'}" FontSize="10" Foreground="#A0AEC0"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </StackPanel>

@@ -47,45 +47,52 @@ public partial class PayrollViewModel : ObservableObject
         {
             using var context = new DataContext();
 
+            // 1. Lọc nhân viên đang hoạt động (Status = "Active")
             var employees = await context.Employees
                 .AsNoTracking()
                 .Include(e => e.Department)
                 .Include(e => e.WorkContracts)
-                .Where(e => e.IsActive)
+                .Where(e => e.Status == "Active") // Sửa IsActive -> Status
                 .ToListAsync();
 
             var startOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
+            // 2. Lấy dữ liệu chấm công (WorkDate)
             var allTimeSheets = await context.TimeSheets
                 .AsNoTracking()
-                .Where(t => t.Date >= startOfMonth && t.Date <= endOfMonth)
+                .Where(t => t.WorkDate >= startOfMonth && t.WorkDate <= endOfMonth) // Sửa Date -> WorkDate
                 .ToListAsync();
 
             var resultList = new ObservableCollection<PayrollDTO>();
 
             foreach (var emp in employees)
             {
+                // Lấy hợp đồng mới nhất
                 var contract = emp.WorkContracts
                     .OrderByDescending(c => c.StartDate)
                     .FirstOrDefault();
 
                 decimal baseSalary = contract?.Salary ?? 0;
 
-                var empTimeSheets = allTimeSheets.Where(t => t.EmployeeId == emp.Id).ToList();
+                // 3. Tính toán công (EmployeeID string)
+                var empTimeSheets = allTimeSheets.Where(t => t.EmployeeID == emp.EmployeeID).ToList();
                 double workDays = empTimeSheets.Count;
-                double totalHours = empTimeSheets.Sum(t => t.HoursWorked);
+
+                // 4. Tổng giờ làm (ActualHours)
+                double totalHours = empTimeSheets.Sum(t => t.ActualHours ?? 0); // Sửa HoursWorked -> ActualHours
 
                 decimal finalSalary = 0;
                 if (baseSalary > 0)
                 {
+                    // Công thức ví dụ: (Lương / 26) * Ngày công thực tế
                     finalSalary = (baseSalary / 26m) * (decimal)workDays;
                 }
 
                 resultList.Add(new PayrollDTO
                 {
-                    EmployeeId = emp.Id,
-                    FullName = $"{emp.LastName} {emp.FirstName}",
+                    EmployeeId = int.TryParse(emp.EmployeeID, out var empId) ? empId : 0,
+                    FullName = emp.FullName, // Sửa LastName/FirstName -> FullName
                     DepartmentName = emp.Department?.DepartmentName ?? "N/A",
                     ContractSalary = baseSalary,
                     ActualWorkDays = workDays,

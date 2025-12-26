@@ -8,10 +8,13 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Role
 {
     [Key]
-    public int RoleId { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string RoleID { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(50)]
+    [StringLength(40)]
     public string RoleName { get; set; } = string.Empty;
+
     public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
 }

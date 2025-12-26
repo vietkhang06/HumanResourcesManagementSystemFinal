@@ -3,8 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
@@ -21,7 +26,8 @@ public partial class LeaveRequestViewModel : ObservableObject
     private readonly LeaveRequestService _leaveService;
     private string _currentUserRole;
 
-    [ObservableProperty] private int _currentUserId;
+    // 1. Đổi int -> string
+    [ObservableProperty] private string _currentUserId;
     [ObservableProperty] private bool _isManager;
     [ObservableProperty] private ObservableCollection<LeaveRequestItem> _requestItems = new();
     [ObservableProperty] private string _leaveType = "Nghỉ Phép Năm";
@@ -30,9 +36,11 @@ public partial class LeaveRequestViewModel : ObservableObject
     [ObservableProperty] private string _reason;
     [ObservableProperty] private string _submitButtonContent = "Gửi Đơn";
 
-    private int? _editingRequestId = null;
+    // 2. Đổi int? -> string?
+    private string? _editingRequestId = null;
 
-    public LeaveRequestViewModel(LeaveRequestService leaveService, int userId, string role)
+    // 3. Constructor nhận string userId
+    public LeaveRequestViewModel(LeaveRequestService leaveService, string userId, string role)
     {
         _leaveService = leaveService;
         CurrentUserId = userId;
@@ -48,13 +56,39 @@ public partial class LeaveRequestViewModel : ObservableObject
 
         if (AppSession.CurrentUser != null)
         {
-            CurrentUserId = AppSession.CurrentUser.Id;
+            // AppSession phải update để trả về string ID
+            CurrentUserId = AppSession.CurrentUser.EmployeeID;
             _currentUserRole = AppSession.CurrentRole;
             IsManager = (_currentUserRole == "Admin" || _currentUserRole == "Manager");
+        }
+        else
+        {
+            // Fallback nếu null (để tránh crash khi design)
+            CurrentUserId = "";
         }
 
         _ = LoadDataAsync();
     }
+
+    // --- HÀM SINH MÃ LR001 ---
+    private string GenerateRequestID()
+    {
+        using var context = new DataContext();
+        string lastID = context.LeaveRequests
+            .OrderByDescending(r => r.RequestID)
+            .Select(r => r.RequestID)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(lastID)) return "LR001";
+
+        string numPart = lastID.Substring(2); // Bỏ chữ LR
+        if (int.TryParse(numPart, out int num))
+        {
+            return "LR" + (num + 1).ToString("D3");
+        }
+        return "LR" + new Random().Next(100, 999);
+    }
+    // ---------------------------
 
     private string GetDeepErrorMessage(Exception ex)
     {
@@ -74,13 +108,19 @@ public partial class LeaveRequestViewModel : ObservableObject
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                MessageBox.Show("Mã nhân viên không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
             var viewList = new List<LeaveRequestItem>();
 
             foreach (var req in list)
             {
-                bool canApprove = IsManager && (req.EmployeeId != CurrentUserId);
-                bool canEdit = (req.EmployeeId == CurrentUserId) && (req.Status == "Pending" || req.Status == "Đang chờ");
+                // Sửa logic so sánh string ID
+                bool canApprove = IsManager && (req.EmployeeID != CurrentUserId);
+                bool canEdit = (req.EmployeeID == CurrentUserId) && (req.Status == "Pending" || req.Status == "Đang chờ");
 
                 viewList.Add(new LeaveRequestItem
                 {
@@ -115,11 +155,17 @@ public partial class LeaveRequestViewModel : ObservableObject
         try
         {
             bool success = false;
+
+            // THÊM MỚI
             if (_editingRequestId == null)
             {
+                // Sinh mã mới
+                string newReqID = GenerateRequestID();
+
                 var newRequest = new LeaveRequest
                 {
-                    EmployeeId = CurrentUserId,
+                    RequestID = newReqID,
+                    EmployeeID = CurrentUserId, // String ID
                     LeaveType = LeaveType,
                     StartDate = StartDate,
                     EndDate = EndDate,
@@ -129,11 +175,12 @@ public partial class LeaveRequestViewModel : ObservableObject
                 success = await _leaveService.AddRequestAsync(newRequest);
                 if (success) MessageBox.Show("Gửi đơn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            // CẬP NHẬT
             else
             {
                 var updateRequest = new LeaveRequest
                 {
-                    Id = _editingRequestId.Value,
+                    RequestID = _editingRequestId, // String ID
                     LeaveType = LeaveType,
                     StartDate = StartDate,
                     EndDate = EndDate,
@@ -166,11 +213,21 @@ public partial class LeaveRequestViewModel : ObservableObject
         if (item == null) return;
         var request = item.Request;
 
-        if (MessageBox.Show($"Duyệt đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        string empName = request.Requester?.FullName ?? "Nhân viên";
+
+        if (MessageBox.Show($"Duyệt đơn của {empName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             try
             {
-                if (await _leaveService.UpdateStatusAsync(request.Id, "Thông qua")) await LoadDataAsync();
+                // Pass string RequestID directly
+                if (!string.IsNullOrEmpty(request.RequestID))
+                {
+                    if (await _leaveService.UpdateStatusAsync(request.RequestID, "Thông qua")) await LoadDataAsync();
+                }
+                else
+                {
+                    MessageBox.Show("Mã đơn không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -184,12 +241,20 @@ public partial class LeaveRequestViewModel : ObservableObject
     {
         if (item == null) return;
         var request = item.Request;
+        string empName = request.Requester?.FullName ?? "Nhân viên";
 
-        if (MessageBox.Show($"Từ chối đơn của {request.Employee?.FirstName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        if (MessageBox.Show($"Từ chối đơn của {empName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             try
             {
-                if (await _leaveService.UpdateStatusAsync(request.Id, "Từ chối")) await LoadDataAsync();
+                if (!string.IsNullOrEmpty(request.RequestID))
+                {
+                    if (await _leaveService.UpdateStatusAsync(request.RequestID, "Từ chối")) await LoadDataAsync();
+                }
+                else
+                {
+                    MessageBox.Show("Mã đơn không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -205,10 +270,10 @@ public partial class LeaveRequestViewModel : ObservableObject
         var req = item.Request;
 
         LeaveType = req.LeaveType;
-        StartDate = req.StartDate;
-        EndDate = req.EndDate;
+        StartDate = req.StartDate ?? DateTime.Now;
+        EndDate = req.EndDate ?? DateTime.Now;
         Reason = req.Reason;
-        _editingRequestId = req.Id;
+        _editingRequestId = req.RequestID; // String
         SubmitButtonContent = "Cập Nhật";
     }
 
@@ -222,15 +287,22 @@ public partial class LeaveRequestViewModel : ObservableObject
         {
             try
             {
-                if (await _leaveService.DeleteRequestAsync(req.Id))
+                if (!string.IsNullOrEmpty(req.RequestID))
                 {
-                    if (_editingRequestId == req.Id)
+                    if (await _leaveService.DeleteRequestAsync(req.RequestID))
                     {
-                        _editingRequestId = null;
-                        Reason = "";
-                        SubmitButtonContent = "Gửi Đơn";
+                        if (_editingRequestId == req.RequestID)
+                        {
+                            _editingRequestId = null;
+                            Reason = "";
+                            SubmitButtonContent = "Gửi Đơn";
+                        }
+                        await LoadDataAsync();
                     }
-                    await LoadDataAsync();
+                }
+                else
+                {
+                    MessageBox.Show("Mã đơn không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

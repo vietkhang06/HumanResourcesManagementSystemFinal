@@ -17,7 +17,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
     {
         private Employee _editingEmployee = null;
         public bool IsEditMode => _editingEmployee != null;
-
         public ObservableCollection<Department> Departments { get; set; } = new();
         public ObservableCollection<Position> Positions { get; set; } = new();
         public ObservableCollection<Role> Roles { get; set; } = new();
@@ -25,26 +24,64 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _windowTitle = "THÊM NHÂN VIÊN MỚI";
 
-        [ObservableProperty] private string _fullName;
-        [ObservableProperty] private string _cccd;
-        [ObservableProperty] private string _email;
-        [ObservableProperty] private string _phone;
-        [ObservableProperty] private string _address;
-        [ObservableProperty] private DateTime _birthDate = DateTime.Now.AddYears(-22);
-        [ObservableProperty] private string _gender = "Male";
+        private string _fullName;
+        public string FullName
+        {
+            get => _fullName;
+            set => SetProperty(ref _fullName, value);
+        }
+
+        private string _cccd;
+        public string CCCD
+        {
+            get => _cccd;
+            set => SetProperty(ref _cccd, value);
+        }
+
+        private string _email;
+        public string Email
+        {
+            get => _email;
+            set => SetProperty(ref _email, value);
+        }
+
+        private string _phone;
+        public string Phone
+        {
+            get => _phone;
+            set => SetProperty(ref _phone, value);
+        }
+
+        private string _address;
+        public string Address
+        {
+            get => _address;
+            set => SetProperty(ref _address, value);
+        }
+
+        private DateTime _birthDate = DateTime.Now.AddYears(-22);
+        public DateTime BirthDate
+        {
+            get => _birthDate;
+            set => SetProperty(ref _birthDate, value);
+        }
+
+        private string _gender = "Male";
+        public string Gender
+        {
+            get => _gender;
+            set => SetProperty(ref _gender, value);
+        }
 
         [ObservableProperty] private string _avatarSource = "/Images/default_user.png";
         private string _selectedImagePath;
-
         [ObservableProperty] private Department _selectedDepartment;
         [ObservableProperty] private Position _selectedPosition;
         [ObservableProperty] private Employee _selectedManager;
-
         [ObservableProperty] private string _contractType = "Full-time";
         [ObservableProperty] private string _salaryString;
         [ObservableProperty] private DateTime _startDate = DateTime.Now;
         [ObservableProperty] private DateTime _endDate = DateTime.Now.AddYears(1);
-
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
 
@@ -60,20 +97,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 _editingEmployee = emp;
                 WindowTitle = "CẬP NHẬT THÔNG TIN";
                 OnPropertyChanged(nameof(IsEditMode));
-
-                _fullName = emp.FullName;
-                _cccd = emp.CCCD;
+                FullName = emp.FullName;
+                CCCD = emp.CCCD;
                 Email = emp.Email;
                 Phone = emp.PhoneNumber;
                 Address = emp.Address;
-
                 BirthDate = emp.DateOfBirth ?? DateTime.Now;
-
                 Gender = emp.Gender;
-
                 string imagePath = GetImagePath(emp.EmployeeID);
                 if (!string.IsNullOrEmpty(imagePath)) AvatarSource = imagePath;
-
                 SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
                 SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
                 SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
@@ -92,8 +124,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         {
                             ContractType = contract.ContractType;
                             SalaryString = contract.Salary?.ToString("F0") ?? "0";
-
-                            // SỬA LỖI TƯƠNG TỰ CHO HỢP ĐỒNG
                             StartDate = contract.StartDate ?? DateTime.Now;
                             EndDate = contract.EndDate ?? DateTime.Now.AddYears(1);
                         }
@@ -151,8 +181,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var window = (Window)values[0];
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
-
-            if (string.IsNullOrWhiteSpace(_fullName))
+            if (string.IsNullOrWhiteSpace(FullName))
             {
                 MessageBox.Show("Vui lòng nhập Họ và Tên.", "Thiếu thông tin"); return;
             }
@@ -275,8 +304,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         private void UpdateEmployeeInfo(Employee e)
         {
-            e.FullName = _fullName;
-            e.CCCD = _cccd;
+            e.FullName = FullName;
+            e.CCCD = CCCD;
             e.Email = Email;
             e.PhoneNumber = Phone;
             e.Address = Address;

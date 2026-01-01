@@ -286,7 +286,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.Title}" Width="*" Foreground="#4A5568" FontWeight="Medium">
+                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.JobDescription}" Width="*" Foreground="#4A5568" FontWeight="Medium">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>

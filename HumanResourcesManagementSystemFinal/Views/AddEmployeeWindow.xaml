@@ -210,7 +210,7 @@
                     <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="THÔNG TIN HỢP ĐỒNG" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,30,0,10"/>
-                    <Border Background="#F7FAFC" CornerRadius="8" Padding="20" BorderBrush="#E2E8F0" BorderThickness="1">
+                    <Border Background="White" CornerRadius="8" Padding="20" BorderBrush="#2B6CB0" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -262,7 +262,7 @@
                     </Border>
 
                     <TextBlock Text="TÀI KHOẢN HỆ THỐNG" FontSize="16" FontWeight="Bold" Foreground="#2B6CB0" Margin="0,30,0,10"/>
-                    <Border Background="#FFFFF0" CornerRadius="8" Padding="20" BorderBrush="#F6E05E" BorderThickness="1">
+                    <Border Background="White" CornerRadius="8" Padding="20" BorderBrush="#2B6CB0" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -303,7 +303,7 @@
                     </Button.Resources>
                 </Button>
 
-                <Button Content="💾 Lưu Hồ Sơ" 
+                <Button Content="Lưu Hồ Sơ" 
                         Command="{Binding SaveCommand}"
                         Width="160" Height="45" 
                         Background="#1A3D64" Foreground="White" FontWeight="Bold" FontSize="15" Cursor="Hand">

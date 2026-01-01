@@ -9,39 +9,55 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Employee
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string EmployeeID { get; set; } = string.Empty;
     [Required]
-    [StringLength(50)]
-    public string FirstName { get; set; } = string.Empty;
-    [Required]
-    [StringLength(50)]
-    public string LastName { get; set; } = string.Empty;
-
-    [NotMapped] // Chỉ dùng để hiển thị, không lưu DB
-    public string FullName => $"{LastName} {FirstName}";
+    [Column(TypeName = "nvarchar(60)")]
+    [StringLength(60)]
+    public string FullName { get; set; } = string.Empty;
+    [Column(TypeName = "varchar(20)")]
+    [StringLength(20)]
+    public string? CCCD { get; set; }
+    [Column(TypeName = "date")]
     public DateTime? DateOfBirth { get; set; }
-    public string? Address { get; set; }
+
     [StringLength(10)]
     public string Gender { get; set; } = "Other";
+
+    [StringLength(100)]
+    public string? Address { get; set; }
+
     [StringLength(100)]
     public string? Email { get; set; }
+
     [StringLength(20)]
     public string? PhoneNumber { get; set; }
-    public DateTime HireDate { get; set; } = DateTime.Now;
-    public bool IsActive { get; set; } = true;
-    public int? PositionId { get; set; }
-    [ForeignKey("PositionId")]
-    public virtual Position? Position { get; set; }
-    public int? DepartmentId { get; set; }
-    [ForeignKey("DepartmentId")]
+
+    [StringLength(20)]
+    public string Status { get; set; } = "Active";
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? DepartmentID { get; set; }
+    [ForeignKey("DepartmentID")]
     public virtual Department? Department { get; set; }
-    public int? ManagerId { get; set; }
-    [ForeignKey("ManagerId")]
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? PositionID { get; set; }
+    [ForeignKey("PositionID")]
+    public virtual Position? Position { get; set; }
+
+    [Column(TypeName = "char(5)")]
+    [StringLength(5)]
+    public string? ManagerID { get; set; }
+    [ForeignKey("ManagerID")]
     public virtual Employee? Manager { get; set; }
+
     public virtual Account? Account { get; set; }
-    public virtual ICollection<Employee> Subordinates { get; set; } = new HashSet<Employee>();
+    public virtual ICollection<WorkContract> WorkContracts { get; set; } = new HashSet<WorkContract>();
     public virtual ICollection<LeaveRequest> LeaveRequests { get; set; } = new HashSet<LeaveRequest>();
     public virtual ICollection<TimeSheet> TimeSheets { get; set; } = new HashSet<TimeSheet>();
-    public virtual ICollection<WorkContract> WorkContracts { get; set; } = new HashSet<WorkContract>();
+    public virtual ICollection<ChangeHistory> ChangeHistories { get; set; } = new HashSet<ChangeHistory>();
 }

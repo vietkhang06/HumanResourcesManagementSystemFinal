@@ -16,13 +16,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private double _remainingLeaveDays = 12;
         [ObservableProperty] private string _todayCheckInTime = "--:--";
         [ObservableProperty] private string _nextHoliday = "25/12";
-        public ObservableCollection<LeaveRequest> MyLeaveRequests { get; set; } = new();
-        private int _currentEmployeeId;
 
-        public EmployeeHomeViewModel(int employeeId)
+        public ObservableCollection<LeaveRequest> MyLeaveRequests { get; set; } = new();
+
+        // 1. Đổi từ int sang string
+        private string _currentEmployeeId;
+
+        // 2. Constructor nhận string
+        public EmployeeHomeViewModel(string employeeId)
         {
             _currentEmployeeId = employeeId;
+            // Kiểm tra DesignMode để tránh lỗi khi mở XAML Designer
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new DependencyObject())) return;
+
             _ = LoadEmployeeDataAsync();
         }
 
@@ -44,35 +50,45 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private async Task LoadEmployeeDataAsync()
         {
+            if (string.IsNullOrEmpty(_currentEmployeeId)) return;
+
             try
             {
                 using var context = new DataContext();
 
-                var emp = await context.Employees.FindAsync(_currentEmployeeId);
+                // 3. Tìm nhân viên theo String ID
+                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeID == _currentEmployeeId);
                 if (emp != null)
                 {
-                    WelcomeMessage = $"Xin chào, {emp.LastName} {emp.FirstName}!";
+                    // 4. Dùng FullName thay vì First/Last
+                    WelcomeMessage = $"Xin chào, {emp.FullName}!";
                 }
 
+                // 5. Tính số ngày làm việc
                 var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
                 DaysWorkedThisMonth = await context.TimeSheets
                     .AsNoTracking()
-                    .CountAsync(t => t.EmployeeId == _currentEmployeeId && t.Date >= startOfMonth);
+                    // TimeSheet: EmployeeID (string), WorkDate (thay cho Date)
+                    .CountAsync(t => t.EmployeeID == _currentEmployeeId && t.WorkDate >= startOfMonth);
 
+                // 6. Lấy giờ Check-in hôm nay
                 var todaySheet = await context.TimeSheets
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.EmployeeId == _currentEmployeeId && t.Date.Date == DateTime.Today);
+                    .FirstOrDefaultAsync(t => t.EmployeeID == _currentEmployeeId && t.WorkDate.Date == DateTime.Today);
 
                 if (todaySheet != null)
                 {
-                    TodayCheckInTime = todaySheet.CheckInTime.HasValue
-                        ? todaySheet.CheckInTime.Value.ToString(@"hh\:mm")
+                    // TimeSheet: TimeIn (thay cho CheckInTime)
+                    TodayCheckInTime = todaySheet.TimeIn.HasValue
+                        ? todaySheet.TimeIn.Value.ToString(@"hh\:mm")
                         : "--:--";
                 }
 
+                // 7. Lấy danh sách nghỉ phép
                 var myRequests = await context.LeaveRequests
                     .AsNoTracking()
-                    .Where(l => l.EmployeeId == _currentEmployeeId)
+                    // LeaveRequest: EmployeeID (string)
+                    .Where(l => l.EmployeeID == _currentEmployeeId)
                     .OrderByDescending(l => l.StartDate)
                     .Take(5)
                     .ToListAsync();

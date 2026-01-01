@@ -44,21 +44,23 @@ public partial class MyProfileViewModel : ObservableObject
     {
         try
         {
-            int currentId = UserSession.CurrentEmployeeId;
-            if (currentId == 0) return;
+            // 1. Đổi int -> string (Lấy từ Session mới)
+            string currentId = UserSession.CurrentEmployeeId.ToString();
+            if (string.IsNullOrEmpty(currentId)) return;
 
             using var context = new DataContext();
 
+            // 2. Tìm theo EmployeeID (string)
             CurrentUser = await context.Employees
                 .AsNoTracking()
                 .Include(e => e.Department)
                 .Include(e => e.Position)
-                .FirstOrDefaultAsync(e => e.Id == currentId);
+                .FirstOrDefaultAsync(e => e.EmployeeID == currentId);
 
             var account = await context.Accounts
                 .AsNoTracking()
                 .Include(a => a.Role)
-                .FirstOrDefaultAsync(a => a.EmployeeId == currentId);
+                .FirstOrDefaultAsync(a => a.EmployeeID == currentId);
 
             AccountRole = account?.Role?.RoleName ?? "N/A";
 
@@ -81,8 +83,9 @@ public partial class MyProfileViewModel : ObservableObject
 
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
-            string pathPng = Path.Combine(folderPath, $"{CurrentUser.Id}.png");
-            string pathJpg = Path.Combine(folderPath, $"{CurrentUser.Id}.jpg");
+            // 3. Dùng EmployeeID làm tên file
+            string pathPng = Path.Combine(folderPath, $"{CurrentUser.EmployeeID}.png");
+            string pathJpg = Path.Combine(folderPath, $"{CurrentUser.EmployeeID}.jpg");
             string pathDefault = Path.Combine(baseFolder, "Images", "default_user.png");
 
             string finalPath = string.Empty;
@@ -157,29 +160,33 @@ public partial class MyProfileViewModel : ObservableObject
         {
             if (CurrentUser == null) return;
 
-            if (string.IsNullOrWhiteSpace(CurrentUser.FirstName) || string.IsNullOrWhiteSpace(CurrentUser.LastName))
+            // 4. Validate FullName
+            if (string.IsNullOrWhiteSpace(CurrentUser.FullName))
             {
                 MessageBox.Show("Họ và Tên không được để trống!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             using var context = new DataContext();
-            var empInDb = await context.Employees.FindAsync(CurrentUser.Id);
+            var empInDb = await context.Employees.FindAsync(CurrentUser.EmployeeID);
 
             if (empInDb != null)
             {
-                empInDb.FirstName = CurrentUser.FirstName;
-                empInDb.LastName = CurrentUser.LastName;
+                // 5. Cập nhật FullName
+                empInDb.FullName = CurrentUser.FullName;
+
+                // Nếu view binding trực tiếp vào CurrentUser thì các trường khác đã tự cập nhật
                 empInDb.Email = CurrentUser.Email;
                 empInDb.PhoneNumber = CurrentUser.PhoneNumber;
                 empInDb.Address = CurrentUser.Address;
+                // empInDb.CCCD = CurrentUser.CCCD; // Nếu muốn cho phép sửa CCCD thì thêm dòng này
 
                 await context.SaveChangesAsync();
             }
 
             if (!string.IsNullOrEmpty(_tempAvatarPath))
             {
-                SaveImageToFolder(CurrentUser.Id, _tempAvatarPath);
+                SaveImageToFolder(CurrentUser.EmployeeID, _tempAvatarPath);
                 _tempAvatarPath = null;
                 LoadAvatarImage();
             }
@@ -193,7 +200,8 @@ public partial class MyProfileViewModel : ObservableObject
         }
     }
 
-    private void SaveImageToFolder(int empId, string sourcePath)
+    // 6. Sửa tham số int -> string
+    private void SaveImageToFolder(string empId, string sourcePath)
     {
         try
         {
@@ -206,6 +214,7 @@ public partial class MyProfileViewModel : ObservableObject
             string oldPng = Path.Combine(folder, $"{empId}.png");
             string oldJpg = Path.Combine(folder, $"{empId}.jpg");
 
+            // Xóa ảnh cũ để tránh trùng lặp định dạng
             if (File.Exists(oldPng)) File.Delete(oldPng);
             if (File.Exists(oldJpg)) File.Delete(oldJpg);
 

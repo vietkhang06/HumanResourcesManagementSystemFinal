@@ -237,12 +237,18 @@
                         
                     </StackPanel>
 
-                    <Button Grid.Row="2" VerticalAlignment="Bottom" Margin="15,0,15,20" Height="65"
-                            Background="#FFE2EAF3" BorderThickness="0" Cursor="Hand"
-                            Click="UserProfile_Click">
+                    <Button x:Name="BtnUserProfile"
+        Grid.Row="2" VerticalAlignment="Bottom" Margin="15,0,15,20" Height="60"
+        Background="#1A3D64" BorderThickness="0" Cursor="Hand"
+        Click="UserProfile_Click">
+
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12" Padding="10,5">
+                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="10" Padding="12,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="12" Opacity="0.2" ShadowDepth="4" Color="Black"/>
+                                    </Border.Effect>
+
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -250,53 +256,132 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Ellipse Grid.Column="0" Width="40" Height="40">
+                                        <Ellipse Grid.Column="0" Width="40" Height="40" Margin="0,0,12,0">
                                             <Ellipse.Fill>
                                                 <ImageBrush ImageSource="{Binding CurrentUserAvatar}" Stretch="UniformToFill"/>
                                             </Ellipse.Fill>
-                                            <Ellipse.Effect>
-                                                <DropShadowEffect BlurRadius="4" Opacity="0.2" ShadowDepth="2"/>
-                                            </Ellipse.Effect>
+                                            <Ellipse.Stroke>
+                                                <SolidColorBrush Color="White" Opacity="0.3"/>
+                                            </Ellipse.Stroke>
+                                            <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
                                         </Ellipse>
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,5,0">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding CurrentUserName}" 
-                                                       Foreground="#1A3D64" FontWeight="Bold" FontSize="13"
-                                                       TextTrimming="CharacterEllipsis"/>
+                                   Foreground="White" FontWeight="Bold" FontSize="14"
+                                   TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding CurrentUserJob}" 
-                                                       Foreground="#95A5A6" FontSize="11" 
-                                                       Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                   Foreground="#A0AEC0" FontSize="12" Margin="0,3,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
-                                        <TextBlock Grid.Column="2" Text="▼" 
-                                                   Foreground="#BDC3C7" FontSize="10" 
-                                                   VerticalAlignment="Center"/>
+                                        <Path Grid.Column="2" Data="M0,0 L5,5 L10,0" Fill="White" Opacity="0.9"
+                          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                     </Grid>
                                 </Border>
+
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="border" Property="Background" Value="#F0F3F4"/>
+                                        <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#102A44"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
 
                         <Button.ContextMenu>
-                            <ContextMenu StaysOpen="False" Placement="Top">
+                            <ContextMenu x:Name="UserContextMenu"
+                     Placement="Bottom" 
+                     PlacementTarget="{Binding ElementName=BtnUserProfile}" 
+                     VerticalOffset="5"
+                     StaysOpen="False"
+                     Width="{Binding Path=PlacementTarget.ActualWidth, RelativeSource={RelativeSource Self}}"
+                     HasDropShadow="True"
+                     Background="White"
+                     BorderThickness="0">
+
+                                <ContextMenu.Template>
+                                    <ControlTemplate TargetType="ContextMenu">
+                                        <Border Background="White" CornerRadius="8" Padding="0,6">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="20" Opacity="0.15" ShadowDepth="5" Color="#2D3748"/>
+                                            </Border.Effect>
+                                            <StackPanel IsItemsHost="True"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ContextMenu.Template>
+
                                 <ContextMenu.Resources>
                                     <Style TargetType="MenuItem">
-                                        <Setter Property="FontSize" Value="13"/>
-                                        <Setter Property="Padding" Value="10,8"/>
-                                        <Setter Property="Height" Value="35"/>
-                                        <Setter Property="Foreground" Value="#1A3D64"/>
+                                        <Setter Property="Height" Value="50"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                        <Setter Property="FontWeight" Value="Medium"/>
+                                        <Setter Property="Foreground" Value="#4A5568"/>
+                                        <Setter Property="Padding" Value="15,0"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="MenuItem">
+                                                    <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="40"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <ContentPresenter Content="{TemplateBinding Icon}" 
+                                                          HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                                                            <ContentPresenter Content="{TemplateBinding Header}" 
+                                                          Grid.Column="1" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsHighlighted" Value="True">
+                                                            <Setter TargetName="Border" Property="Background" Value="#EBF8FF"/>
+                                                            <Setter Property="Foreground" Value="#2B6CB0"/>
+                                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                     </Style>
                                 </ContextMenu.Resources>
-                                <MenuItem Header="👤  Hồ sơ cá nhân" Command="{Binding NavigateProfileCommand}"/>
-                                <MenuItem Header="🔑  Đổi mật khẩu" Command="{Binding NavigateChangePasswordCommand}"/>
-                                <Separator/>
-                                <MenuItem Header="🚪  Đăng Xuất" 
-                                          Foreground="#C0392B" FontWeight="Bold"
-                                          Click="BtnLogout_Click"/>
+
+                                <MenuItem Header="Hồ sơ cá nhân" Command="{Binding NavigateProfileCommand}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="👤" FontSize="18" Foreground="#1A3D64"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+
+                                <MenuItem Header="Đổi mật khẩu" Command="{Binding NavigateChangePasswordCommand}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="🔑" FontSize="18" Foreground="#1A3D64"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+
+                                <Separator Background="#EDF2F7" Height="1" Margin="10,5"/>
+
+                                <MenuItem Header="Đăng Xuất" Click="BtnLogout_Click" Foreground="#E53E3E">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="🚪" FontSize="18" Foreground="#E53E3E"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsHighlighted" Value="True">
+                                                    <Setter Property="Background" Value="#FFF5F5"/>
+                                                    <Setter Property="Foreground" Value="#C53030"/>
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
+
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
@@ -312,7 +397,7 @@
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#1A3D64" Offset="0"/>
-                                <GradientStop Color="#2B6CB0" Offset="1"/>
+                                <GradientStop Color="#1A3D64" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
 

@@ -12,16 +12,18 @@ using System.Windows;
 using System.Windows.Threading;
 using ClosedXML.Excel;
 using Microsoft.Win32;
+using System.Collections.Generic;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
 
 public partial class TimeSheetViewModel : ObservableObject
 {
-    private readonly TimeSpan _shiftStart = new(8, 0, 0);    // 08:00: Bắt đầu cho phép Check-in
-    private readonly TimeSpan _lunchStart = new(12, 0, 0);   // 12:00: Bắt đầu nghỉ trưa
-    private readonly TimeSpan _lunchEnd = new(13, 0, 0);   // 13:00: Hết nghỉ trưa
-    private readonly TimeSpan _shiftEnd = new(17, 0, 0);   // 17:00: Hết giờ làm việc
-    private readonly TimeSpan _lateThreshold = new(8, 15, 0); // 08:15: Mốc tính đi muộn
+    private readonly TimeSpan _shiftStart = new(8, 0, 0);
+    private readonly TimeSpan _lunchStart = new(12, 0, 0);
+    private readonly TimeSpan _lunchEnd = new(13, 0, 0);
+    private readonly TimeSpan _shiftEnd = new(17, 0, 0);
+    private readonly TimeSpan _lateThreshold = new(8, 15, 0);
+
     [ObservableProperty] private string _currentTimeStr;
     [ObservableProperty] private string _currentDateStr;
     [ObservableProperty] private string _todayStatusText = "Chưa vào ca";
@@ -30,8 +32,10 @@ public partial class TimeSheetViewModel : ObservableObject
     [ObservableProperty] private string _todayCheckOutStr = "--:--";
     [ObservableProperty] private bool _canCheckIn;
     [ObservableProperty] private bool _canCheckOut;
+
     private bool _dbHasCheckedIn = false;
     private bool _dbHasCheckedOut = false;
+
     public ObservableCollection<TimeSheetDTO> HistoryList { get; set; } = new();
     private DispatcherTimer _timer;
 
@@ -41,13 +45,32 @@ public partial class TimeSheetViewModel : ObservableObject
         _timer.Tick += (s, e) =>
         {
             UpdateClock();
-            UpdateButtonStateRealTime(); 
+            UpdateButtonStateRealTime();
         };
         _timer.Start();
 
         UpdateClock();
         _ = InitializeAsync();
     }
+
+    // --- HÀM SINH MÃ TỰ ĐỘNG TS001 ---
+    private string GenerateTimeSheetID(DataContext context)
+    {
+        var lastID = context.TimeSheets
+            .OrderByDescending(t => t.TimeSheetID)
+            .Select(t => t.TimeSheetID)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(lastID)) return "TS001";
+
+        string numPart = lastID.Substring(2); // Bỏ chữ TS
+        if (int.TryParse(numPart, out int num))
+        {
+            return "TS" + (num + 1).ToString("D3");
+        }
+        return "TS" + new Random().Next(100, 999);
+    }
+    // ----------------------------------
 
     private void UpdateClock()
     {
@@ -59,19 +82,10 @@ public partial class TimeSheetViewModel : ObservableObject
     private void UpdateButtonStateRealTime()
     {
         var now = DateTime.Now.TimeOfDay;
-
-        // Điều kiện để Nút Check-in SÁNG (Enabled):
-        // 1. Chưa Check-in trong Database (_dbHasCheckedIn == false)
-        // 2. Phải >= 08:00 (_shiftStart)
-        // 3. Phải <= 17:00 (_shiftEnd)
-        // 4. Không nằm trong giờ nghỉ trưa (12:00 - 13:00)
         bool isWorkingHours = (now >= _shiftStart && now <= _shiftEnd);
         bool isLunchTime = (now >= _lunchStart && now < _lunchEnd);
+
         CanCheckIn = !_dbHasCheckedIn && isWorkingHours && !isLunchTime;
-        // Điều kiện Nút Check-out SÁNG:
-        // 1. Đã Check-in rồi
-        // 2. Chưa Check-out
-        // (Không chặn giờ về, vì nhân viên có thể xin về sớm bất cứ lúc nào)
         CanCheckOut = _dbHasCheckedIn && !_dbHasCheckedOut;
     }
 
@@ -86,12 +100,14 @@ public partial class TimeSheetViewModel : ObservableObject
         try
         {
             using var context = new DataContext();
-            int myId = UserSession.CurrentEmployeeId;
+            string myId = UserSession.CurrentEmployeeId.ToString(); // String ID
             DateTime today = DateTime.Today;
 
+            // Truy vấn theo Model mới: WorkDate, TimeIn, TimeOut
             var record = await context.TimeSheets
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.EmployeeId == myId && t.Date == today);
+                .FirstOrDefaultAsync(t => t.EmployeeID == myId && t.WorkDate == today);
+
             if (record == null)
             {
                 _dbHasCheckedIn = false;
@@ -105,9 +121,9 @@ public partial class TimeSheetViewModel : ObservableObject
             else
             {
                 _dbHasCheckedIn = true;
-                TodayCheckInStr = record.CheckInTime?.ToString(@"hh\:mm");
+                TodayCheckInStr = record.TimeIn?.ToString(@"hh\:mm");
 
-                if (record.CheckOutTime == null || record.CheckOutTime == TimeSpan.Zero)
+                if (record.TimeOut == null || record.TimeOut == TimeSpan.Zero)
                 {
                     _dbHasCheckedOut = false;
                     TodayStatusText = "Đang làm việc";
@@ -119,7 +135,7 @@ public partial class TimeSheetViewModel : ObservableObject
                     _dbHasCheckedOut = true;
                     TodayStatusText = "Đã kết thúc ca";
                     TodayStatusColor = "#2B6CB0";
-                    TodayCheckOutStr = record.CheckOutTime?.ToString(@"hh\:mm");
+                    TodayCheckOutStr = record.TimeOut?.ToString(@"hh\:mm");
                 }
             }
 
@@ -145,16 +161,19 @@ public partial class TimeSheetViewModel : ObservableObject
         try
         {
             using var context = new DataContext();
-            bool exists = await context.TimeSheets.AnyAsync(t => t.EmployeeId == UserSession.CurrentEmployeeId && t.Date == DateTime.Today);
+            bool exists = await context.TimeSheets.AnyAsync(t => t.EmployeeID == UserSession.CurrentEmployeeId.ToString() && t.WorkDate == DateTime.Today);
             if (exists) { await LoadTodayStateAsync(); return; }
+
+            string newTSID = GenerateTimeSheetID(context);
 
             var newRecord = new TimeSheet
             {
-                EmployeeId = UserSession.CurrentEmployeeId,
-                Date = DateTime.Today,
-                CheckInTime = nowTime,
-                CheckOutTime = null,
-                HoursWorked = 0
+                TimeSheetID = newTSID,
+                EmployeeID = UserSession.CurrentEmployeeId.ToString(),
+                WorkDate = DateTime.Today,
+                TimeIn = nowTime,
+                TimeOut = null,
+                ActualHours = 0
             };
 
             context.TimeSheets.Add(newRecord);
@@ -185,19 +204,18 @@ public partial class TimeSheetViewModel : ObservableObject
         try
         {
             using var context = new DataContext();
-            var record = await context.TimeSheets.FirstOrDefaultAsync(t => t.EmployeeId == UserSession.CurrentEmployeeId && t.Date == DateTime.Today);
+            var record = await context.TimeSheets.FirstOrDefaultAsync(t => t.EmployeeID == UserSession.CurrentEmployeeId.ToString() && t.WorkDate == DateTime.Today);
 
             if (record != null)
             {
-                record.CheckOutTime = nowTime;
+                record.TimeOut = nowTime;
 
                 double totalHours = 0;
-                if (record.CheckInTime.HasValue)
+                if (record.TimeIn.HasValue)
                 {
-                    TimeSpan inTime = record.CheckInTime.Value;
+                    TimeSpan inTime = record.TimeIn.Value;
                     TimeSpan outTime = nowTime;
 
-                    // Nếu làm xuyên qua trưa (Vào sáng, Ra chiều) -> Trừ 1h nghỉ
                     if (inTime < _lunchStart && outTime > _lunchEnd)
                     {
                         totalHours = (outTime - inTime).TotalHours - 1.0;
@@ -208,10 +226,10 @@ public partial class TimeSheetViewModel : ObservableObject
                     }
                 }
 
-                record.HoursWorked = Math.Max(0, Math.Round(totalHours, 1));
+                record.ActualHours = Math.Max(0, Math.Round(totalHours, 1));
 
                 await context.SaveChangesAsync();
-                MessageBox.Show($"Check-out thành công!\nTổng giờ công: {record.HoursWorked}h.", "Hoàn thành", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Check-out thành công!\nTổng giờ công: {record.ActualHours}h.", "Hoàn thành", MessageBoxButton.OK, MessageBoxImage.Information);
                 await InitializeAsync();
             }
         }
@@ -223,12 +241,12 @@ public partial class TimeSheetViewModel : ObservableObject
         try
         {
             using var context = new DataContext();
-            int myId = UserSession.CurrentEmployeeId;
+            string myId = UserSession.CurrentEmployeeId.ToString();
 
             var list = await context.TimeSheets
                 .AsNoTracking()
-                .Where(t => t.EmployeeId == myId)
-                .OrderByDescending(t => t.Date)
+                .Where(t => t.EmployeeID == myId)
+                .OrderByDescending(t => t.WorkDate)
                 .Take(30)
                 .ToListAsync();
 
@@ -238,17 +256,17 @@ public partial class TimeSheetViewModel : ObservableObject
                 string status;
                 string color;
 
-                if (item.CheckOutTime == null)
+                if (item.TimeOut == null)
                 {
-                    status = (item.Date == DateTime.Today) ? "Đang làm việc" : "Quên Check-out";
-                    color = (item.Date == DateTime.Today) ? "#ECC94B" : "#A0AEC0";
+                    status = (item.WorkDate == DateTime.Today) ? "Đang làm việc" : "Quên Check-out";
+                    color = (item.WorkDate == DateTime.Today) ? "#ECC94B" : "#A0AEC0";
                 }
                 else
                 {
-                    bool isLate = item.CheckInTime.Value > _lateThreshold;
-                    bool isEarly = item.CheckOutTime.Value < _shiftEnd;
+                    bool isLate = item.TimeIn.Value > _lateThreshold;
+                    bool isEarly = item.TimeOut.Value < _shiftEnd;
 
-                    if (!isLate && !isEarly && item.HoursWorked >= 8)
+                    if (!isLate && !isEarly && item.ActualHours >= 8)
                     {
                         status = "Đủ công"; color = "#38A169";
                     }
@@ -272,10 +290,10 @@ public partial class TimeSheetViewModel : ObservableObject
 
                 HistoryList.Add(new TimeSheetDTO
                 {
-                    Date = item.Date,
-                    CheckInText = item.CheckInTime?.ToString(@"hh\:mm") ?? "--:--",
-                    CheckOutText = item.CheckOutTime?.ToString(@"hh\:mm") ?? "--:--",
-                    TotalHoursText = item.HoursWorked > 0 ? $"{item.HoursWorked}h" : "...",
+                    WorkDate = item.WorkDate,
+                    CheckInText = item.TimeIn?.ToString(@"hh\:mm") ?? "--:--",
+                    CheckOutText = item.TimeOut?.ToString(@"hh\:mm") ?? "--:--",
+                    TotalHoursText = item.ActualHours > 0 ? $"{item.ActualHours}h" : "...",
                     StatusText = status,
                     StatusColor = color
                 });
@@ -287,7 +305,7 @@ public partial class TimeSheetViewModel : ObservableObject
     [RelayCommand]
     private async Task ExportReportAsync()
     {
-        bool isAdmin = AppSession.CurrentRole == "Admin" || AppSession.CurrentRole == "Manager"; 
+        bool isAdmin = AppSession.CurrentRole == "Admin" || AppSession.CurrentRole == "Manager";
         bool exportAll = false;
         if (isAdmin)
         {
@@ -303,6 +321,7 @@ public partial class TimeSheetViewModel : ObservableObject
             if (result == MessageBoxResult.Cancel) return;
             if (result == MessageBoxResult.Yes) exportAll = true;
         }
+
         var dataToExport = new List<TimeSheetDTO>();
 
         try
@@ -313,7 +332,12 @@ public partial class TimeSheetViewModel : ObservableObject
             {
                 var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
-                var allRecords = await context.TimeSheets.Include(t => t.Employee) .Where(t => t.Date >= startOfMonth).OrderBy(t => t.EmployeeId).ThenBy(t => t.Date).ToListAsync();
+                var allRecords = await context.TimeSheets
+                    .Include(t => t.Employee)
+                    .Where(t => t.WorkDate >= startOfMonth)
+                    .OrderBy(t => t.EmployeeID)
+                    .ThenBy(t => t.WorkDate)
+                    .ToListAsync();
 
                 foreach (var item in allRecords)
                 {
@@ -330,8 +354,10 @@ public partial class TimeSheetViewModel : ObservableObject
                 var currentUser = AppSession.CurrentUser;
                 foreach (var item in HistoryList)
                 {
-                    var dto = item;
-                    dataToExport.Add(dto);
+                    // Gán lại thông tin user hiện tại cho DTO lịch sử
+                    item.EmployeeID = currentUser.EmployeeID;
+                    item.EmployeeName = currentUser.FullName;
+                    dataToExport.Add(item);
                 }
             }
 
@@ -341,7 +367,7 @@ public partial class TimeSheetViewModel : ObservableObject
                 Title = exportAll ? "Báo Cáo Tổng Hợp" : "Báo Cáo Cá Nhân",
                 FileName = exportAll
                     ? $"TongHopChamCong_Thang{DateTime.Now:MM_yyyy}.xlsx"
-                    : $"ChamCong_{AppSession.CurrentUser.Id}_{DateTime.Now:MM_yyyy}.xlsx"
+                    : $"ChamCong_{AppSession.CurrentUser.EmployeeID}_{DateTime.Now:MM_yyyy}.xlsx"
             };
 
             if (saveFileDialog.ShowDialog() == true)
@@ -356,9 +382,10 @@ public partial class TimeSheetViewModel : ObservableObject
                         titleRange.Style.Font.Bold = true;
                         titleRange.Style.Font.FontSize = 16;
                         titleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        titleRange.Style.Fill.BackgroundColor = XLColor.White;
+
                         worksheet.Cell("A2").Value = $"Ngày xuất báo cáo: {DateTime.Now:dd/MM/yyyy HH:mm}";
-                        int headerRow = 4; 
+
+                        int headerRow = 4;
                         worksheet.Cell(headerRow, 1).Value = "Mã NV";
                         worksheet.Cell(headerRow, 2).Value = "Họ Tên";
                         worksheet.Cell(headerRow, 3).Value = "Ngày";
@@ -366,62 +393,33 @@ public partial class TimeSheetViewModel : ObservableObject
                         worksheet.Cell(headerRow, 5).Value = "Giờ Ra";
                         worksheet.Cell(headerRow, 6).Value = "Tổng Giờ";
                         worksheet.Cell(headerRow, 7).Value = "Trạng Thái";
+
                         var headerRange = worksheet.Range(headerRow, 1, headerRow, 7);
                         headerRange.Style.Font.Bold = true;
+                        headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1A3D64");
                         headerRange.Style.Font.FontColor = XLColor.White;
-                        headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1A3D64"); 
-                        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                         int currentRow = 5;
                         foreach (var item in dataToExport)
                         {
-                            if (exportAll)
-                            {
-                                worksheet.Cell(currentRow, 1).Value = item.EmployeeId;
-                                worksheet.Cell(currentRow, 2).Value = item.EmployeeName;
-                            }
-                            else
-                            {
-                                worksheet.Cell(currentRow, 1).Value = AppSession.CurrentUser.Id;
-                                worksheet.Cell(currentRow, 2).Value = AppSession.CurrentUser.FirstName + " " + AppSession.CurrentUser.LastName;
-                            }
-
-                            worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                            worksheet.Cell(currentRow, 3).Value = item.Date.ToString("dd/MM/yyyy");
-                            worksheet.Cell(currentRow, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            worksheet.Cell(currentRow, 1).Value = item.EmployeeID;
+                            worksheet.Cell(currentRow, 2).Value = item.EmployeeName;
+                            worksheet.Cell(currentRow, 3).Value = item.WorkDate.ToString("dd/MM/yyyy");
                             worksheet.Cell(currentRow, 4).Value = item.CheckInText;
-                            worksheet.Cell(currentRow, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                             worksheet.Cell(currentRow, 5).Value = item.CheckOutText;
-                            worksheet.Cell(currentRow, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                             worksheet.Cell(currentRow, 6).Value = item.TotalHoursText;
-                            worksheet.Cell(currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                             var statusCell = worksheet.Cell(currentRow, 7);
                             statusCell.Value = item.StatusText;
-                            statusCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                            statusCell.Style.Font.Bold = true;
 
-                            if (item.StatusText.Contains("Muộn") || item.StatusText.Contains("Thiếu") || item.StatusText.Contains("Về sớm"))
-                            {
+                            if (item.StatusText.Contains("Muộn") || item.StatusText.Contains("Thiếu"))
                                 statusCell.Style.Font.FontColor = XLColor.Red;
-                            }
                             else if (item.StatusText.Contains("Đủ công"))
-                            {
                                 statusCell.Style.Font.FontColor = XLColor.Green;
-                            }
                             else
-                            {
-                                statusCell.Style.Font.FontColor = XLColor.Orange; 
-                            }
+                                statusCell.Style.Font.FontColor = XLColor.Orange;
 
-                            currentRow++; 
-                        }
-
-                        if (currentRow > 5)
-                        {
-                            var dataRange = worksheet.Range(headerRow, 1, currentRow - 1, 7);
-                            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-                            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            currentRow++;
                         }
 
                         worksheet.Columns().AdjustToContents();
@@ -441,16 +439,31 @@ public partial class TimeSheetViewModel : ObservableObject
     private TimeSheetDTO ConvertToDTO(TimeSheet item, Employee emp)
     {
         string status = "Đang làm";
+        // Tính toán lại status cho export nếu cần (giản lược)
+        if (item.TimeOut != null) status = "Hoàn thành";
 
         return new TimeSheetDTO
         {
-            EmployeeId = emp.Id,       
-            EmployeeName = emp.FirstName + " " + emp.LastName, 
-            Date = item.Date,
-            CheckInText = item.CheckInTime?.ToString(@"hh\:mm") ?? "--:--",
-            CheckOutText = item.CheckOutTime?.ToString(@"hh\:mm") ?? "--:--",
-            TotalHoursText = item.HoursWorked > 0 ? $"{item.HoursWorked}h" : "...",
+            EmployeeID = emp.EmployeeID,
+            EmployeeName = emp.FullName,
+            WorkDate = item.WorkDate,
+            CheckInText = item.TimeIn?.ToString(@"hh\:mm") ?? "--:--",
+            CheckOutText = item.TimeOut?.ToString(@"hh\:mm") ?? "--:--",
+            TotalHoursText = item.ActualHours > 0 ? $"{item.ActualHours}h" : "...",
             StatusText = status
         };
     }
+}
+
+// Cập nhật DTO cho phù hợp
+public class TimeSheetDTO
+{
+    public string EmployeeID { get; set; }
+    public string EmployeeName { get; set; }
+    public DateTime WorkDate { get; set; }
+    public string CheckInText { get; set; }
+    public string CheckOutText { get; set; }
+    public string TotalHoursText { get; set; }
+    public string StatusText { get; set; }
+    public string StatusColor { get; set; }
 }

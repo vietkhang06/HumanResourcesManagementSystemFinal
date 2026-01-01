@@ -8,42 +8,67 @@ namespace HumanResourcesManagementSystemFinal.Data
     {
         public static void Seed(DataContext context)
         {
-            var empRole = context.Roles.FirstOrDefault(r => r.RoleName == "Employee");
-            if (empRole == null)
+            context.Database.EnsureCreated();
+
+            // 1. Seed Roles
+            if (!context.Roles.Any())
             {
-                empRole = new Role { RoleId = 2, RoleName = "Employee"};
-                context.Roles.Add(empRole);
-                context.SaveChanges();
-            }
-            var testEmployee = context.Employees.FirstOrDefault(e => e.Email == "user@test.com");
-            if (testEmployee == null)
-            {
-                testEmployee = new Employee
-                {
-                    FirstName = "User",
-                    LastName = "Test",
-                    Email = "user@test.com",
-                    PhoneNumber = "0999888777",
-                    IsActive = true,
-                    HireDate = DateTime.Now,
-                    DepartmentId = 1,
-                    PositionId = 2
-                };
-                context.Employees.Add(testEmployee);
+                context.Roles.AddRange(
+                    new Role { RoleID = "R001", RoleName = "Admin" },
+                    new Role { RoleID = "R002", RoleName = "Manager" },
+                    new Role { RoleID = "R003", RoleName = "Employee" }
+                );
                 context.SaveChanges();
             }
 
-            if (!context.Accounts.Any(a => a.Username == "user"))
+            // 2. Seed Departments
+            if (!context.Departments.Any())
             {
-                var userAccount = new Account
+                context.Departments.AddRange(
+                    new Department { DepartmentID = "PB001", DepartmentName = "Ban Giám Đốc", Location = "Tầng 5" },
+                    new Department { DepartmentID = "PB002", DepartmentName = "Nhân Sự", Location = "Tầng 2" },
+                    new Department { DepartmentID = "PB003", DepartmentName = "Kỹ Thuật", Location = "Tầng 3" }
+                );
+                context.SaveChanges();
+            }
+
+            // 3. Seed Positions
+            if (!context.Positions.Any())
+            {
+                context.Positions.AddRange(
+                    new Position { PositionID = "CV001", PositionName = "CEO" },
+                    new Position { PositionID = "CV002", PositionName = "HR Manager" },
+                    new Position { PositionID = "CV003", PositionName = "Developer" }
+                );
+                context.SaveChanges();
+            }
+
+            // 4. Seed Employee & Account
+            if (!context.Employees.Any())
+            {
+                var adminEmp = new Employee
                 {
-                    Username = "user",
-                    PasswordHash = "123",
-                    EmployeeId = testEmployee.Id,
-                    RoleId = empRole.RoleId,    
-                    IsActive = true
+                    EmployeeID = "NV001",
+                    FullName = "Super Admin",
+                    Status = "Active", // Sửa IsActive -> Status
+                    DepartmentID = "PB001",
+                    PositionID = "CV001",
+                    Email = "admin@company.com",
                 };
-                context.Accounts.Add(userAccount);
+
+                context.Employees.Add(adminEmp);
+
+                var adminAcc = new Account
+                {
+                    UserID = "TK001",
+                    UserName = "admin",
+                    Password = "123", // Sửa PasswordHash -> Password
+                    IsActive = "Active", // Sửa bool -> string
+                    EmployeeID = "NV001",
+                    RoleID = "R001"
+                };
+
+                context.Accounts.Add(adminAcc);
                 context.SaveChanges();
             }
         }

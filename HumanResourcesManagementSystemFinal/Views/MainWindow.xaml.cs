@@ -25,16 +25,6 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             Application.Current.Shutdown();
         }
-        private void UserProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            if (button != null && button.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button; 
-                button.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top; 
-                button.ContextMenu.IsOpen = true;
-            }
-        }
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
             var loginWindow = new LoginWindow();
@@ -47,6 +37,21 @@ namespace HumanResourcesManagementSystemFinal.Views
             if (user?.Account == null)
                 throw new ArgumentException("Employee must have an associated Account.", nameof(user));
             this.DataContext = new MainViewModel(user.Account);
+        }
+        private void UserProfile_Click(object sender, RoutedEventArgs e)
+        {
+            // Lấy đối tượng nút bấm
+            var btn = sender as Button;
+
+            // Nếu nút có chứa ContextMenu
+            if (btn != null && btn.ContextMenu != null)
+            {
+                // Đảm bảo Menu biết nó mọc ra từ nút nào
+                btn.ContextMenu.PlacementTarget = btn;
+
+                // Mở Menu
+                btn.ContextMenu.IsOpen = true;
+            }
         }
     }
 }

@@ -38,6 +38,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
+        // Constructor cho Design Mode
         _currentAccount = new Account { Role = new Role { RoleName = "Admin" } };
         IsAdmin = true;
         PageTitle = "Trang Chủ";
@@ -53,13 +54,15 @@ public partial class MainViewModel : ObservableObject
                 .AsNoTracking()
                 .Include(e => e.Position)
                 .Include(e => e.Account)
-                .FirstOrDefaultAsync(e => e.Account.AccountId == _currentAccount.AccountId);
+                // 1. Sửa AccountId -> UserID
+                .FirstOrDefaultAsync(e => e.Account.UserID == _currentAccount.UserID);
 
             if (employee != null)
             {
                 employee.Account = _currentAccount;
                 CurrentUser = employee;
-                WelcomeMessage = $"Xin chào, {CurrentUser.LastName} {CurrentUser.FirstName}!";
+                // 2. Sửa Name -> FullName
+                WelcomeMessage = $"Xin chào, {CurrentUser.FullName}!";
                 OnPropertyChanged(nameof(CurrentUserAvatar));
                 OnPropertyChanged(nameof(CurrentUserJob));
                 OnPropertyChanged(nameof(CurrentUserName));
@@ -71,18 +74,20 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public string CurrentUserName => CurrentUser?.Id > 0 ? $"{CurrentUser.LastName} {CurrentUser.FirstName}" : "Người dùng";
-    public string CurrentUserJob => CurrentUser?.Position?.Title ?? "N/A";
+    // 3. Cập nhật hiển thị tên và chức vụ
+    public string CurrentUserName => !string.IsNullOrEmpty(CurrentUser?.EmployeeID) ? CurrentUser.FullName : "Người dùng";
+    public string CurrentUserJob => CurrentUser?.Position?.PositionName ?? "N/A"; // Title -> PositionName
 
     public string CurrentUserAvatar
     {
         get
         {
-            if (CurrentUser?.Id > 0)
+            // 4. Kiểm tra ID string
+            if (!string.IsNullOrEmpty(CurrentUser?.EmployeeID))
             {
                 string baseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-                string jpgPath = Path.Combine(baseDir, $"{CurrentUser.Id}.jpg");
-                string pngPath = Path.Combine(baseDir, $"{CurrentUser.Id}.png");
+                string jpgPath = Path.Combine(baseDir, $"{CurrentUser.EmployeeID}.jpg");
+                string pngPath = Path.Combine(baseDir, $"{CurrentUser.EmployeeID}.png");
 
                 if (File.Exists(jpgPath)) return jpgPath;
                 if (File.Exists(pngPath)) return pngPath;
@@ -103,7 +108,8 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
-            int empId = CurrentUser?.Id ?? 0;
+            // 5. Truyền string ID
+            string empId = CurrentUser?.EmployeeID;
             CurrentView = new EmployeeHomeControl
             {
                 DataContext = new EmployeeHomeViewModel(empId)
@@ -176,7 +182,8 @@ public partial class MainViewModel : ObservableObject
         CurrentPageName = "LeaveRequest";
 
         var leaveService = new LeaveRequestService(new DataContext());
-        int empId = CurrentUser?.Id ?? 0;
+        // 6. Truyền string ID
+        string empId = CurrentUser?.EmployeeID;
         string role = _currentAccount?.Role?.RoleName ?? "Employee";
 
         var leaveViewModel = new LeaveRequestViewModel(leaveService, empId, role);
@@ -196,10 +203,18 @@ public partial class MainViewModel : ObservableObject
 
         if (_currentAccount != null)
         {
-            CurrentView = new ChangePasswordControl
+            // 7. Truyền int UserID (parse from string)
+            if (int.TryParse(_currentAccount.UserID, out int userId))
             {
-                DataContext = new ChangePasswordViewModel(_currentAccount.AccountId)
-            };
+                CurrentView = new ChangePasswordControl
+                {
+                    DataContext = new ChangePasswordViewModel(userId.ToString())
+                };
+            }
+            else
+            {
+                MessageBox.Show("ID tài khoản không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 

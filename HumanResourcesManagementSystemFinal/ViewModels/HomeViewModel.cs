@@ -64,14 +64,16 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
         {
             using var context = new DataContext();
 
-            var totalEmp = await context.Employees.CountAsync(e => e.IsActive);
+            // 1. Tổng nhân viên (Sửa IsActive -> Status)
+            var totalEmp = await context.Employees.CountAsync(e => e.Status == "Active");
             var totalDept = await context.Departments.CountAsync();
             var activeCont = await context.WorkContracts.CountAsync(c => c.EndDate > DateTime.Now);
 
+            // 2. Chấm công hôm nay (Sửa Date -> WorkDate, CheckInTime -> TimeIn)
             var today = DateTime.Today;
             var checkedInCount = await context.TimeSheets
                 .AsNoTracking()
-                .Where(t => t.Date.Date == today && t.CheckInTime != null)
+                .Where(t => t.WorkDate.Date == today && t.TimeIn != null)
                 .CountAsync();
 
             TotalEmployees = totalEmp;
@@ -79,15 +81,17 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
             ActiveContracts = activeCont;
             AttendanceStatus = $"{checkedInCount} / {TotalEmployees}";
 
+            // 3. Nhân viên mới (Giữ nguyên logic HireDate)
             var newHires = await context.Employees
                 .AsNoTracking()
-                .OrderByDescending(e => e.HireDate)
+                .OrderByDescending(e => e.EmployeeID) // Lưu ý: Model mới bạn có thể đã bỏ HireDate hoặc đổi tên, nếu lỗi dòng này hãy kiểm tra lại Model Employee xem có trường HireDate không. Nếu không có thể dùng EmployeeID để sort.
                 .Take(5)
                 .ToListAsync();
 
             RecentEmployees.Clear();
             foreach (var item in newHires) RecentEmployees.Add(item);
 
+            // 4. Hợp đồng sắp hết hạn
             var thirtyDaysLater = DateTime.Now.AddDays(30);
             var expiringList = await context.WorkContracts
                 .AsNoTracking()
@@ -99,8 +103,10 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
             ExpiringContractEmployees.Clear();
             foreach (var item in expiringList) ExpiringContractEmployees.Add(item);
 
+            // 5. Thống kê theo phòng ban
             var deptStats = await context.Employees
                 .AsNoTracking()
+                .Where(e => e.Department != null) // Đảm bảo không lỗi null
                 .GroupBy(e => e.Department.DepartmentName)
                 .Select(g => new DepartmentStat { DepartmentName = g.Key, Count = g.Count() })
                 .ToListAsync();
@@ -108,9 +114,10 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
             DepartmentStats.Clear();
             foreach (var item in deptStats) DepartmentStats.Add(item);
 
+            // 6. Đơn nghỉ phép chờ duyệt (Sửa Employee -> Requester)
             var pendings = await context.LeaveRequests
                 .AsNoTracking()
-                .Include(l => l.Employee)
+                .Include(l => l.Requester) // Model mới quan hệ là Requester
                 .Where(l => l.Status == "Đang chờ" || l.Status == "Pending")
                 .OrderByDescending(l => l.StartDate)
                 .ToListAsync();
@@ -136,10 +143,16 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
         try
         {
             using var context = new DataContext();
-            var item = await context.LeaveRequests.FindAsync(request.Id);
+            // Sửa Id -> RequestID
+            var item = await context.LeaveRequests.FindAsync(request.RequestID);
             if (item != null)
             {
                 item.Status = newStatus;
+
+                // Cập nhật người duyệt (Nếu có thông tin UserSession)
+                // string currentAdminID = UserSession.CurrentUserID;
+                // item.ApproverID = currentAdminID;
+
                 await context.SaveChangesAsync();
 
                 PendingLeavesList.Remove(request);

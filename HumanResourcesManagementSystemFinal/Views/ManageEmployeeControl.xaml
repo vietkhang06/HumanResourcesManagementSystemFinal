@@ -4,333 +4,372 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+             xmlns:cnv="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000" Background="Transparent">
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="Transparent">
 
     <UserControl.DataContext>
         <vm:ManageEmployeeViewModel/>
     </UserControl.DataContext>
 
     <UserControl.Resources>
+        <cnv:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Border x:Name="Border" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" />
+                <Path x:Name="Arrow" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Fill="White" Data="M0,0 L4,4 L8,0" />
+            </Grid>
+        </ControlTemplate>
+
+        <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border" Background="#1A3D64" CornerRadius="6" BorderThickness="0">
+                                <Grid>
+                                    <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
+                                    <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="10,0,30,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.Foreground="White"/>
+                                </Grid>
+                            </Border>
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="6" Margin="0,5,0,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="3" Color="Black"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Margin="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                                <Setter TargetName="border" Property="Cursor" Value="Hand"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground" Value="#2D3748"/>
+                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border Name="Border" Padding="{TemplateBinding Padding}" Background="Transparent" CornerRadius="4">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="true">
+                                            <Setter TargetName="Border" Property="Background" Value="#EBF8FF"/>
+                                            <Setter Property="Foreground" Value="#1A3D64"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="true">
+                                            <Setter TargetName="Border" Property="Background" Value="#1A3D64"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#718096"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="10,0,10,10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,10"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
         </Style>
 
-        <Style x:Key="CenterHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="DataGridCell">
-                        <Border Padding="{TemplateBinding Padding}" Background="Transparent">
-                            <ContentPresenter VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Foreground" Value="Black"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <Style TargetType="DataGridRow">
             <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="45"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="BorderBrush" Value="#F7FAFC"/>
-            <Setter Property="Height" Value="65"/>
+            <Setter Property="BorderBrush" Value="#EDF2F7"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F7FAFC"/>
                 </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#EBF8FF"/>
-                </Trigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SmartTextStyle" TargetType="TextBlock">
-            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" CornerRadius="8" Width="300" Height="45">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
-                </Border.Effect>
+            <Border Grid.Column="0" Background="White" CornerRadius="6" BorderBrush="#E2E8F0" BorderThickness="1" Height="40">
                 <Grid>
-                    <TextBlock Text="🔍" VerticalAlignment="Center" Margin="15,0,0,0" Foreground="#A0AEC0"/>
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" 
-                             Margin="40,0,10,0" FontSize="14"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="35"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Path Data="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" 
+                          Stroke="#A0AEC0" StrokeThickness="2" Width="14" Height="14" Margin="10,0,0,0" Stretch="Uniform"/>
+
+                    <TextBlock Grid.Column="1" Text="Tìm kiếm..." 
+                               Foreground="#A0AEC0" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="13"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearch}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBox x:Name="txtSearch" Grid.Column="1" 
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                             VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" Padding="5,0,10,0" FontSize="13"/>
                 </Grid>
             </Border>
 
-            <ComboBox Grid.Column="1" 
-                      Margin="15,0,0,0" 
-                      Width="200" 
-                      Height="45" 
-          
+            <ComboBox Grid.Column="2" 
                       ItemsSource="{Binding Departments}" 
-                      DisplayMemberPath="DepartmentName"
-          
                       SelectedItem="{Binding SelectedDepartment}" 
-          
-                      SelectedIndex="0"
-                      FontSize="15" 
-                      FontWeight="Medium" 
-                      Foreground="White"
-                      BorderThickness="0">
-                <ComboBox.Resources>
-                    <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
-                        <Grid>
-                            <Border x:Name="Border" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" />
-                            <Path x:Name="Arrow" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Fill="White" Data="M0,0 L4,4 L8,0" />
-                        </Grid>
-                    </ControlTemplate>
-                    <Style TargetType="ComboBox">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ComboBox">
-                                    <Grid>
-                                        <Border x:Name="border" Background="#1A3D64" CornerRadius="8" BorderThickness="0">
-                                            <Grid>
-                                                <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
-                                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="15,0,35,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.Foreground="White"/>
-                                            </Grid>
-                                        </Border>
-                                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                                            <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                                <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="8" Margin="0,5,0,0">
-                                                    <Border.Effect>
-                                                        <DropShadowEffect BlurRadius="15" Opacity="0.15" ShadowDepth="3" Color="Black"/>
-                                                    </Border.Effect>
-                                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
-                                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                                    </ScrollViewer>
-                                                </Border>
-                                            </Grid>
-                                        </Popup>
-                                    </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="true">
-                                            <Setter TargetName="border" Property="Background" Value="#254E7A"/>
-                                            <Setter TargetName="border" Property="Cursor" Value="Hand"/>
-                                        </Trigger>
-                                        <Trigger Property="IsDropDownOpen" Value="true">
-                                            <Setter TargetName="border" Property="Background" Value="#254E7A"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="ItemContainerStyle">
-                            <Setter.Value>
-                                <Style TargetType="ComboBoxItem">
-                                    <Setter Property="Foreground" Value="#2D3748"/>
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="Margin" Value="0,2"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ComboBoxItem">
-                                                <Border Name="Border" Padding="{TemplateBinding Padding}" Background="Transparent" CornerRadius="4">
-                                                    <ContentPresenter />
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="true">
-                                                        <Setter TargetName="Border" Property="Background" Value="#EBF8FF"/>
-                                                        <Setter Property="Foreground" Value="#1A3D64"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsSelected" Value="true">
-                                                        <Setter TargetName="Border" Property="Background" Value="#1A3D64"/>
-                                                        <Setter Property="Foreground" Value="White"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ComboBox.Resources>
-            </ComboBox>
+                      DisplayMemberPath="DepartmentName"
+                      Style="{StaticResource BlueComboBoxStyle}" />
 
-            <Button Grid.Column="3" Command="{Binding AddEmployeeCommand}"
-                    Background="#1A3D64" Foreground="White" Height="45" Padding="20,0" BorderThickness="0" Cursor="Hand">
+            <Button Grid.Column="4" Command="{Binding AddEmployeeCommand}" 
+                    Background="#1A3D64" Foreground="White" Height="40" Padding="15,0" Cursor="Hand">
                 <Button.Resources>
                     <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="8"/>
+                        <Setter Property="CornerRadius" Value="6"/>
                     </Style>
                 </Button.Resources>
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="M136 128a120 120 0 1 1 240 0 120 120 0 1 1 -240 0zM48 482.3C48 383.8 127.8 304 226.3 304l59.4 0c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7L77.7 512C61.3 512 48 498.7 48 482.3zM544 96c13.3 0 24 10.7 24 24l0 48 48 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-48 0 0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48-48 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0 0-48c0-13.3 10.7-24 24-24z"
-                          Fill="White"
-                          Width="14" Height="14"
-                          Stretch="Uniform"
-                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <TextBlock Text=" Thêm Nhân Viên" FontWeight="Bold"/>
+                    <TextBlock Text="+ Thêm Mới" FontWeight="Bold" FontSize="13"/>
                 </StackPanel>
             </Button>
         </Grid>
 
-        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="10">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#ccc"/>
-            </Border.Effect>
-
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="0" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
             <DataGrid ItemsSource="{Binding Employees}" 
+                      SelectedItem="{Binding SelectedEmployee}"
                       AutoGenerateColumns="False" 
                       CanUserAddRows="False" 
-                      IsReadOnly="True" 
-                      GridLinesVisibility="Horizontal" 
-                      HorizontalGridLinesBrush="#F7F7F7" 
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#F7FAFC"
                       VerticalGridLinesBrush="Transparent"
-                      Background="White" 
-                      BorderThickness="0" 
-                      HeadersVisibility="Column" 
-                      FontSize="13" 
-                      RowHeight="50"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                      Background="Transparent"
+                      BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      CanUserResizeColumns="False">
+
+                <DataGrid.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick"
+                                  Command="{Binding ViewDetailCommand}"
+                                  CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}, Path=SelectedItem}"/>
+                </DataGrid.InputBindings>
+
                 <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="#718096"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="Padding" Value="10,10,10,10"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="Padding" Value="10,0"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="{TemplateBinding Padding}" Background="Transparent">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Foreground" Value="Black"/>
-                            </Trigger>
-                        </Style.Triggers>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                        <Setter Property="ToolTip" Value="Nhấn đúp để xem chi tiết"/>
+                        <Setter Property="Cursor" Value="Hand"/>
                     </Style>
                 </DataGrid.Resources>
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding Id}" Width="70" Foreground="#718096" FontWeight="Bold">
+                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeID}" Width="70" FontWeight="Bold" Foreground="#4A5568">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
                                 <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0,0,0"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="Auto" MinWidth="200">
+                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Width="32" Height="32" CornerRadius="16" Background="#EDF2F7" Margin="0,0,10,0">
-                                        <TextBlock Text="{Binding FullName[0]}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="ExtraBold" Foreground="#2B6CB0" FontSize="14"/>
-                                    </Border>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+
+                                    <Ellipse Width="34" Height="34" Margin="0,0,10,0">
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" 
+                                                        Stretch="UniformToFill"/>
+                                        </Ellipse.Fill>
+                                        <Ellipse.Stroke>
+                                            <SolidColorBrush Color="#E2E8F0"/>
+                                        </Ellipse.Stroke>
+                                        <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
+                                    </Ellipse>
+
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="13" TextTrimming="None" TextWrapping="NoWrap"/>
-                                        <TextBlock Text="{Binding Email}" FontSize="11" Foreground="#718096" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="13"/>
+                                        <TextBlock Text="{Binding Email}" Foreground="#718096" FontSize="11"/>
                                     </StackPanel>
+
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding Department.DepartmentName}" Width="*" Foreground="#4A5568">
+                    <DataGridTextColumn Header="PHÒNG BAN" Binding="{Binding Department.DepartmentName}" Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Foreground" Value="#4A5568"/>
+                                <Setter Property="Margin" Value="10, 0, 0, 0" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.JobDescription}" Width="*" Foreground="#4A5568" FontWeight="Medium">
+                    <DataGridTextColumn Header="CHỨC VỤ" Binding="{Binding Position.PositionName}" Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Foreground" Value="#4A5568"/>
+                                <Setter Property="Margin" Value="10, 0, 0, 0" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="SĐT" Binding="{Binding PhoneNumber}" Width="110" Foreground="#4A5568">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTextColumn Header="ĐỊA CHỈ" Binding="{Binding Address}" Width="*" Foreground="#718096">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="90">
+                    <DataGridTemplateColumn Header="TRẠNG THÁI" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Button Click="BtnEditEmployee_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,5,0" ToolTip="Sửa">
-                                        <Border Background="#EBF8FF" CornerRadius="5" Width="28" Height="28">
-                                            <Path Data="M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 168 255.8 302.2c-2.9 2.9-6.5 5-10.4 6.1l-58.5 16.7 16.7-58.5c1.1-3.9 3.2-7.5 6.1-10.4zM373.1 25L175.8 222.2c-8.7 8.7-15 19.4-18.3 31.1l-28.6 100c-2.4 8.4-.1 17.4 6.1 23.6s15.2 8.5 23.6 6.1l100-28.6c11.8-3.4 22.5-9.7 31.1-18.3L487 138.9c28.1-28.1 28.1-73.7 0-101.8L474.9 25C446.8-3.1 401.2-3.1 373.1 25zM88 64C39.4 64 0 103.4 0 152L0 424c0 48.6 39.4 88 88 88l272 0c48.6 0 88-39.4 88-88l0-112c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 112c0 22.1-17.9 40-40 40L88 464c-22.1 0-40-17.9-40-40l0-272c0-22.1 17.9-40 40-40l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24L88 64z"
-                                                  Fill="#2B6CB0" Width="12" Height="12" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
+                                <Border CornerRadius="10" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Margin" Value="10, 0, 0, 0" />
+                                            <Setter Property="Background" Value="#EDF2F7"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                    <Setter Property="Background" Value="#C6F6D5"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Đang làm việc">
+                                                    <Setter Property="Background" Value="#C6F6D5"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Resigned">
+                                                    <Setter Property="Background" Value="#FED7D7"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Đã nghỉ việc">
+                                                    <Setter Property="Background" Value="#FED7D7"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="OnLeave">
+                                                    <Setter Property="Background" Value="#FEEBC8"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Nghỉ phép">
+                                                    <Setter Property="Background" Value="#FEEBC8"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                        <Setter Property="Foreground" Value="#22543D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Đang làm việc">
+                                                        <Setter Property="Foreground" Value="#22543D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Resigned">
+                                                        <Setter Property="Foreground" Value="#822727"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Đã nghỉ việc">
+                                                        <Setter Property="Foreground" Value="#822727"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="OnLeave">
+                                                        <Setter Property="Foreground" Value="#7B341E"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Nghỉ phép">
+                                                        <Setter Property="Foreground" Value="#7B341E"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
+                                    <Button Style="{StaticResource ActionButton}" Background="#EBF8FF" ToolTip="Sửa"
+                                            Command="{Binding DataContext.EditEmployeeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <Path Data="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
+                                              Stroke="#3182CE" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform"/>
                                     </Button>
-                                    <Button Command="{Binding DataContext.DeleteEmployeeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Xóa">
-                                        <Border Background="#FFF5F5" CornerRadius="5" Width="28" Height="28">
-                                            <Path Data="M136 128a120 120 0 1 1 240 0 120 120 0 1 1 -240 0zM48 482.3C48 383.8 127.8 304 226.3 304l59.4 0c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7L77.7 512C61.3 512 48 498.7 48 482.3zM472 168l144 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-144 0c-13.3 0-24-10.7-24-24s10.7-24 24-24z"
-                                                  Fill="#C53030" Width="12" Height="12" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
+                                    <Button Style="{StaticResource ActionButton}" Background="#FFF5F5" ToolTip="Xóa"
+                                            Command="{Binding DataContext.DeleteEmployeeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <Path Data="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" 
+                                              Stroke="#E53E3E" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform"/>
                                     </Button>
                                 </StackPanel>
                             </DataTemplate>
@@ -340,9 +379,9 @@
             </DataGrid>
         </Border>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+        <Grid Grid.Row="2" Margin="0,10,0,0">
             <TextBlock Text="{Binding Employees.Count, StringFormat='Tổng số: {0} nhân viên'}" 
-               VerticalAlignment="Center" Foreground="#718096" Margin="0,0,20,0" FontWeight="SemiBold"/>
-        </StackPanel>
+                       HorizontalAlignment="Right" Foreground="#718096" FontSize="11" FontStyle="Italic"/>
+        </Grid>
     </Grid>
 </UserControl>

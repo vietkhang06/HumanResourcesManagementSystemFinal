@@ -156,5 +156,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
             }
         }
+        [RelayCommand]
+        private void ViewDetail(Employee emp)
+        {
+            if (emp == null) return;
+
+            var detailWindow = new EmployeeDetailWindow(emp);
+            detailWindow.ShowDialog();
+        }
     }
 }

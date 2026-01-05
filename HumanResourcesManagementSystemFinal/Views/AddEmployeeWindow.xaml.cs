@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Input;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.ViewModels;
 
@@ -7,27 +6,25 @@ namespace HumanResourcesManagementSystemFinal.Views
 {
     public partial class AddEmployeeWindow : Window
     {
+        // 1. Dùng cho nút THÊM MỚI
         public AddEmployeeWindow()
         {
             InitializeComponent();
-            // Mặc định ViewModel đã khởi tạo ở chế độ Add
+            this.DataContext = new AddEmployeeViewModel();
         }
 
-        // Constructor cho chế độ Edit
-        public AddEmployeeWindow(Employee empToEdit)
+        // 2. Dùng cho nút SỬA (Quan trọng!)
+        public AddEmployeeWindow(Employee employeeEdit)
         {
             InitializeComponent();
-
-            // Lấy ViewModel từ DataContext (đã được khai báo trong XAML)
-            if (this.DataContext is AddEmployeeViewModel vm)
-            {
-                vm.LoadEmployeeForEdit(empToEdit);
-            }
+            // Truyền nhân viên cần sửa vào ViewModel
+            this.DataContext = new AddEmployeeViewModel(employeeEdit);
         }
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            this.DragMove();
+            if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+                this.DragMove();
         }
     }
 }

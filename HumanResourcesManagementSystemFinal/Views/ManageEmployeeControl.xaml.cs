@@ -43,5 +43,23 @@ namespace HumanResourcesManagementSystemFinal.Views
                 }
             }
         }
+        private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // 1. Lấy dòng vừa click
+            var row = sender as DataGridRow;
+            if (row == null) return;
+
+            // 2. Lấy dữ liệu nhân viên của dòng đó
+            var emp = row.DataContext as Employee;
+
+            // 3. Lấy ViewModel của UserControl
+            var vm = this.DataContext as ManageEmployeeViewModel;
+
+            // 4. Gọi Command ViewDetail
+            if (vm != null && emp != null && vm.ViewDetailCommand.CanExecute(emp))
+            {
+                vm.ViewDetailCommand.Execute(emp);
+            }
+        }
     }
 }

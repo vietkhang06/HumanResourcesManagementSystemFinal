@@ -24,5 +24,6 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             InitializeComponent();
         }
+
     }
 }

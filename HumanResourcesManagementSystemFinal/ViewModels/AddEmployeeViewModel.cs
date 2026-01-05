@@ -24,54 +24,45 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _windowTitle = "THÊM NHÂN VIÊN MỚI";
 
+        // Các Property Binding
         private string _fullName;
         public string FullName
         {
             get => _fullName;
-            set => SetProperty(ref _fullName, value);
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) _fullName = null;
+                else _fullName = value;
+                OnPropertyChanged();
+            }
         }
 
         private string _cccd;
-        public string CCCD
-        {
-            get => _cccd;
-            set => SetProperty(ref _cccd, value);
-        }
+        public string CCCD { get => _cccd; set => SetProperty(ref _cccd, value); }
 
         private string _email;
         public string Email
         {
             get => _email;
-            set => SetProperty(ref _email, value);
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) _email = null;
+                else _email = value;
+                OnPropertyChanged();
+            }
         }
 
         private string _phone;
-        public string Phone
-        {
-            get => _phone;
-            set => SetProperty(ref _phone, value);
-        }
+        public string Phone { get => _phone; set => SetProperty(ref _phone, value); }
 
         private string _address;
-        public string Address
-        {
-            get => _address;
-            set => SetProperty(ref _address, value);
-        }
+        public string Address { get => _address; set => SetProperty(ref _address, value); }
 
         private DateTime _birthDate = DateTime.Now.AddYears(-22);
-        public DateTime BirthDate
-        {
-            get => _birthDate;
-            set => SetProperty(ref _birthDate, value);
-        }
+        public DateTime BirthDate { get => _birthDate; set => SetProperty(ref _birthDate, value); }
 
         private string _gender = "Male";
-        public string Gender
-        {
-            get => _gender;
-            set => SetProperty(ref _gender, value);
-        }
+        public string Gender { get => _gender; set => SetProperty(ref _gender, value); }
 
         [ObservableProperty] private string _avatarSource = "/Images/default_user.png";
         private string _selectedImagePath;
@@ -85,11 +76,22 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
 
+        // --- CONSTRUCTOR 1: Dùng cho Thêm Mới ---
         public AddEmployeeViewModel()
         {
             LoadComboBoxData();
         }
 
+        // --- CONSTRUCTOR 2: Dùng cho Chỉnh Sửa (QUAN TRỌNG) ---
+        public AddEmployeeViewModel(Employee emp) : this() // Gọi this() để load combobox trước
+        {
+            if (emp != null)
+            {
+                LoadEmployeeForEdit(emp); // Đổ dữ liệu cũ vào form
+            }
+        }
+
+        // Hàm đổ dữ liệu cũ vào các ô nhập liệu
         public void LoadEmployeeForEdit(Employee emp)
         {
             try
@@ -97,6 +99,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 _editingEmployee = emp;
                 WindowTitle = "CẬP NHẬT THÔNG TIN";
                 OnPropertyChanged(nameof(IsEditMode));
+
                 FullName = emp.FullName;
                 CCCD = emp.CCCD;
                 Email = emp.Email;
@@ -104,14 +107,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 Address = emp.Address;
                 BirthDate = emp.DateOfBirth ?? DateTime.Now;
                 Gender = emp.Gender;
+
                 string imagePath = GetImagePath(emp.EmployeeID);
                 if (!string.IsNullOrEmpty(imagePath)) AvatarSource = imagePath;
-                SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
-                SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
-                SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
 
+                // Load chi tiết từ DB để lấy Account và Contract
                 using (var context = new DataContext())
                 {
+                    // Map Department, Position, Manager từ List đã load
+                    SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
+                    SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
+                    SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
+
                     var fullEmp = context.Employees
                         .Include(e => e.WorkContracts)
                         .Include(e => e.Account)
@@ -181,33 +188,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var window = (Window)values[0];
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
-            if (string.IsNullOrWhiteSpace(FullName))
-            {
-                MessageBox.Show("Vui lòng nhập Họ và Tên.", "Thiếu thông tin"); return;
-            }
-            if (SelectedDepartment == null || SelectedPosition == null)
-            {
-                MessageBox.Show("Vui lòng chọn Phòng ban và Chức vụ.", "Thiếu thông tin"); return;
-            }
-            if (!decimal.TryParse(SalaryString, out decimal salary))
-            {
-                MessageBox.Show("Lương cơ bản phải là số.", "Lỗi định dạng"); return;
-            }
-            if (!IsEditMode && string.IsNullOrWhiteSpace(Username))
-            {
-                MessageBox.Show("Vui lòng nhập Tên đăng nhập.", "Thiếu thông tin"); return;
-            }
+
+            // Validate cơ bản
+            if (string.IsNullOrWhiteSpace(FullName)) { MessageBox.Show("Vui lòng nhập Họ và Tên."); return; }
+            if (SelectedDepartment == null || SelectedPosition == null) { MessageBox.Show("Vui lòng chọn Phòng ban và Chức vụ."); return; }
+            if (!decimal.TryParse(SalaryString, out decimal salary)) { MessageBox.Show("Lương cơ bản phải là số."); return; }
+
+            if (!IsEditMode && string.IsNullOrWhiteSpace(Username)) { MessageBox.Show("Vui lòng nhập Tên đăng nhập."); return; }
 
             if (!IsEditMode || (IsEditMode && !string.IsNullOrEmpty(pBox.Password)))
             {
-                if (string.IsNullOrEmpty(pBox.Password))
-                {
-                    MessageBox.Show("Vui lòng nhập mật khẩu.", "Thiếu thông tin"); return;
-                }
-                if (pBox.Password != pBoxConfirm.Password)
-                {
-                    MessageBox.Show("Mật khẩu xác nhận không khớp!", "Lỗi mật khẩu"); return;
-                }
+                if (string.IsNullOrEmpty(pBox.Password)) { MessageBox.Show("Vui lòng nhập mật khẩu."); return; }
+                if (pBox.Password != pBoxConfirm.Password) { MessageBox.Show("Mật khẩu xác nhận không khớp!"); return; }
             }
 
             using (var context = new DataContext())
@@ -220,6 +212,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                         if (IsEditMode)
                         {
+                            // UPDATE
                             empToSave = context.Employees
                                 .Include(e => e.Account).Include(e => e.WorkContracts)
                                 .FirstOrDefault(e => e.EmployeeID == _editingEmployee.EmployeeID);
@@ -228,6 +221,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                             UpdateEmployeeInfo(empToSave);
 
+                            // Update Contract
                             var contract = empToSave.WorkContracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
                             if (contract == null)
                             {
@@ -236,6 +230,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             }
                             UpdateContractInfo(contract, salary);
 
+                            // Update Account
                             if (empToSave.Account != null)
                             {
                                 empToSave.Account.RoleID = SelectedRole?.RoleID ?? empToSave.Account.RoleID;
@@ -247,22 +242,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         }
                         else
                         {
+                            // INSERT (ADD NEW)
                             if (context.Accounts.Any(a => a.UserName == Username))
                             {
-                                MessageBox.Show("Tên đăng nhập này đã tồn tại. Vui lòng chọn tên khác.", "Trùng lặp"); return;
+                                MessageBox.Show("Tên đăng nhập này đã tồn tại."); return;
                             }
 
                             string newId = GenerateNewEmployeeID(context);
-
                             empToSave = new Employee { EmployeeID = newId, Status = "Active" };
                             UpdateEmployeeInfo(empToSave);
                             context.Employees.Add(empToSave);
 
-                            var newContract = new WorkContract
-                            {
-                                ContractID = "HD" + newId,
-                                EmployeeID = newId
-                            };
+                            var newContract = new WorkContract { ContractID = "HD" + newId, EmployeeID = newId };
                             UpdateContractInfo(newContract, salary);
                             context.WorkContracts.Add(newContract);
 
@@ -286,14 +277,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             SaveImageToFolder(empToSave.EmployeeID, _selectedImagePath);
                         }
 
-                        MessageBox.Show("Lưu hồ sơ thành công!", "Thông báo");
+                        MessageBox.Show("Lưu hồ sơ thành công!");
                         window.DialogResult = true;
                         window.Close();
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        MessageBox.Show("Có lỗi xảy ra: " + ex.Message, "Lỗi hệ thống");
+                        MessageBox.Show("Có lỗi xảy ra: " + ex.Message);
                     }
                 }
             }
@@ -326,19 +317,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         private string GenerateNewEmployeeID(DataContext context)
         {
-            var lastId = context.Employees
-                .Where(e => e.EmployeeID.StartsWith("NV"))
-                .Select(e => e.EmployeeID)
-                .OrderByDescending(id => id)
-                .FirstOrDefault();
-
+            var lastId = context.Employees.Where(e => e.EmployeeID.StartsWith("NV")).Select(e => e.EmployeeID).OrderByDescending(id => id).FirstOrDefault();
             if (string.IsNullOrEmpty(lastId)) return "NV001";
-
-            if (int.TryParse(lastId.Substring(2), out int currentNum))
-            {
-                return "NV" + (currentNum + 1).ToString("D3");
-            }
-
+            if (int.TryParse(lastId.Substring(2), out int currentNum)) return "NV" + (currentNum + 1).ToString("D3");
             return "NV" + DateTime.Now.Ticks.ToString().Substring(0, 5);
         }
 
@@ -348,10 +329,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                string extension = Path.GetExtension(sourcePath);
-                string dest = Path.Combine(folder, $"{empId}{extension}");
-
+                string dest = Path.Combine(folder, $"{empId}{Path.GetExtension(sourcePath)}");
                 File.Copy(sourcePath, dest, true);
             }
             catch { }
@@ -362,7 +340,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
             string pathPng = Path.Combine(folder, $"{empId}.png");
             string pathJpg = Path.Combine(folder, $"{empId}.jpg");
-
             if (File.Exists(pathPng)) return pathPng;
             if (File.Exists(pathJpg)) return pathJpg;
             return "/Images/default_user.png";

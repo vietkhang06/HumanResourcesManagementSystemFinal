@@ -247,14 +247,19 @@
                     </DataGrid.CellStyle>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Mã" Binding="{Binding Request.LeaveRequestId}" Width="60" FontWeight="SemiBold" Foreground="#718096"/>
+                        <DataGridTextColumn Header="Mã" 
+                                            Binding="{Binding Request.LeaveRequestId, TargetNullValue='---'}" 
+                                            Width="60" FontWeight="SemiBold" Foreground="#718096"/>
 
-                        <DataGridTemplateColumn Header="Nhân Viên" Width="180">
+                        <DataGridTemplateColumn Header="Nhân Viên" Width="200">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Request.Employee.FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="14"/>
-                                        <TextBlock Text="{Binding Request.EmployeeId}" Foreground="#A0AEC0" FontSize="12" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding Request.Employee.FullName, TargetNullValue='(Không xác định)'}" 
+                                                   FontWeight="Bold" Foreground="#2D3748" FontSize="14"/>
+
+                                        <TextBlock Text="{Binding Request.EmployeeID, StringFormat='MNV: {0}'}" 
+                                                   Foreground="#A0AEC0" FontSize="12" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

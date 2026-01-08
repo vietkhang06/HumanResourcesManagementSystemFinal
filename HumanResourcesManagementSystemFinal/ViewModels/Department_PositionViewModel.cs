@@ -38,7 +38,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             _ = LoadDepartmentsAsync();
         }
 
-        // --- HÀM SINH MÃ TỰ ĐỘNG (PB001, CV001) ---
+        // --- HÀM SINH MÃ TỰ ĐỘNG ---
         private string GenerateID(DataContext context, string type)
         {
             string lastID = "";
@@ -62,16 +62,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 return prefix + (num + 1).ToString("D3");
             }
-            
+
             return prefix + new Random().Next(100, 999);
         }
-        // -------------------------------------------
 
         private string GetDeepErrorMessage(Exception ex)
         {
             var sb = new StringBuilder();
             sb.AppendLine(ex.Message);
-
             var inner = ex.InnerException;
             while (inner != null)
             {
@@ -81,6 +79,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             return sb.ToString();
         }
 
+        // --- LOAD DATA ---
         private async Task LoadDepartmentsAsync()
         {
             try
@@ -98,18 +97,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải danh sách phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Lỗi tải danh sách phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống");
             }
         }
 
         private async Task LoadPositionsAsync()
         {
-            // Since Position does not have DepartmentID, we cannot filter by DepartmentID.
-            // Instead, load all positions.
             try
             {
+                if (SelectedDepartment == null)
+                {
+                    Positions.Clear();
+                    OnPropertyChanged(nameof(Positions));
+                    return;
+                }
+
                 using var context = new DataContext();
+                // Lọc chức vụ theo DepartmentID
                 var list = await context.Positions
+                    .Where(p => p.DepartmentID == SelectedDepartment.DepartmentID)
                     .AsNoTracking()
                     .ToListAsync();
 
@@ -118,10 +124,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải danh sách chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Lỗi tải danh sách chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống");
             }
         }
 
+        // --- CRUD PHÒNG BAN ---
         [RelayCommand]
         private async Task AddDepartmentAsync()
         {
@@ -134,37 +141,32 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 {
                     if (await context.Departments.AnyAsync(d => d.DepartmentName == addWindow.DeptName))
                     {
-                        MessageBox.Show($"Phòng ban '{addWindow.DeptName}' đã tồn tại!", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"Phòng ban '{addWindow.DeptName}' đã tồn tại!", "Trùng lặp");
                         return;
                     }
 
-                    // Sinh mã mới
                     string newID = GenerateID(context, "Department");
 
                     var newDept = new Department
                     {
                         DepartmentID = newID,
                         DepartmentName = addWindow.DeptName,
-                        Location = addWindow.DeptLocation
+                        Location = addWindow.DeptLocation,
+                        ManagerID = null
                     };
 
                     context.Departments.Add(newDept);
-                    
-                    // Ghi Log
-                    string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                    if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
+
+                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
+                    context.ChangeHistories.Add(new ChangeHistory
                     {
-                        currentAdminID = "ADMIN";
-                    }
-                    // Lưu ý: AuditService cần được cập nhật để nhận string ID, hoặc bạn tự insert vào ChangeHistory tại đây
-                    // Giả sử AuditService đã update hoặc ta gọi ChangeHistory trực tiếp:
-                    context.ChangeHistories.Add(new ChangeHistory 
-                    {
-                        LogID = GenerateID(context, "Log"), // Cần đảm bảo hàm GenerateID hỗ trợ Log hoặc bạn tự sinh
+                        LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                         ActionType = "CREATE",
                         TableName = "Departments",
                         RecordID = newDept.DepartmentID,
-                        ChangeByUserID = currentAdminID,
+                        ChangeByUserID = adminID,
                         ChangeTime = DateTime.Now,
                         Details = $"Thêm phòng: {newDept.DepartmentName}"
                     });
@@ -178,7 +180,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    MessageBox.Show("Không thể thêm phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Lỗi thêm phòng ban:\n" + GetDeepErrorMessage(ex), "Lỗi");
                 }
             }
         }
@@ -195,31 +197,22 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {
-                    // Tìm theo DepartmentID
                     var dbDept = await context.Departments.FirstOrDefaultAsync(d => d.DepartmentID == dept.DepartmentID);
-                    if (dbDept == null)
-                    {
-                        MessageBox.Show("Phòng ban không còn tồn tại.", "Lỗi dữ liệu");
-                        return;
-                    }
+                    if (dbDept == null) return;
 
                     dbDept.DepartmentName = editWindow.DeptName;
                     dbDept.Location = editWindow.DeptLocation;
 
-                    // Log
-                    string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                    if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
-                    {
-                        currentAdminID = "ADMIN";
-                    }
-                    // Tự insert Log nếu AuditService chưa hỗ trợ string
+                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
                     context.ChangeHistories.Add(new ChangeHistory
                     {
-                        LogID = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(), // Fallback sinh ID nhanh
+                        LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                         ActionType = "UPDATE",
                         TableName = "Departments",
                         RecordID = dbDept.DepartmentID,
-                        ChangeByUserID = currentAdminID,
+                        ChangeByUserID = adminID,
                         ChangeTime = DateTime.Now,
                         Details = $"Sửa phòng: {dbDept.DepartmentName}"
                     });
@@ -227,17 +220,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     await context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // Cập nhật UI
                     dept.DepartmentName = editWindow.DeptName;
                     dept.Location = editWindow.DeptLocation;
-                    
-                    // Refresh UI List
-                    int index = -1;
-                    for(int i=0; i<Departments.Count; i++) 
-                        if(Departments[i].DepartmentID == dept.DepartmentID) index = i;
-                    
-                    if (index >= 0) Departments[index] = dept;
-                    SelectedDepartment = dept;
+
+                    // Refresh UI
+                    int index = Departments.IndexOf(dept);
+                    if (index != -1)
+                    {
+                        Departments[index] = dept;
+                        SelectedDepartment = dept;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -252,68 +244,60 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (dept == null) return;
 
-            try
+            using var context = new DataContext();
+            bool hasEmployees = await context.Employees.AnyAsync(e => e.DepartmentID == dept.DepartmentID);
+            if (hasEmployees)
             {
-                using var context = new DataContext();
+                MessageBox.Show($"Không thể xóa '{dept.DepartmentName}' vì đang có nhân viên!", "Ràng buộc dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-                // Kiểm tra ràng buộc khóa ngoại (String ID)
-                bool hasEmployees = await context.Employees.AnyAsync(e => e.DepartmentID == dept.DepartmentID);
-                // Position trong model mới không có DepartmentID (độc lập), nhưng nếu bạn vẫn giữ quan hệ thì check:
-                // bool hasPositions = await context.Positions.AnyAsync(p => p.DepartmentID == dept.DepartmentID); 
-                // (Tạm bỏ check Position nếu model mới của bạn Position không nối với Department)
-
-                if (hasEmployees)
+            if (MessageBox.Show($"Bạn chắc chắn muốn xóa phòng '{dept.DepartmentName}'?\nTất cả chức vụ trong phòng này cũng sẽ bị xóa!", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                try
                 {
-                    MessageBox.Show($"Không thể xóa phòng '{dept.DepartmentName}' vì đang có Nhân viên trực thuộc!", "Ràng buộc dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                    var positionsToDelete = context.Positions.Where(p => p.DepartmentID == dept.DepartmentID);
+                    context.Positions.RemoveRange(positionsToDelete);
 
-                if (MessageBox.Show($"Xóa phòng '{dept.DepartmentName}'?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
                     var dbDept = await context.Departments.FirstOrDefaultAsync(d => d.DepartmentID == dept.DepartmentID);
-                    if (dbDept != null)
-                    {
-                        string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                        if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
-                        {
-                            currentAdminID = "ADMIN";
-                        }
-                        context.ChangeHistories.Add(new ChangeHistory
-                        {
-                            LogID = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(),
-                            ActionType = "DELETE",
-                            TableName = "Departments",
-                            RecordID = dept.DepartmentID,
-                            ChangeByUserID = currentAdminID,
-                            ChangeTime = DateTime.Now,
-                            Details = $"Xóa phòng: {dept.DepartmentName}"
-                        });
+                    if (dbDept != null) context.Departments.Remove(dbDept);
 
-                        context.Departments.Remove(dbDept);
-                        await context.SaveChangesAsync();
-                    }
+                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
+                    context.ChangeHistories.Add(new ChangeHistory
+                    {
+                        LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                        ActionType = "DELETE",
+                        TableName = "Departments",
+                        RecordID = dept.DepartmentID,
+                        ChangeByUserID = adminID,
+                        ChangeTime = DateTime.Now,
+                        Details = $"Xóa phòng ban: {dept.DepartmentName}"
+                    });
+
+                    await context.SaveChangesAsync();
 
                     Departments.Remove(dept);
                     if (Departments.Count > 0) SelectedDepartment = Departments[0];
+                    else Positions.Clear();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi xóa:\n" + GetDeepErrorMessage(ex), "Lỗi");
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi xóa:\n" + GetDeepErrorMessage(ex));
+                }
             }
         }
 
+        // --- CRUD CHỨC VỤ ---
         [RelayCommand]
         private async Task AddPositionAsync()
         {
-            // Trong Model mới, Position có thể độc lập, nhưng nếu UI bạn bắt chọn Phòng ban thì giữ check này
-            /*
             if (SelectedDepartment == null)
             {
-                MessageBox.Show("Vui lòng chọn một phòng ban trước!", "Cảnh báo");
+                MessageBox.Show("Vui lòng chọn một phòng ban trước!", "Chưa chọn phòng ban", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            */
 
             var addWindow = new AddPositionWindow();
             if (addWindow.ShowDialog() == true)
@@ -327,34 +311,32 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     var newPos = new Position
                     {
                         PositionID = newID,
-                        PositionName = addWindow.PosTitle, // Map từ Title của Window sang PositionName
+                        PositionName = addWindow.PosTitle,
                         JobDescription = addWindow.JobDescription,
-                        // DepartmentID = SelectedDepartment.DepartmentID // Bỏ comment nếu Position có DepartmentID
+                        DepartmentID = SelectedDepartment.DepartmentID // Gán FK
                     };
 
                     context.Positions.Add(newPos);
-                    
-                    string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                    if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
-                    {
-                        currentAdminID = "ADMIN";
-                    }
+
+                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
                     context.ChangeHistories.Add(new ChangeHistory
                     {
-                        LogID = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(),
+                        LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                         ActionType = "CREATE",
                         TableName = "Positions",
                         RecordID = newPos.PositionID,
-                        ChangeByUserID = currentAdminID,
+                        ChangeByUserID = adminID,
                         ChangeTime = DateTime.Now,
-                        Details = $"Thêm chức vụ: {newPos.PositionName}"
+                        Details = $"Thêm chức vụ: {newPos.PositionName} vào {SelectedDepartment.DepartmentName}"
                     });
 
                     await context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
                     Positions.Add(newPos);
-                    MessageBox.Show($"Đã thêm chức vụ '{newPos.PositionName}'!");
+                    MessageBox.Show($"Đã thêm chức vụ '{newPos.PositionName}' thành công!");
                 }
                 catch (Exception ex)
                 {
@@ -372,7 +354,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (editWindow.ShowDialog() == true)
             {
                 using var context = new DataContext();
-                using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {
                     var dbPos = await context.Positions.FirstOrDefaultAsync(p => p.PositionID == pos.PositionID);
@@ -381,38 +362,31 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     dbPos.PositionName = editWindow.PosTitle;
                     dbPos.JobDescription = editWindow.JobDescription;
 
-                    string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                    if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
-                    {
-                        currentAdminID = "ADMIN";
-                    }
+                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
                     context.ChangeHistories.Add(new ChangeHistory
                     {
-                        LogID = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(),
+                        LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                         ActionType = "UPDATE",
                         TableName = "Positions",
                         RecordID = pos.PositionID,
-                        ChangeByUserID = currentAdminID,
+                        ChangeByUserID = adminID,
                         ChangeTime = DateTime.Now,
                         Details = $"Sửa chức vụ: {dbPos.PositionName}"
                     });
 
                     await context.SaveChangesAsync();
-                    await transaction.CommitAsync();
 
                     pos.PositionName = editWindow.PosTitle;
                     pos.JobDescription = editWindow.JobDescription;
-                    
-                    // Refresh List
-                    int index = -1;
-                    for(int i=0; i<Positions.Count; i++) 
-                        if(Positions[i].PositionID == pos.PositionID) index = i;
-                    if (index >= 0) Positions[index] = pos;
+
+                    int index = Positions.IndexOf(pos);
+                    if (index != -1) Positions[index] = pos;
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
-                    MessageBox.Show("Lỗi cập nhật:\n" + GetDeepErrorMessage(ex), "Lỗi");
+                    MessageBox.Show("Lỗi cập nhật chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi");
                 }
             }
         }
@@ -422,49 +396,46 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (pos == null) return;
 
-            try
+            using var context = new DataContext();
+            bool hasEmp = await context.Employees.AnyAsync(e => e.PositionID == pos.PositionID);
+
+            if (hasEmp)
             {
-                using var context = new DataContext();
-                // Check khóa ngoại Employee
-                bool hasEmp = await context.Employees.AnyAsync(e => e.PositionID == pos.PositionID);
+                MessageBox.Show($"Không thể xóa chức vụ '{pos.PositionName}' vì đang có nhân viên nắm giữ!", "Ràng buộc dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-                if (hasEmp)
-                {
-                    MessageBox.Show($"Không thể xóa chức vụ '{pos.PositionName}' vì đang có nhân viên nắm giữ!", "Ràng buộc", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (MessageBox.Show($"Xóa chức vụ '{pos.PositionName}'?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Xóa chức vụ '{pos.PositionName}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                try
                 {
                     var dbPos = await context.Positions.FirstOrDefaultAsync(p => p.PositionID == pos.PositionID);
                     if (dbPos != null)
                     {
                         context.Positions.Remove(dbPos);
-                        
-                        string currentAdminID = UserSession.CurrentEmployeeId.ToString();
-                        if (string.IsNullOrEmpty(currentAdminID) || currentAdminID == "0")
-                        {
-                            currentAdminID = "ADMIN";
-                        }
+
+                        // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
+                        string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+
                         context.ChangeHistories.Add(new ChangeHistory
                         {
-                            LogID = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(),
+                            LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                             ActionType = "DELETE",
                             TableName = "Positions",
                             RecordID = pos.PositionID,
-                            ChangeByUserID = currentAdminID,
+                            ChangeByUserID = adminID,
                             ChangeTime = DateTime.Now,
                             Details = $"Xóa chức vụ: {pos.PositionName}"
                         });
 
                         await context.SaveChangesAsync();
+                        Positions.Remove(pos);
                     }
-                    Positions.Remove(pos);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi xóa:\n" + GetDeepErrorMessage(ex), "Lỗi");
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi xóa chức vụ:\n" + GetDeepErrorMessage(ex), "Lỗi");
+                }
             }
         }
     }

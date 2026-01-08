@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using HumanResourcesManagementSystemFinal.ViewModels;
+using System.Windows.Controls;
 
 namespace HumanResourcesManagementSystemFinal.Views
 {
@@ -7,6 +8,11 @@ namespace HumanResourcesManagementSystemFinal.Views
         public ProfileControl()
         {
             InitializeComponent();
+        }
+        public ProfileControl(string employeeId)
+        {
+            InitializeComponent();
+            this.DataContext = new MyProfileViewModel(employeeId);
         }
     }
 }

@@ -105,20 +105,18 @@ namespace HumanResourcesManagementSystemFinal.Migrations
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
-                        .HasMaxLength(40)
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
-                        .HasMaxLength(50)
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ManagerID")
                         .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("DepartmentID");
-
-                    b.HasIndex("ManagerID");
 
                     b.ToTable("Departments");
                 });
@@ -241,6 +239,10 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("char(5)");
 
+                    b.Property<string>("DepartmentID")
+                        .IsRequired()
+                        .HasColumnType("char(5)");
+
                     b.Property<string>("JobDescription")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
@@ -251,6 +253,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("PositionID");
+
+                    b.HasIndex("DepartmentID");
 
                     b.ToTable("Positions");
                 });
@@ -359,15 +363,6 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Department", b =>
-                {
-                    b.HasOne("HumanResourcesManagementSystemFinal.Models.Employee", "Manager")
-                        .WithMany()
-                        .HasForeignKey("ManagerID");
-
-                    b.Navigation("Manager");
-                });
-
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Employee", b =>
                 {
                     b.HasOne("HumanResourcesManagementSystemFinal.Models.Department", "Department")
@@ -408,6 +403,17 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     b.Navigation("Requester");
                 });
 
+            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Position", b =>
+                {
+                    b.HasOne("HumanResourcesManagementSystemFinal.Models.Department", "Department")
+                        .WithMany("Positions")
+                        .HasForeignKey("DepartmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.TimeSheet", b =>
                 {
                     b.HasOne("HumanResourcesManagementSystemFinal.Models.Employee", "Employee")
@@ -436,6 +442,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Department", b =>
                 {
                     b.Navigation("Employees");
+
+                    b.Navigation("Positions");
                 });
 
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Employee", b =>

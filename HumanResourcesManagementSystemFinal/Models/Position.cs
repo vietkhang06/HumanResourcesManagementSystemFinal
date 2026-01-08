@@ -19,5 +19,11 @@ public class Position
     [StringLength(200)]
     public string? JobDescription { get; set; }
 
+    [Column(TypeName = "char(5)")]
+    public string DepartmentID { get; set; } = string.Empty;
+
+    [ForeignKey("DepartmentID")]
+    public virtual Department? Department { get; set; }
+
     public virtual ICollection<Employee> Employees { get; set; } = new HashSet<Employee>();
 }

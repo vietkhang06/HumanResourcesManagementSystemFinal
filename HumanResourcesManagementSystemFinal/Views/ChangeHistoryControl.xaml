@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
              mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1000"
-             Background="#F7F9FC">
+             Background="Transparent">
 
     <UserControl.DataContext>
         <vm:ChangeHistoryViewModel/>
@@ -205,13 +205,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Width="45" Height="45" CornerRadius="12" Background="#E0F2F1" Margin="0,0,15,0">
-                    <Path Data="{StaticResource IconHistory}" Fill="#009688" Width="22" Height="22" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Border>
-
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="Nhật Ký Hoạt Động" FontSize="22" FontWeight="Bold" Foreground="#1A3D64"/>
-                    <TextBlock Text="Theo dõi toàn bộ thay đổi dữ liệu trong hệ thống" FontSize="13" Foreground="#718096" Margin="0,3,0,0"/>
                 </StackPanel>
 
                 <Button Grid.Column="2" Command="{Binding ExportExcelCommand}" 
@@ -220,7 +215,7 @@
                         Height="40" Padding="15,0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconFileExcel}" Fill="#2F855A" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Xuất Báo Cáo" Foreground="#2F855A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="Xuất Báo Cáo Excel" Foreground="#2F855A" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </Grid>

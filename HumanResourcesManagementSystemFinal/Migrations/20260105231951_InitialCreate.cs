@@ -12,16 +12,17 @@ namespace HumanResourcesManagementSystemFinal.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Positions",
+                name: "Departments",
                 columns: table => new
                 {
-                    PositionID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
-                    PositionName = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false),
-                    JobDescription = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
+                    DepartmentID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
+                    DepartmentName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Location = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    ManagerID = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Positions", x => x.PositionID);
+                    table.PrimaryKey("PK_Departments", x => x.DepartmentID);
                 });
 
             migrationBuilder.CreateTable(
@@ -37,61 +38,23 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Accounts",
+                name: "Positions",
                 columns: table => new
                 {
-                    UserID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
-                    UserName = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    Password = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    IsActive = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    EmployeeID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true),
-                    RoleID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true)
+                    PositionID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
+                    PositionName = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false),
+                    JobDescription = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    DepartmentID = table.Column<string>(type: "char(5)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.UserID);
+                    table.PrimaryKey("PK_Positions", x => x.PositionID);
                     table.ForeignKey(
-                        name: "FK_Accounts_Roles_RoleID",
-                        column: x => x.RoleID,
-                        principalTable: "Roles",
-                        principalColumn: "RoleID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChangeHistory",
-                columns: table => new
-                {
-                    LogID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
-                    TableName = table.Column<string>(type: "TEXT", maxLength: 40, nullable: true),
-                    RecordID = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true),
-                    ActionType = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    ChangeTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ChangeByUserID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true),
-                    Details = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    EmployeeID = table.Column<string>(type: "char(5)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChangeHistory", x => x.LogID);
-                    table.ForeignKey(
-                        name: "FK_ChangeHistory_Accounts_ChangeByUserID",
-                        column: x => x.ChangeByUserID,
-                        principalTable: "Accounts",
-                        principalColumn: "UserID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Departments",
-                columns: table => new
-                {
-                    DepartmentID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
-                    DepartmentName = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false),
-                    ManagerID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true),
-                    Location = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Departments", x => x.DepartmentID);
+                        name: "FK_Positions_Departments_DepartmentID",
+                        column: x => x.DepartmentID,
+                        principalTable: "Departments",
+                        principalColumn: "DepartmentID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -132,6 +95,33 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         principalTable: "Positions",
                         principalColumn: "PositionID",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Accounts",
+                columns: table => new
+                {
+                    UserID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
+                    UserName = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    Password = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    IsActive = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    EmployeeID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true),
+                    RoleID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Accounts", x => x.UserID);
+                    table.ForeignKey(
+                        name: "FK_Accounts_Employees_EmployeeID",
+                        column: x => x.EmployeeID,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Accounts_Roles_RoleID",
+                        column: x => x.RoleID,
+                        principalTable: "Roles",
+                        principalColumn: "RoleID");
                 });
 
             migrationBuilder.CreateTable(
@@ -209,6 +199,34 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ChangeHistory",
+                columns: table => new
+                {
+                    LogID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: false),
+                    TableName = table.Column<string>(type: "TEXT", maxLength: 40, nullable: true),
+                    RecordID = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true),
+                    ActionType = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    ChangeTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ChangeByUserID = table.Column<string>(type: "char(5)", maxLength: 5, nullable: true),
+                    Details = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    EmployeeID = table.Column<string>(type: "char(5)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChangeHistory", x => x.LogID);
+                    table.ForeignKey(
+                        name: "FK_ChangeHistory_Accounts_ChangeByUserID",
+                        column: x => x.ChangeByUserID,
+                        principalTable: "Accounts",
+                        principalColumn: "UserID");
+                    table.ForeignKey(
+                        name: "FK_ChangeHistory_Employees_EmployeeID",
+                        column: x => x.EmployeeID,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeID");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_EmployeeID",
                 table: "Accounts",
@@ -229,11 +247,6 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                 name: "IX_ChangeHistory_EmployeeID",
                 table: "ChangeHistory",
                 column: "EmployeeID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Departments_ManagerID",
-                table: "Departments",
-                column: "ManagerID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_DepartmentID",
@@ -261,6 +274,11 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                 column: "EmployeeID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Positions_DepartmentID",
+                table: "Positions",
+                column: "DepartmentID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeSheets_EmployeeID",
                 table: "TimeSheets",
                 column: "EmployeeID");
@@ -269,37 +287,11 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                 name: "IX_WorkContracts_EmployeeID",
                 table: "WorkContracts",
                 column: "EmployeeID");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Accounts_Employees_EmployeeID",
-                table: "Accounts",
-                column: "EmployeeID",
-                principalTable: "Employees",
-                principalColumn: "EmployeeID",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_ChangeHistory_Employees_EmployeeID",
-                table: "ChangeHistory",
-                column: "EmployeeID",
-                principalTable: "Employees",
-                principalColumn: "EmployeeID");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Departments_Employees_ManagerID",
-                table: "Departments",
-                column: "ManagerID",
-                principalTable: "Employees",
-                principalColumn: "EmployeeID");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Departments_Employees_ManagerID",
-                table: "Departments");
-
             migrationBuilder.DropTable(
                 name: "ChangeHistory");
 
@@ -316,16 +308,16 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                 name: "Accounts");
 
             migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
                 name: "Employees");
 
             migrationBuilder.DropTable(
-                name: "Departments");
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Positions");
+
+            migrationBuilder.DropTable(
+                name: "Departments");
         }
     }
 }

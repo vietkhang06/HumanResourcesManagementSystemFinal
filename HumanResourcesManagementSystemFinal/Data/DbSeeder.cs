@@ -10,18 +10,15 @@ namespace HumanResourcesManagementSystemFinal.Data
         {
             context.Database.EnsureCreated();
 
-            // 1. Seed Roles
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
                     new Role { RoleID = "R001", RoleName = "Admin" },
-                    new Role { RoleID = "R002", RoleName = "Manager" },
-                    new Role { RoleID = "R003", RoleName = "Employee" }
+                    new Role { RoleID = "R002", RoleName = "Employee" }
                 );
                 context.SaveChanges();
             }
 
-            // 2. Seed Departments
             if (!context.Departments.Any())
             {
                 context.Departments.AddRange(
@@ -32,25 +29,24 @@ namespace HumanResourcesManagementSystemFinal.Data
                 context.SaveChanges();
             }
 
-            // 3. Seed Positions
+
             if (!context.Positions.Any())
             {
                 context.Positions.AddRange(
-                    new Position { PositionID = "CV001", PositionName = "CEO" },
-                    new Position { PositionID = "CV002", PositionName = "HR Manager" },
-                    new Position { PositionID = "CV003", PositionName = "Developer" }
+                    new Position { PositionID = "CV001", PositionName = "CEO", DepartmentID = "PB001" },
+                    new Position { PositionID = "CV002", PositionName = "HR Manager", DepartmentID = "PB002" },
+                    new Position { PositionID = "CV003", PositionName = "Developer", DepartmentID = "PB003" }
                 );
                 context.SaveChanges();
             }
 
-            // 4. Seed Employee & Account
             if (!context.Employees.Any())
             {
                 var adminEmp = new Employee
                 {
                     EmployeeID = "NV001",
                     FullName = "Super Admin",
-                    Status = "Active", // Sửa IsActive -> Status
+                    Status = "Active",
                     DepartmentID = "PB001",
                     PositionID = "CV001",
                     Email = "admin@company.com",
@@ -62,8 +58,8 @@ namespace HumanResourcesManagementSystemFinal.Data
                 {
                     UserID = "TK001",
                     UserName = "admin",
-                    Password = "123", // Sửa PasswordHash -> Password
-                    IsActive = "Active", // Sửa bool -> string
+                    Password = "123",
+                    IsActive = "Active",
                     EmployeeID = "NV001",
                     RoleID = "R001"
                 };

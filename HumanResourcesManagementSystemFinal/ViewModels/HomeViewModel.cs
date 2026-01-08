@@ -85,7 +85,7 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
             var newHires = await context.Employees
                 .AsNoTracking()
                 .OrderByDescending(e => e.EmployeeID) // Lưu ý: Model mới bạn có thể đã bỏ HireDate hoặc đổi tên, nếu lỗi dòng này hãy kiểm tra lại Model Employee xem có trường HireDate không. Nếu không có thể dùng EmployeeID để sort.
-                .Take(5)
+                .Take(2)
                 .ToListAsync();
 
             RecentEmployees.Clear();

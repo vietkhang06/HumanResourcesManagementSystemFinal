@@ -15,6 +15,8 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
+        <converters:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+
         <Style x:Key="HeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -154,7 +156,6 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-
                     <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
                         <Border.Style>
                             <Style TargetType="Border" BasedOn="{StaticResource CardPanel}">
@@ -173,8 +174,8 @@
                                     <DataTemplate>
                                         <Grid Margin="0,0,0,8">
                                             <TextBlock>
-                            <Run Text="{Binding FullName, Mode=OneWay}" FontWeight="Bold" Foreground="#7F1D1D"/>
-                            <Run Text=" - Sắp hết hạn trong 30 ngày tới" Foreground="#B91C1C"/>
+                                                <Run Text="{Binding FullName, Mode=OneWay}" FontWeight="Bold" Foreground="#7F1D1D"/>
+                                                <Run Text=" - Sắp hết hạn trong 30 ngày tới" Foreground="#B91C1C"/>
                                             </TextBlock>
                                         </Grid>
                                     </DataTemplate>
@@ -306,11 +307,17 @@
                                                 <ColumnDefinition Width="40"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <Border Width="36" Height="36" CornerRadius="18" Background="#E0F2FE">
-                                                <TextBlock Text="{Binding FullName, StringFormat={}{0:1}}" 
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                           FontWeight="Bold" Foreground="#0284C7"/>
-                                            </Border>
+
+                                            <Ellipse Width="36" Height="36">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" 
+                                                                Stretch="UniformToFill"/>
+                                                </Ellipse.Fill>
+                                                <Ellipse.Stroke>
+                                                    <SolidColorBrush Color="#E2E8F0"/>
+                                                </Ellipse.Stroke>
+                                                <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
+                                            </Ellipse>
 
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#334155" FontSize="13"/>

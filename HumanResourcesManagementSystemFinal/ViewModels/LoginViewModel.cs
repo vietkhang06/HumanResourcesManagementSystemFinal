@@ -100,16 +100,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 using var context = new DataContext();
 
-                // 1. Cập nhật truy vấn theo Model mới
                 var account = await context.Accounts
                     .AsNoTracking()
                     .Include(a => a.Role)
                     .Include(a => a.Employee)
                         .ThenInclude(e => e.Department)
-                    // .Include(a => a.Employee).ThenInclude(e => e.Position) // Bỏ dòng này nếu Position không còn link trực tiếp trong Employee như trước, hoặc giữ nếu bạn đã cấu hình lại
                     .Include(a => a.Employee)
                         .ThenInclude(e => e.Position)
-                    // UserName (viết hoa N), Password (không phải Hash)
                     .FirstOrDefaultAsync(u => u.UserName == Username && u.Password == Password);
 
                 if (account == null)
@@ -118,19 +115,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     return;
                 }
 
-                // 2. Kiểm tra trạng thái (String so sánh)
                 if (account.IsActive != "Active")
                 {
                     MessageBox.Show("Tài khoản đã bị khóa hoặc không hoạt động!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // 3. Cập nhật Session với String ID
+                // Cập nhật Session
                 AppSession.CurrentUser = account.Employee;
                 AppSession.CurrentRole = account.Role?.RoleName;
 
-                // Lưu ý: UserSession cần được cập nhật Property thành string CurrentUserID
-                UserSession.CurrentEmployeeId = int.TryParse(account.EmployeeID, out var empId) ? empId : 0;
+                // [FIXED] Gán trực tiếp chuỗi ID, không ép kiểu int
+                UserSession.CurrentEmployeeId = account.EmployeeID;
                 UserSession.CurrentRole = account.Role?.RoleName;
 
                 SaveSettings(Password);

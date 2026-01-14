@@ -84,6 +84,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var addWindow = new AddEmployeeWindow();
             if (addWindow.ShowDialog() == true)
             {
+                // Logic Add nằm trong AddEmployeeWindow, 
+                // Bạn hãy mở ViewModel của cửa sổ đó và thêm code ghi Log tương tự như hàm Delete bên dưới
                 LoadDataFromDb();
             }
         }
@@ -92,15 +94,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void EditEmployee(Employee emp)
         {
             if (emp == null) return;
-
-            // Mở cửa sổ ở chế độ SỬA (Truyền emp vào)
             var editWindow = new AddEmployeeWindow(emp);
-
             bool? result = editWindow.ShowDialog();
-
-            // Nếu lưu thành công thì load lại danh sách
             if (result == true)
             {
+                // Logic Edit cũng nằm trong AddEmployeeWindow
                 LoadDataFromDb();
             }
         }
@@ -117,19 +115,35 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 {
                     using (var context = new DataContext())
                     {
-                        var dbEmp = context.Employees
+                        var dbEmp = await context.Employees
                             .Include(e => e.Account)
                             .Include(e => e.WorkContracts)
-                            .FirstOrDefault(e => e.EmployeeID == emp.EmployeeID);
+                            .FirstOrDefaultAsync(e => e.EmployeeID == emp.EmployeeID);
 
                         if (dbEmp != null)
                         {
+                            // 1. Xóa các bảng liên quan
                             if (dbEmp.Account != null) context.Accounts.Remove(dbEmp.Account);
                             if (dbEmp.WorkContracts != null) context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
 
                             var subordinates = context.Employees.Where(e => e.ManagerID == dbEmp.EmployeeID).ToList();
                             foreach (var sub in subordinates) sub.ManagerID = null;
 
+                            // 2. Ghi Lịch sử TRƯỚC KHI xóa (Để lưu vết)
+                            string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
+
+                            context.ChangeHistories.Add(new ChangeHistory
+                            {
+                                LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                                TableName = "Employees",
+                                ActionType = "DELETE",
+                                RecordID = dbEmp.EmployeeID,
+                                ChangeByUserID = adminID,
+                                ChangeTime = DateTime.Now,
+                                Details = $"Xóa nhân viên: {dbEmp.FullName} (ID: {dbEmp.EmployeeID}) - Chức vụ: {dbEmp.PositionID}"
+                            });
+
+                            // 3. Xóa nhân viên và Lưu
                             context.Employees.Remove(dbEmp);
                             await context.SaveChangesAsync();
 
@@ -149,8 +163,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void ViewDetail(Employee emp)
         {
             if (emp == null) return;
-            // var detailWindow = new EmployeeDetailWindow(emp); // Bỏ comment khi bạn có cửa sổ này
-            // detailWindow.ShowDialog();
+            // Code mở cửa sổ xem chi tiết
         }
     }
 }

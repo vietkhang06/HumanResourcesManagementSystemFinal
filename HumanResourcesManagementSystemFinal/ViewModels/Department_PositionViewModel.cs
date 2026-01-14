@@ -38,7 +38,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             _ = LoadDepartmentsAsync();
         }
 
-        // --- HÀM SINH MÃ TỰ ĐỘNG ---
         private string GenerateID(DataContext context, string type)
         {
             string lastID = "";
@@ -79,7 +78,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             return sb.ToString();
         }
 
-        // --- LOAD DATA ---
         private async Task LoadDepartmentsAsync()
         {
             try
@@ -113,7 +111,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
 
                 using var context = new DataContext();
-                // Lọc chức vụ theo DepartmentID
                 var list = await context.Positions
                     .Where(p => p.DepartmentID == SelectedDepartment.DepartmentID)
                     .AsNoTracking()
@@ -128,7 +125,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // --- CRUD PHÒNG BAN ---
         [RelayCommand]
         private async Task AddDepartmentAsync()
         {
@@ -157,8 +153,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                     context.Departments.Add(newDept);
 
-                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                    string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                     context.ChangeHistories.Add(new ChangeHistory
                     {
@@ -203,8 +198,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     dbDept.DepartmentName = editWindow.DeptName;
                     dbDept.Location = editWindow.DeptLocation;
 
-                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                    string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                     context.ChangeHistories.Add(new ChangeHistory
                     {
@@ -223,7 +217,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     dept.DepartmentName = editWindow.DeptName;
                     dept.Location = editWindow.DeptLocation;
 
-                    // Refresh UI
                     int index = Departments.IndexOf(dept);
                     if (index != -1)
                     {
@@ -262,8 +255,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     var dbDept = await context.Departments.FirstOrDefaultAsync(d => d.DepartmentID == dept.DepartmentID);
                     if (dbDept != null) context.Departments.Remove(dbDept);
 
-                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                    string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                     context.ChangeHistories.Add(new ChangeHistory
                     {
@@ -289,7 +281,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // --- CRUD CHỨC VỤ ---
         [RelayCommand]
         private async Task AddPositionAsync()
         {
@@ -313,13 +304,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         PositionID = newID,
                         PositionName = addWindow.PosTitle,
                         JobDescription = addWindow.JobDescription,
-                        DepartmentID = SelectedDepartment.DepartmentID // Gán FK
+                        DepartmentID = SelectedDepartment.DepartmentID
                     };
 
                     context.Positions.Add(newPos);
 
-                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                    string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                     context.ChangeHistories.Add(new ChangeHistory
                     {
@@ -362,8 +352,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     dbPos.PositionName = editWindow.PosTitle;
                     dbPos.JobDescription = editWindow.JobDescription;
 
-                    // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                    string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                    string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                     context.ChangeHistories.Add(new ChangeHistory
                     {
@@ -414,8 +403,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     {
                         context.Positions.Remove(dbPos);
 
-                        // [ĐÃ SỬA LỖI CS0023 TẠI ĐÂY]
-                        string adminID = UserSession.CurrentEmployeeId == 0 ? "ADMIN" : UserSession.CurrentEmployeeId.ToString();
+                        string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
 
                         context.ChangeHistories.Add(new ChangeHistory
                         {

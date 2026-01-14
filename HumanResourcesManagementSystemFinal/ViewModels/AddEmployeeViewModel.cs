@@ -76,22 +76,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
 
-        // --- CONSTRUCTOR 1: Dùng cho Thêm Mới ---
         public AddEmployeeViewModel()
         {
             LoadComboBoxData();
         }
 
-        // --- CONSTRUCTOR 2: Dùng cho Chỉnh Sửa (QUAN TRỌNG) ---
-        public AddEmployeeViewModel(Employee emp) : this() // Gọi this() để load combobox trước
+        public AddEmployeeViewModel(Employee emp) : this()
         {
             if (emp != null)
             {
-                LoadEmployeeForEdit(emp); // Đổ dữ liệu cũ vào form
+                LoadEmployeeForEdit(emp);
             }
         }
 
-        // Hàm đổ dữ liệu cũ vào các ô nhập liệu
         public void LoadEmployeeForEdit(Employee emp)
         {
             try
@@ -111,10 +108,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 string imagePath = GetImagePath(emp.EmployeeID);
                 if (!string.IsNullOrEmpty(imagePath)) AvatarSource = imagePath;
 
-                // Load chi tiết từ DB để lấy Account và Contract
                 using (var context = new DataContext())
                 {
-                    // Map Department, Position, Manager từ List đã load
                     SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
                     SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
                     SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
@@ -189,7 +184,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
 
-            // Validate cơ bản
             if (string.IsNullOrWhiteSpace(FullName)) { MessageBox.Show("Vui lòng nhập Họ và Tên."); return; }
             if (SelectedDepartment == null || SelectedPosition == null) { MessageBox.Show("Vui lòng chọn Phòng ban và Chức vụ."); return; }
             if (!decimal.TryParse(SalaryString, out decimal salary)) { MessageBox.Show("Lương cơ bản phải là số."); return; }
@@ -209,10 +203,17 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     try
                     {
                         Employee empToSave;
+                        string logAction = "";
+                        string logDetails = "";
+                        string recordID = "";
+
+                        // [QUAN TRỌNG] Lấy ID người đang thao tác
+                        string currentUserId = UserSession.CurrentEmployeeId;
+                        if (string.IsNullOrEmpty(currentUserId)) currentUserId = "ADMIN"; // Fallback nếu chưa đăng nhập
 
                         if (IsEditMode)
                         {
-                            // UPDATE
+                            // --- LOGIC CẬP NHẬT (UPDATE) ---
                             empToSave = context.Employees
                                 .Include(e => e.Account).Include(e => e.WorkContracts)
                                 .FirstOrDefault(e => e.EmployeeID == _editingEmployee.EmployeeID);
@@ -221,7 +222,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                             UpdateEmployeeInfo(empToSave);
 
-                            // Update Contract
+                            // Contract
                             var contract = empToSave.WorkContracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
                             if (contract == null)
                             {
@@ -230,7 +231,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             }
                             UpdateContractInfo(contract, salary);
 
-                            // Update Account
+                            // Account
                             if (empToSave.Account != null)
                             {
                                 empToSave.Account.RoleID = SelectedRole?.RoleID ?? empToSave.Account.RoleID;
@@ -239,10 +240,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                     empToSave.Account.Password = pBox.Password;
                                 }
                             }
+
+                            // [CHUẨN BỊ LOG UPDATE]
+                            logAction = "UPDATE";
+                            recordID = empToSave.EmployeeID;
+                            logDetails = $"Cập nhật nhân viên: {empToSave.FullName} (Phòng: {SelectedDepartment.DepartmentName})";
                         }
                         else
                         {
-                            // INSERT (ADD NEW)
+                            // --- LOGIC THÊM MỚI (INSERT) ---
                             if (context.Accounts.Any(a => a.UserName == Username))
                             {
                                 MessageBox.Show("Tên đăng nhập này đã tồn tại."); return;
@@ -267,7 +273,26 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 RoleID = SelectedRole?.RoleID,
                                 IsActive = "Active"
                             });
+
+                            // [CHUẨN BỊ LOG CREATE]
+                            logAction = "CREATE";
+                            recordID = newId;
+                            logDetails = $"Thêm mới nhân viên: {empToSave.FullName} - Chức vụ: {SelectedPosition.PositionName}";
                         }
+
+                        // --- [GHI LOG VÀO DATABASE] ---
+                        var history = new ChangeHistory
+                        {
+                            LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                            TableName = "Employees",
+                            ActionType = logAction,
+                            RecordID = recordID,
+                            ChangeTime = DateTime.Now,
+                            ChangeByUserID = currentUserId, // Người thực hiện
+                            Details = logDetails
+                        };
+                        context.ChangeHistories.Add(history);
+                        // ------------------------------------
 
                         context.SaveChanges();
                         transaction.Commit();

@@ -166,7 +166,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             PageTitle = "Chấm Công";
             CurrentPageName = "TimeSheet";
-            CurrentView = new TimeSheetControl();
+
+            var viewModel = new TimeSheetViewModel();
+            var view = new TimeSheetControl();
+            view.DataContext = viewModel; 
+
+            // 3. Hiển thị View
+            CurrentView = view;
         }
 
         [RelayCommand]
@@ -203,7 +209,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             PageTitle = "Lịch Sử Hoạt Động";
             CurrentPageName = "History";
-            CurrentView = new ChangeHistoryControl();
+            var viewModel = new ChangeHistoryViewModel();
+            var view = new ChangeHistoryControl();
+            view.DataContext = viewModel;
+            CurrentView = view;
         }
 
         [RelayCommand]

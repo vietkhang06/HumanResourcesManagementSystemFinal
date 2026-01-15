@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -22,7 +27,7 @@ public class Position
     [Column(TypeName = "char(5)")]
     public string DepartmentID { get; set; } = string.Empty;
 
-    [ForeignKey("DepartmentID")]
+    [ForeignKey(nameof(DepartmentID))]
     public virtual Department? Department { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new HashSet<Employee>();

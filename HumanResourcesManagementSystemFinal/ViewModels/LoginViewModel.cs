@@ -120,12 +120,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     MessageBox.Show("Tài khoản đã bị khóa hoặc không hoạt động!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-
-                // Cập nhật Session
                 AppSession.CurrentUser = account.Employee;
                 AppSession.CurrentRole = account.Role?.RoleName;
-
-                // [FIXED] Gán trực tiếp chuỗi ID, không ép kiểu int
                 UserSession.CurrentEmployeeId = account.EmployeeID;
                 UserSession.CurrentRole = account.Role?.RoleName;
 

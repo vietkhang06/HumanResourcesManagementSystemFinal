@@ -24,7 +24,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
     {
         private readonly LeaveRequestService _leaveService;
         private string _currentUserRole;
-        private string? _editingRequestId = null;
+        private string? _editingRequestId;
 
         [ObservableProperty] private string _currentUserId;
         [ObservableProperty] private bool _isManager;
@@ -48,6 +48,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             var context = new DataContext();
             _leaveService = new LeaveRequestService(context);
+
             if (AppSession.CurrentUser != null)
             {
                 CurrentUserId = AppSession.CurrentUser.EmployeeID;
@@ -58,12 +59,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 CurrentUserId = "";
             }
+
             _ = LoadDataAsync();
         }
 
         private string GenerateRequestID()
         {
             using var context = new DataContext();
+
             string lastID = context.LeaveRequests
                 .OrderByDescending(r => r.RequestID)
                 .Select(r => r.RequestID)
@@ -73,9 +76,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             string numPart = lastID.Substring(2);
             if (int.TryParse(numPart, out int num))
-            {
                 return "LR" + (num + 1).ToString("D3");
-            }
+
             return "LR" + new Random().Next(100, 999);
         }
 
@@ -83,12 +85,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             var sb = new StringBuilder();
             sb.AppendLine(ex.Message);
+
             var inner = ex.InnerException;
             while (inner != null)
             {
                 sb.AppendLine(inner.Message);
                 inner = inner.InnerException;
             }
+
             return sb.ToString();
         }
 
@@ -102,13 +106,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     MessageBox.Show("Mã nhân viên không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+
                 var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
                 var viewList = new List<LeaveRequestItem>();
 
                 foreach (var req in list)
                 {
                     bool canApprove = IsManager && (req.EmployeeID != CurrentUserId);
-                    bool canEdit = (req.EmployeeID == CurrentUserId) && (req.Status == "Pending" || req.Status == "Đang chờ");
+                    bool canEdit = (req.EmployeeID == CurrentUserId) &&
+                                   (req.Status == "Pending" || req.Status == "Đang chờ");
 
                     viewList.Add(new LeaveRequestItem
                     {
@@ -117,11 +123,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         CanEdit = canEdit
                     });
                 }
+
                 RequestItems = new ObservableCollection<LeaveRequestItem>(viewList);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Lỗi tải dữ liệu:\n" + GetDeepErrorMessage(ex),
+                    "Lỗi hệ thống",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -133,6 +144,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 MessageBox.Show("Ngày kết thúc không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
             if (string.IsNullOrWhiteSpace(Reason))
             {
                 MessageBox.Show("Vui lòng nhập lý do.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -141,10 +153,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             try
             {
-                bool success = false;
+                bool success;
+
                 if (_editingRequestId == null)
                 {
                     string newReqID = GenerateRequestID();
+
                     var newRequest = new LeaveRequest
                     {
                         RequestID = newReqID,
@@ -155,8 +169,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         Reason = Reason,
                         Status = "Pending"
                     };
+
                     success = await _leaveService.AddRequestAsync(newRequest);
-                    if (success) MessageBox.Show("Gửi đơn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    if (success)
+                        MessageBox.Show("Gửi đơn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
@@ -168,7 +185,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         EndDate = EndDate,
                         Reason = Reason
                     };
+
                     success = await _leaveService.UpdateRequestAsync(updateRequest);
+
                     if (success)
                     {
                         MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -185,7 +204,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi xử lý đơn:\n{GetDeepErrorMessage(ex)}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Lỗi xử lý đơn:\n" + GetDeepErrorMessage(ex),
+                    "Lỗi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -193,16 +216,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public async Task ApproveAsync(LeaveRequestItem item)
         {
             if (item == null) return;
+
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
 
-            if (MessageBox.Show($"Duyệt đơn của {empName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Duyệt đơn của {empName}?", "Xác nhận",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 try
                 {
                     if (!string.IsNullOrEmpty(request.RequestID))
                     {
-                        if (await _leaveService.UpdateStatusAsync(request.RequestID, "Thông qua")) await LoadDataAsync();
+                        if (await _leaveService.UpdateStatusAsync(request.RequestID, "Thông qua"))
+                            await LoadDataAsync();
                     }
                     else
                     {
@@ -211,7 +237,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Lỗi duyệt đơn:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        "Lỗi duyệt đơn:\n" + GetDeepErrorMessage(ex),
+                        "Lỗi",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
         }
@@ -220,16 +250,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public async Task RejectAsync(LeaveRequestItem item)
         {
             if (item == null) return;
+
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
 
-            if (MessageBox.Show($"Từ chối đơn của {empName}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Từ chối đơn của {empName}?", "Xác nhận",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 try
                 {
                     if (!string.IsNullOrEmpty(request.RequestID))
                     {
-                        if (await _leaveService.UpdateStatusAsync(request.RequestID, "Từ chối")) await LoadDataAsync();
+                        if (await _leaveService.UpdateStatusAsync(request.RequestID, "Từ chối"))
+                            await LoadDataAsync();
                     }
                     else
                     {
@@ -238,7 +271,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Lỗi từ chối đơn:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        "Lỗi từ chối đơn:\n" + GetDeepErrorMessage(ex),
+                        "Lỗi",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
         }
@@ -247,7 +284,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public void PrepareEdit(LeaveRequestItem item)
         {
             if (item == null) return;
+
             var req = item.Request;
+
             LeaveType = req.LeaveType;
             StartDate = req.StartDate ?? DateTime.Now;
             EndDate = req.EndDate ?? DateTime.Now;
@@ -260,9 +299,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public async Task DeleteRequestAsync(LeaveRequestItem item)
         {
             if (item == null) return;
+
             var req = item.Request;
 
-            if (MessageBox.Show("Bạn có chắc chắn muốn xóa đơn này?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (MessageBox.Show(
+                "Bạn có chắc chắn muốn xóa đơn này?",
+                "Xác nhận",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 try
                 {
@@ -273,9 +317,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                             if (_editingRequestId == req.RequestID)
                             {
                                 _editingRequestId = null;
-                                Reason = "";
+                                Reason = string.Empty;
                                 SubmitButtonContent = "Gửi Đơn";
                             }
+
                             await LoadDataAsync();
                         }
                     }
@@ -286,7 +331,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Lỗi xóa đơn:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        "Lỗi xóa đơn:\n" + GetDeepErrorMessage(ex),
+                        "Lỗi",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
         }

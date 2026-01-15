@@ -1,9 +1,12 @@
-﻿using HumanResourcesManagementSystemFinal.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HumanResourcesManagementSystemFinal.Services
 {
@@ -16,20 +19,20 @@ namespace HumanResourcesManagementSystemFinal.Services
             _context = context;
         }
 
-        // Sửa tham số int -> string
         public async Task<List<LeaveRequest>> GetRequestsByRoleAsync(string userId, string role)
         {
             var query = _context.LeaveRequests
-                .Include(r => r.Requester) // Sửa Employee -> Requester
+                .Include(r => r.Requester)
                 .AsQueryable();
 
             if (role != "Admin" && role != "Manager")
             {
-                // Sửa EmployeeId -> EmployeeID
                 query = query.Where(r => r.EmployeeID == userId);
             }
 
-            return await query.OrderByDescending(r => r.StartDate).ToListAsync();
+            return await query
+                .OrderByDescending(r => r.StartDate)
+                .ToListAsync();
         }
 
         public async Task<bool> AddRequestAsync(LeaveRequest request)
@@ -40,7 +43,6 @@ namespace HumanResourcesManagementSystemFinal.Services
 
         public async Task<bool> UpdateRequestAsync(LeaveRequest request)
         {
-            // Sửa Id -> RequestID
             var existing = await _context.LeaveRequests.FindAsync(request.RequestID);
             if (existing == null) return false;
 
@@ -52,7 +54,6 @@ namespace HumanResourcesManagementSystemFinal.Services
             return await _context.SaveChangesAsync() > 0;
         }
 
-        // Sửa tham số int -> string
         public async Task<bool> UpdateStatusAsync(string requestId, string status)
         {
             var existing = await _context.LeaveRequests.FindAsync(requestId);
@@ -62,7 +63,6 @@ namespace HumanResourcesManagementSystemFinal.Services
             return await _context.SaveChangesAsync() > 0;
         }
 
-        // Sửa tham số int -> string
         public async Task<bool> DeleteRequestAsync(string requestId)
         {
             var existing = await _context.LeaveRequests.FindAsync(requestId);

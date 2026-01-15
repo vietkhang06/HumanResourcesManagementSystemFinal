@@ -1,13 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using HumanResourcesManagementSystemFinal.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels;
@@ -51,20 +50,26 @@ public partial class ForgotPasswordViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSubmitRequest))]
     private async Task SubmitRequestAsync()
     {
-        // 1. Kiểm tra nhập liệu (Thêm kiểm tra CCCD)
         if (string.IsNullOrWhiteSpace(Username) ||
             string.IsNullOrWhiteSpace(EmailAddress) ||
             string.IsNullOrWhiteSpace(PhoneNumber) ||
             string.IsNullOrWhiteSpace(_cccd))
         {
-            MessageBox.Show("Vui lòng nhập đầy đủ thông tin: Tên đăng nhập, Email, SĐT và CCCD.",
-                            "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(
+                "Vui lòng nhập đầy đủ thông tin: Tên đăng nhập, Email, SĐT và CCCD.",
+                "Thiếu thông tin",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
             return;
         }
 
         if (!IsValidEmail(EmailAddress))
         {
-            MessageBox.Show("Định dạng Email không hợp lệ.", "Sai định dạng", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(
+                "Định dạng Email không hợp lệ.",
+                "Sai định dạng",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
             return;
         }
 
@@ -74,31 +79,28 @@ public partial class ForgotPasswordViewModel : ObservableObject
         try
         {
             string existingPassword = null;
-            string targetEmail = "";
+            string targetEmail = string.Empty;
 
             using (var context = new DataContext())
             {
-                // 2. Tìm Account theo UserName (Lưu ý: Model mới là UserName viết hoa N)
                 var account = await context.Accounts
-                                           .Include(a => a.Employee)
-                                           .FirstOrDefaultAsync(a => a.UserName == Username);
+                    .Include(a => a.Employee)
+                    .FirstOrDefaultAsync(a => a.UserName == Username);
 
                 if (account != null && account.Employee != null)
                 {
-                    // Lấy thông tin từ DB để đối chiếu
-                    string dbEmail = account.Employee.Email ?? "";
-                    string dbPhone = account.Employee.PhoneNumber ?? "";
-                    string dbCCCD = account.Employee.CCCD ?? ""; // Lấy CCCD từ Employee
+                    string dbEmail = account.Employee.Email ?? string.Empty;
+                    string dbPhone = account.Employee.PhoneNumber ?? string.Empty;
+                    string dbCCCD = account.Employee.CCCD ?? string.Empty;
 
-                    // So sánh không phân biệt hoa thường và khoảng trắng
-                    bool isEmailMatch = dbEmail.Trim().Equals(EmailAddress.Trim(), StringComparison.OrdinalIgnoreCase);
+                    bool isEmailMatch = dbEmail.Trim()
+                        .Equals(EmailAddress.Trim(), StringComparison.OrdinalIgnoreCase);
                     bool isPhoneMatch = dbPhone.Trim() == PhoneNumber.Trim();
                     bool isCccdMatch = dbCCCD.Trim() == _cccd.Trim();
 
-                    // 3. Khớp tất cả thông tin mới gửi mật khẩu
                     if (isEmailMatch && isPhoneMatch && isCccdMatch)
                     {
-                        existingPassword = account.Password; // Model mới là Password
+                        existingPassword = account.Password;
                         targetEmail = dbEmail;
                     }
                 }
@@ -108,25 +110,38 @@ public partial class ForgotPasswordViewModel : ObservableObject
             {
                 await _emailService.SendPassResetEmailAsync(targetEmail, existingPassword);
 
-                MessageBox.Show($"Mật khẩu đã được gửi tới email:\n{targetEmail}\n\nVui lòng kiểm tra hộp thư (bao gồm cả mục Spam).",
-                                "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(
+                    $"Mật khẩu đã được gửi tới email:\n{targetEmail}\n\nVui lòng kiểm tra hộp thư (bao gồm cả mục Spam).",
+                    "Thành công",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
 
                 SwitchToLogin();
             }
             else
             {
-                MessageBox.Show("Thông tin xác thực không chính xác.\nVui lòng kiểm tra lại Tên đăng nhập, Email, SĐT và CCCD.",
-                                "Không tìm thấy tài khoản", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Thông tin xác thực không chính xác.\nVui lòng kiểm tra lại Tên đăng nhập, Email, SĐT và CCCD.",
+                    "Không tìm thấy tài khoản",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
         catch (System.Net.Mail.SmtpException smtpEx)
         {
-            MessageBox.Show($"Lỗi gửi Email: {smtpEx.Message}\nVui lòng kiểm tra kết nối mạng.",
-                            "Lỗi Gửi Mail", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Lỗi gửi Email: {smtpEx.Message}\nVui lòng kiểm tra kết nối mạng.",
+                "Lỗi Gửi Mail",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi hệ thống: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Lỗi hệ thống: {ex.Message}",
+                "Lỗi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {
@@ -135,28 +150,31 @@ public partial class ForgotPasswordViewModel : ObservableObject
         }
     }
 
-    private bool IsValidEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-        try
-        {
-            return Regex.IsMatch(email,
-                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return false;
-        }
-    }
-
     private bool CanSubmitRequest()
     {
-        // Cập nhật điều kiện cho nút bấm
         return !_isBusy &&
                !string.IsNullOrWhiteSpace(Username) &&
                !string.IsNullOrWhiteSpace(EmailAddress) &&
                !string.IsNullOrWhiteSpace(PhoneNumber) &&
                !string.IsNullOrWhiteSpace(_cccd);
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        try
+        {
+            return Regex.IsMatch(
+                email,
+                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                RegexOptions.IgnoreCase,
+                TimeSpan.FromMilliseconds(250));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
     }
 }

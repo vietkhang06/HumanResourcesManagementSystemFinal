@@ -3,105 +3,112 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class EmployeeHomeViewModel : ObservableObject
     {
-        [ObservableProperty] private string _welcomeMessage;
-        [ObservableProperty] private int _daysWorkedThisMonth;
-        [ObservableProperty] private double _remainingLeaveDays = 12;
-        [ObservableProperty] private string _todayCheckInTime = "--:--";
-        [ObservableProperty] private string _nextHoliday = "25/12";
+        [ObservableProperty] private string welcomeMessage;
+        [ObservableProperty] private int daysWorkedThisMonth;
+        [ObservableProperty] private double remainingLeaveDays = 12;
+        [ObservableProperty] private string todayCheckInTime = "--:--";
+        [ObservableProperty] private string nextHoliday = "25/12";
 
-        public ObservableCollection<LeaveRequest> MyLeaveRequests { get; set; } = new();
+        public ObservableCollection<LeaveRequest> MyLeaveRequests { get; } = new();
 
-        // 1. Đổi từ int sang string
-        private string _currentEmployeeId;
+        private string currentEmployeeId;
 
-        // 2. Constructor nhận string
+        public EmployeeHomeViewModel() { }
+
         public EmployeeHomeViewModel(string employeeId)
         {
-            _currentEmployeeId = employeeId;
-            // Kiểm tra DesignMode để tránh lỗi khi mở XAML Designer
-            if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new DependencyObject())) return;
+            currentEmployeeId = employeeId;
+
+            if (System.ComponentModel.DesignerProperties
+                .GetIsInDesignMode(new DependencyObject()))
+                return;
 
             _ = LoadEmployeeDataAsync();
         }
 
-        public EmployeeHomeViewModel() { }
-
         private string GetDeepErrorMessage(Exception ex)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine(ex.Message);
+            var sb = new StringBuilder(ex.Message);
             var inner = ex.InnerException;
+
             while (inner != null)
             {
                 sb.AppendLine(inner.Message);
                 inner = inner.InnerException;
             }
+
             return sb.ToString();
         }
 
         [RelayCommand]
         private async Task LoadEmployeeDataAsync()
         {
-            if (string.IsNullOrEmpty(_currentEmployeeId)) return;
+            if (string.IsNullOrEmpty(currentEmployeeId))
+                return;
 
             try
             {
                 using var context = new DataContext();
 
-                // 3. Tìm nhân viên theo String ID
-                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeID == _currentEmployeeId);
-                if (emp != null)
-                {
-                    // 4. Dùng FullName thay vì First/Last
-                    WelcomeMessage = $"Xin chào, {emp.FullName}!";
-                }
+                var emp = await context.Employees
+                    .FirstOrDefaultAsync(e => e.EmployeeID == currentEmployeeId);
 
-                // 5. Tính số ngày làm việc
-                var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                if (emp != null)
+                    WelcomeMessage = $"Xin chào, {emp.FullName}!";
+
+                var startOfMonth = new DateTime(
+                    DateTime.Now.Year,
+                    DateTime.Now.Month,
+                    1
+                );
+
                 DaysWorkedThisMonth = await context.TimeSheets
                     .AsNoTracking()
-                    // TimeSheet: EmployeeID (string), WorkDate (thay cho Date)
-                    .CountAsync(t => t.EmployeeID == _currentEmployeeId && t.WorkDate >= startOfMonth);
+                    .CountAsync(t =>
+                        t.EmployeeID == currentEmployeeId &&
+                        t.WorkDate >= startOfMonth
+                    );
 
-                // 6. Lấy giờ Check-in hôm nay
                 var todaySheet = await context.TimeSheets
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.EmployeeID == _currentEmployeeId && t.WorkDate.Date == DateTime.Today);
+                    .FirstOrDefaultAsync(t =>
+                        t.EmployeeID == currentEmployeeId &&
+                        t.WorkDate.Date == DateTime.Today
+                    );
 
-                if (todaySheet != null)
-                {
-                    // TimeSheet: TimeIn (thay cho CheckInTime)
-                    TodayCheckInTime = todaySheet.TimeIn.HasValue
-                        ? todaySheet.TimeIn.Value.ToString(@"hh\:mm")
-                        : "--:--";
-                }
+                TodayCheckInTime = todaySheet?.TimeIn.HasValue == true
+                    ? todaySheet.TimeIn.Value.ToString(@"hh\:mm")
+                    : "--:--";
 
-                // 7. Lấy danh sách nghỉ phép
-                var myRequests = await context.LeaveRequests
+                var requests = await context.LeaveRequests
                     .AsNoTracking()
-                    // LeaveRequest: EmployeeID (string)
-                    .Where(l => l.EmployeeID == _currentEmployeeId)
+                    .Where(l => l.EmployeeID == currentEmployeeId)
                     .OrderByDescending(l => l.StartDate)
                     .Take(5)
                     .ToListAsync();
 
                 MyLeaveRequests.Clear();
-                foreach (var req in myRequests)
-                {
-                    MyLeaveRequests.Add(req);
-                }
+                foreach (var r in requests)
+                    MyLeaveRequests.Add(r);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không thể tải dữ liệu trang chủ:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Không thể tải dữ liệu trang chủ:\n" + GetDeepErrorMessage(ex),
+                    "Lỗi hệ thống",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
     }

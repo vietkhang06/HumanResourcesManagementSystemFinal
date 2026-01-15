@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HumanResourcesManagementSystemFinal.Models; 
+namespace HumanResourcesManagementSystemFinal.Models;
 
 [Table("Departments")]
 public class Department
@@ -20,7 +25,7 @@ public class Department
     public string? Location { get; set; }
 
     [StringLength(5)]
-    public string? ManagerID { get; set; } 
+    public string? ManagerID { get; set; }
 
     public virtual ICollection<Position> Positions { get; set; } = new HashSet<Position>();
 

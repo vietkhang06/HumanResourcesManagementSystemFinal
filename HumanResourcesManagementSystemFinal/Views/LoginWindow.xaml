@@ -11,7 +11,7 @@
         AllowsTransparency="True" Background="Transparent"
         MouseDown="Window_MouseDown">
 
-    <Border Background="#f9f8f6" CornerRadius="25">
+    <Border Background="#f9f8f6">
         <Border.Effect>
             <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.2" Color="#202020"/>
         </Border.Effect>
@@ -19,7 +19,7 @@
         <Border.OpacityMask>
             <VisualBrush>
                 <VisualBrush.Visual>
-                    <Border Background="Black" CornerRadius="25"
+                    <Border Background="Black"
                             Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
                             Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Border}}"/>
                 </VisualBrush.Visual>
@@ -64,7 +64,7 @@
 
                 <StackPanel Orientation="Horizontal" 
                             HorizontalAlignment="Right" VerticalAlignment="Top" 
-                            Margin="0,5,10,0" Panel.ZIndex="100">
+                            Margin="0,5,5,0" Panel.ZIndex="100">
 
                     <Button Click="MinimizeButton_Click"
                             Width="25" Height="25" Margin="0,0,5,0"

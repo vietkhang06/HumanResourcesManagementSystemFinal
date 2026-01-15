@@ -15,13 +15,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class ManageEmployeeViewModel : ObservableObject
     {
-        public ObservableCollection<Employee> Employees { get; set; } = new();
-        public ObservableCollection<Department> Departments { get; set; } = new();
+        private List<Employee> _allEmployees = new();
+        public ObservableCollection<Employee> Employees { get; } = new();
+        public ObservableCollection<Department> Departments { get; } = new();
 
         [ObservableProperty] private string _searchText;
         [ObservableProperty] private Department _selectedDepartment;
-
-        private List<Employee> _allEmployees = new List<Employee>();
 
         public ManageEmployeeViewModel()
         {
@@ -32,27 +31,34 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
-                using (var context = new DataContext())
+                using var context = new DataContext();
+
+                var deptList = context.Departments.ToList();
+                deptList.Insert(0, new Department
                 {
-                    var depts = context.Departments.ToList();
-                    depts.Insert(0, new Department { DepartmentID = "", DepartmentName = "      --- Tất cả ---" });
+                    DepartmentID = "",
+                    DepartmentName = "--- Tất cả ---"
+                });
 
-                    Departments.Clear();
-                    foreach (var d in depts) Departments.Add(d);
+                Departments.Clear();
+                foreach (var dept in deptList)
+                    Departments.Add(dept);
 
-                    if (SelectedDepartment == null) SelectedDepartment = Departments.FirstOrDefault();
+                SelectedDepartment ??= Departments.FirstOrDefault();
 
-                    _allEmployees = context.Employees
-                        .Include(e => e.Department)
-                        .Include(e => e.Position)
-                        .Include(e => e.Manager)
-                        .OrderByDescending(e => e.EmployeeID)
-                        .ToList();
+                _allEmployees = context.Employees
+                    .Include(e => e.Department)
+                    .Include(e => e.Position)
+                    .Include(e => e.Manager)
+                    .OrderByDescending(e => e.EmployeeID)
+                    .ToList();
 
-                    FilterEmployees();
-                }
+                FilterEmployees();
             }
-            catch (Exception ex) { MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+            }
         }
 
         partial void OnSearchTextChanged(string value) => FilterEmployees();
@@ -60,102 +66,106 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         private void FilterEmployees()
         {
-            var query = _allEmployees.AsEnumerable();
+            IEnumerable<Employee> query = _allEmployees;
 
             if (SelectedDepartment != null && !string.IsNullOrEmpty(SelectedDepartment.DepartmentID))
+            {
                 query = query.Where(e => e.DepartmentID == SelectedDepartment.DepartmentID);
+            }
 
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                string key = SearchText.ToLower();
+                string keyword = SearchText.ToLower();
                 query = query.Where(e =>
-                    (e.FullName ?? "").ToLower().Contains(key) ||
-                    (e.Email ?? "").ToLower().Contains(key) ||
-                    (e.EmployeeID ?? "").ToLower().Contains(key));
+                    (e.FullName ?? "").ToLower().Contains(keyword) ||
+                    (e.Email ?? "").ToLower().Contains(keyword) ||
+                    (e.EmployeeID ?? "").ToLower().Contains(keyword));
             }
 
             Employees.Clear();
-            foreach (var e in query) Employees.Add(e);
+            foreach (var emp in query)
+                Employees.Add(emp);
         }
 
         [RelayCommand]
         private void AddEmployee()
         {
-            var addWindow = new AddEmployeeWindow();
-            if (addWindow.ShowDialog() == true)
-            {
-                // Logic Add nằm trong AddEmployeeWindow, 
-                // Bạn hãy mở ViewModel của cửa sổ đó và thêm code ghi Log tương tự như hàm Delete bên dưới
+            var window = new AddEmployeeWindow();
+            if (window.ShowDialog() == true)
                 LoadDataFromDb();
-            }
         }
 
         [RelayCommand]
         private void EditEmployee(Employee emp)
         {
             if (emp == null) return;
-            var editWindow = new AddEmployeeWindow(emp);
-            bool? result = editWindow.ShowDialog();
-            if (result == true)
-            {
-                // Logic Edit cũng nằm trong AddEmployeeWindow
+
+            var window = new AddEmployeeWindow(emp);
+            if (window.ShowDialog() == true)
                 LoadDataFromDb();
-            }
         }
 
         [RelayCommand]
         private async Task DeleteEmployee(Employee emp)
         {
             if (emp == null) return;
-            var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
-            if (result == MessageBoxResult.Yes)
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?",
+                "Xác nhận xóa",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            try
             {
-                try
+                using var context = new DataContext();
+
+                var dbEmp = await context.Employees
+                    .Include(e => e.Account)
+                    .Include(e => e.WorkContracts)
+                    .FirstOrDefaultAsync(e => e.EmployeeID == emp.EmployeeID);
+
+                if (dbEmp == null) return;
+
+                if (dbEmp.Account != null)
+                    context.Accounts.Remove(dbEmp.Account);
+
+                if (dbEmp.WorkContracts != null)
+                    context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
+
+                var subordinates = context.Employees
+                    .Where(e => e.ManagerID == dbEmp.EmployeeID)
+                    .ToList();
+
+                foreach (var sub in subordinates)
+                    sub.ManagerID = null;
+
+                string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId)
+                    ? "ADMIN"
+                    : UserSession.CurrentEmployeeId;
+
+                context.ChangeHistories.Add(new ChangeHistory
                 {
-                    using (var context = new DataContext())
-                    {
-                        var dbEmp = await context.Employees
-                            .Include(e => e.Account)
-                            .Include(e => e.WorkContracts)
-                            .FirstOrDefaultAsync(e => e.EmployeeID == emp.EmployeeID);
+                    LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
+                    TableName = "Employees",
+                    ActionType = "DELETE",
+                    RecordID = dbEmp.EmployeeID,
+                    ChangeByUserID = adminID,
+                    ChangeTime = DateTime.Now,
+                    Details = $"Xóa nhân viên: {dbEmp.FullName} (ID: {dbEmp.EmployeeID})"
+                });
 
-                        if (dbEmp != null)
-                        {
-                            // 1. Xóa các bảng liên quan
-                            if (dbEmp.Account != null) context.Accounts.Remove(dbEmp.Account);
-                            if (dbEmp.WorkContracts != null) context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
+                context.Employees.Remove(dbEmp);
+                await context.SaveChangesAsync();
 
-                            var subordinates = context.Employees.Where(e => e.ManagerID == dbEmp.EmployeeID).ToList();
-                            foreach (var sub in subordinates) sub.ManagerID = null;
-
-                            // 2. Ghi Lịch sử TRƯỚC KHI xóa (Để lưu vết)
-                            string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId) ? "ADMIN" : UserSession.CurrentEmployeeId;
-
-                            context.ChangeHistories.Add(new ChangeHistory
-                            {
-                                LogID = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
-                                TableName = "Employees",
-                                ActionType = "DELETE",
-                                RecordID = dbEmp.EmployeeID,
-                                ChangeByUserID = adminID,
-                                ChangeTime = DateTime.Now,
-                                Details = $"Xóa nhân viên: {dbEmp.FullName} (ID: {dbEmp.EmployeeID}) - Chức vụ: {dbEmp.PositionID}"
-                            });
-
-                            // 3. Xóa nhân viên và Lưu
-                            context.Employees.Remove(dbEmp);
-                            await context.SaveChangesAsync();
-
-                            LoadDataFromDb();
-                            MessageBox.Show("Đã xóa thành công!");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Lỗi chi tiết: {ex.Message}");
-                }
+                LoadDataFromDb();
+                MessageBox.Show("Đã xóa thành công!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message);
             }
         }
 
@@ -163,7 +173,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void ViewDetail(Employee emp)
         {
             if (emp == null) return;
-            // Code mở cửa sổ xem chi tiết
         }
     }
 }

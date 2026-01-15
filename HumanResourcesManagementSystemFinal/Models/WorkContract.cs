@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,7 +19,8 @@ public class WorkContract
     [Column(TypeName = "char(5)")]
     [StringLength(5)]
     public string? EmployeeID { get; set; }
-    [ForeignKey("EmployeeID")]
+
+    [ForeignKey(nameof(EmployeeID))]
     public virtual Employee? Employee { get; set; }
 
     [StringLength(40)]

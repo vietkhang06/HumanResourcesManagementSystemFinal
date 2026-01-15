@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Services;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,13 +11,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class ChangePasswordViewModel : ObservableObject
     {
-        private readonly AccountService _accountService;
-        private readonly string _currentUserId;
+        private readonly AccountService accountService;
+        private readonly string currentUserId;
 
         public ChangePasswordViewModel(string userId)
         {
-            _currentUserId = userId;
-            _accountService = new AccountService(new DataContext());
+            currentUserId = userId;
+            accountService = new AccountService(new DataContext());
         }
 
         [RelayCommand]
@@ -24,40 +25,37 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (parameter is not object[] values || values.Length < 3) return;
 
-            var oldPassBox = values[0] as PasswordBox;
-            var newPassBox = values[1] as PasswordBox;
-            var confirmPassBox = values[2] as PasswordBox;
+            if (values[0] is not PasswordBox oldPassBox ||
+                values[1] is not PasswordBox newPassBox ||
+                values[2] is not PasswordBox confirmPassBox) return;
 
-            if (oldPassBox == null || newPassBox == null || confirmPassBox == null) return;
-
-            string oldPass = oldPassBox.Password;
-            string newPass = newPassBox.Password;
-            string confirmPass = confirmPassBox.Password;
+            var oldPass = oldPassBox.Password;
+            var newPass = newPassBox.Password;
+            var confirmPass = confirmPassBox.Password;
 
             if (string.IsNullOrWhiteSpace(oldPass) || string.IsNullOrWhiteSpace(newPass))
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!");
                 return;
             }
 
             if (newPass != confirmPass)
             {
-                MessageBox.Show("Mật khẩu xác nhận không khớp!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Mật khẩu xác nhận không khớp!");
                 return;
             }
 
             if (newPass.Length < 3)
             {
-                MessageBox.Show("Mật khẩu mới quá ngắn (tối thiểu 3 ký tự)!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Mật khẩu mới quá ngắn!");
                 return;
             }
 
             try
             {
-                bool success = await _accountService.ChangePasswordAsync(_currentUserId, oldPass, newPass);
-                if (success)
+                if (await accountService.ChangePasswordAsync(currentUserId, oldPass, newPass))
                 {
-                    MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Đổi mật khẩu thành công!");
                     oldPassBox.Clear();
                     newPassBox.Clear();
                     confirmPassBox.Clear();
@@ -65,17 +63,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                var sb = new StringBuilder();
-                sb.AppendLine(ex.Message);
-
+                var sb = new StringBuilder(ex.Message);
                 var inner = ex.InnerException;
+
                 while (inner != null)
                 {
                     sb.AppendLine(inner.Message);
                     inner = inner.InnerException;
                 }
 
-                MessageBox.Show("Lỗi khi đổi mật khẩu:\n" + sb.ToString(), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(sb.ToString(), "Lỗi");
             }
         }
     }

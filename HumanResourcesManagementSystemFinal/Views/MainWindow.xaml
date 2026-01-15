@@ -118,7 +118,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#F9F8F6" CornerRadius="20">
+    <Border Background="#F9F8F6">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.1"/>
         </Border.Effect>
@@ -130,7 +130,7 @@
             </Grid.ColumnDefinitions>
 
             <Border x:Name="SidebarBorder" Grid.Column="0" Width="70" 
-                    Background="White" CornerRadius="20,0,0,20" Panel.ZIndex="100"
+                    Background="White" Panel.ZIndex="100"
                     ClipToBounds="True"
                     MouseEnter="Sidebar_MouseEnter"
                     MouseLeave="Sidebar_MouseLeave">
@@ -396,7 +396,7 @@
                         </TextBlock>
                     </Border>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,20,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0">
                         <Button Click="btnMinimize_Click" ToolTip="Thu nhỏ" Style="{StaticResource WindowBtnStyle}">
                             <Path Data="M2,18 L22,18 L22,14 L2,14 Z" Fill="#1A3D64" Stretch="Uniform" Width="12"/>
                         </Button>

@@ -47,7 +47,7 @@
         </Storyboard>
 
         <Style TargetType="Button" x:Key="MenuButtonStyle">
-            <Setter Property="Foreground" Value="#1A3D64"/>
+            <Setter Property="Foreground" Value="#1E3A8A"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="Height" Value="55"/>
@@ -73,7 +73,7 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F1F5F9"/>
-                    <Setter Property="Foreground" Value="#1A3D64"/>
+                    <Setter Property="Foreground" Value="#1E3A8A"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </Trigger>
             </Style.Triggers>
@@ -159,7 +159,7 @@
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="-10,0,0,0">
-                                <TextBlock Text=" HRMS PRO" Foreground="#1A3D64" FontSize="28" FontWeight="Bold"/>
+                                <TextBlock Text=" HRMS PRO" Foreground="#1E3A8A" FontSize="28" FontWeight="Bold"/>
                                 <TextBlock Text="   Management System" Foreground="#BDC3C7" FontSize="12"/>
                             </StackPanel>
                         </Grid>
@@ -398,10 +398,10 @@
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0">
                         <Button Click="btnMinimize_Click" ToolTip="Thu nhỏ" Style="{StaticResource WindowBtnStyle}">
-                            <Path Data="M2,18 L22,18 L22,14 L2,14 Z" Fill="#1A3D64" Stretch="Uniform" Width="12"/>
+                            <Path Data="M2,18 L22,18 L22,14 L2,14 Z" Fill="#1E3A8A" Stretch="Uniform" Width="12"/>
                         </Button>
                         <Button Click="btnMaximize_Click" ToolTip="Phóng to" Style="{StaticResource WindowBtnStyle}">
-                            <Path x:Name="iconMaximize" Data="M4,4 H20 V20 H4 Z M8,8 V16 H16 V8 Z" Fill="#1A3D64" Stretch="Uniform" Width="12"/>
+                            <Path x:Name="iconMaximize" Data="M4,4 H20 V20 H4 Z M8,8 V16 H16 V8 Z" Fill="#1E3A8A" Stretch="Uniform" Width="12"/>
                         </Button>
                         <Button Click="btnClose_Click" ToolTip="Đóng" Width="40" Style="{StaticResource WindowBtnStyle}">
                             <Path Data="M24.2,5.8 L18.4,0 L12.1,6.3 L5.8,0 L0,5.8 L6.3,12.1 L0,18.4 L5.8,24.2 L12.1,17.9 L18.4,24.2 L24.2,18.4 L17.9,12.1 Z" Fill="#B43F3F" Stretch="Uniform" Width="12"/>

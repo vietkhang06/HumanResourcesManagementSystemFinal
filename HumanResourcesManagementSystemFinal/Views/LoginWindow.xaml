@@ -5,123 +5,54 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:HumanResourcesManagementSystemFinal.Views" 
         mc:Ignorable="d"
-        Title="Hệ thống Đăng nhập" Height="450" Width="650"
+        
+        Title="Hệ thống Quản lý Nhân sự" 
+        Height="500" Width="800"
         WindowStartupLocation="CenterScreen" 
-        WindowStyle="None" ResizeMode="NoResize"
-        AllowsTransparency="True" Background="Transparent"
-        MouseDown="Window_MouseDown">
+        ResizeMode="CanResize"
+        Icon="/Images/logo PRO.jpg">
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.2*"/>
+            <ColumnDefinition Width="1.5*"/>
+        </Grid.ColumnDefinitions>
 
-    <Border Background="#f9f8f6">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.2" Color="#202020"/>
-        </Border.Effect>
+        <Grid Grid.Column="0" ClipToBounds="True">
+            <Image Source="/Images/png1.png" HorizontalAlignment="Center" Stretch="UniformToFill">
+                <Image.Effect>
+                    <BlurEffect Radius="10" KernelType="Gaussian"/>
+                </Image.Effect>
+            </Image>
 
-        <Border.OpacityMask>
-            <VisualBrush>
-                <VisualBrush.Visual>
-                    <Border Background="Black"
-                            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
-                            Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Border}}"/>
-                </VisualBrush.Visual>
-            </VisualBrush>
-        </Border.OpacityMask>
+            <Rectangle Fill="Black" Opacity="0.3"/>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1.5*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid Grid.Column="0">
-                <Image Source="/Images/png1.png" HorizontalAlignment="Center" Stretch="UniformToFill">
-                    <Image.Effect>
-                        <BlurEffect Radius="14" KernelType="Gaussian"/>
-                    </Image.Effect>
-                </Image>
-
-                <Rectangle/>
-
-                <Ellipse Width="180" Height="180" 
-                         HorizontalAlignment="Center" 
-                         VerticalAlignment="Top" Margin="0,45,0,0">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Ellipse Width="160" Height="160" Margin="0,0,0,20">
+                    <Ellipse.Effect>
+                        <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="White" Opacity="0.4"/>
+                    </Ellipse.Effect>
                     <Ellipse.Fill>
                         <ImageBrush ImageSource="/Images/logo PRO.jpg" Stretch="UniformToFill"/>
                     </Ellipse.Fill>
-
-                    <Ellipse.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.1" Color="White"/>
-                    </Ellipse.Effect>
                 </Ellipse>
-                <TextBlock HorizontalAlignment="Center" Margin="0,420,0,0" TextWrapping="Wrap" Text="UIT - IT008.Q14" VerticalAlignment="Top" Height="20" Width="240" Foreground="White" FontSize="14" TextAlignment="Center"/>
-                <TextBlock HorizontalAlignment="Center" Margin="0,230,0,0" TextWrapping="Wrap" Text="Human Resource Management System" VerticalAlignment="Top" Height="62" Width="240" FontSize="23" Foreground="#FFFBFBFB" FontWeight="Bold" TextAlignment="Center"/>
-            </Grid>
 
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="7*"/>
-                    <RowDefinition Height="18*"/>
-                </Grid.RowDefinitions>
+                <TextBlock Text="HUMAN RESOURCE" Foreground="White" FontSize="24" FontWeight="Bold" 
+                           HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,5">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="5" Opacity="0.5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
 
-                <StackPanel Orientation="Horizontal" 
-                            HorizontalAlignment="Right" VerticalAlignment="Top" 
-                            Margin="0,5,5,0" Panel.ZIndex="100">
+                <TextBlock Text="MANAGEMENT SYSTEM" Foreground="#E0E0E0" FontSize="16" FontWeight="SemiBold" 
+                           HorizontalAlignment="Center" TextAlignment="Center"/>
 
-                    <Button Click="MinimizeButton_Click"
-                            Width="25" Height="25" Margin="0,0,5,0"
-                            Background="Transparent" BorderThickness="0" Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="MinBorder" Background="{TemplateBinding Background}" CornerRadius="10">
-                                    <TextBlock Text="―" FontSize="12" FontWeight="Bold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="MinBorder" Property="Background" Value="#E5E5E5"/>
-                                        <Setter Property="Foreground" Value="Black"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="MinBorder" Property="Background" Value="#D0D0D0"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <Button.Foreground>
-                            <SolidColorBrush Color="#999"/>
-                        </Button.Foreground>
-                    </Button>
-
-                    <Button Click="CloseButton_Click" 
-                            Width="25" Height="25"
-                            Background="Transparent" BorderThickness="0" Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="10">
-                                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="BtnBorder" Property="Background" Value="#E81123"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="BtnBorder" Property="Background" Value="#C10F1D"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <Button.Foreground>
-                            <SolidColorBrush Color="#999"/>
-                        </Button.Foreground>
-                    </Button>
-
-                </StackPanel>
-
-                <ContentControl x:Name="MainFrame" Grid.RowSpan="2" />
-            </Grid>
+                <TextBlock Text="UIT - IT008.Q14" Foreground="#CCCCCC" FontSize="14" Margin="0,30,0,0"
+                           HorizontalAlignment="Center" TextAlignment="Center"/>
+            </StackPanel>
         </Grid>
-    </Border>
+
+        <Grid Grid.Column="1">
+            <ContentControl x:Name="MainFrame" Margin="0"/>
+        </Grid>
+    </Grid>
 </Window>

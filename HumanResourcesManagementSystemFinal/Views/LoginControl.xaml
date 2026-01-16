@@ -80,7 +80,7 @@
     </UserControl.Triggers>
 
     <Grid>
-        <Border x:Name="MainCard" Background="White" CornerRadius="20" Margin="25" VerticalAlignment="Center">
+        <Border x:Name="MainCard" Background="White" CornerRadius="20" Margin="25" VerticalAlignment="Center" MaxWidth="400">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="30" ShadowDepth="5" Direction="270" Color="#B0C4DE" Opacity="0.5"/>
             </Border.Effect>
@@ -101,6 +101,7 @@
                             <Path Data="{StaticResource IconUser}" Fill="{StaticResource GrayText}" Stretch="Uniform" Width="16" Height="16" HorizontalAlignment="Center"/>
 
                             <TextBox Grid.Column="1" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
+                                     KeyDown="Username_KeyDown"
                                      VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
                                      FontSize="14" Padding="0,0,10,0"/>
                         </Grid>
@@ -125,6 +126,7 @@
 
                             <PasswordBox Grid.Column="1" x:Name="txtPassword"
                                          Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
+                                         KeyDown="Password_KeyDown"
                                          VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
                                          FontSize="14" Panel.ZIndex="1"
                                          IsHitTestVisible="{Binding IsPasswordVisible, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
@@ -152,7 +154,6 @@
                                                 </Path.Style>
                                             </Path>
                                         </Border>
-
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="BtnBorder" Property="Background" Value="#D3DAD9"/>
@@ -164,12 +165,10 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-
                                 <Button.Foreground>
                                     <SolidColorBrush Color="{Binding Color, Source={StaticResource SecondaryColor}}"/>
-                                </Button.Foreground>    
+                                </Button.Foreground>
                             </Button>
-
                         </Grid>
                     </Border>
 
@@ -187,6 +186,8 @@
                     </Grid>
 
                     <Button Content="ĐĂNG NHẬP" Command="{Binding LoginCommand}" 
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                            IsDefault="True"
                             Style="{StaticResource LoginButtonStyle}" Height="45">
                         <Button.Effect>
                             <DropShadowEffect Color="#102f76" BlurRadius="15" ShadowDepth="3" Opacity="0.3"/>

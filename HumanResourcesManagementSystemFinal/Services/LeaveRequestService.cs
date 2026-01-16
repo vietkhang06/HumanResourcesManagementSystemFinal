@@ -71,5 +71,10 @@ namespace HumanResourcesManagementSystemFinal.Services
             _context.LeaveRequests.Remove(existing);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<LeaveRequest?> GetRequestByIdAsync(string requestId)
+        {
+            return await _context.LeaveRequests.FindAsync(requestId);
+        }
     }
 }

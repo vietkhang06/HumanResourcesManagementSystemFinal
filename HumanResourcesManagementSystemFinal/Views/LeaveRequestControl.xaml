@@ -157,7 +157,7 @@
                 <StackPanel Grid.Row="2" Margin="0,0,0,15">
                     <TextBlock Text="Lý do nghỉ:" Foreground="Gray" Margin="0,0,0,5"/>
                     <TextBox Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
-                             Text="{Binding Reason}"
+                             Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}"
                              BorderBrush="#DDDDDD" Padding="8" 
                              VerticalContentAlignment="Top"
                              FontSize="14">
@@ -171,6 +171,7 @@
 
                 <Button Grid.Row="3" 
                         Command="{Binding SubmitRequestCommand}"
+                        IsEnabled="{Binding CanSubmit}" 
                         Width="120" Height="40" HorizontalAlignment="Right"
                         Foreground="White" FontWeight="Bold"
                         Cursor="Hand" BorderThickness="0">
@@ -181,10 +182,18 @@
                                 <DataTrigger Binding="{Binding SubmitButtonContent}" Value="Cập Nhật">
                                     <Setter Property="Background" Value="#D35400"/>
                                 </DataTrigger>
+
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#A0AEC0"/>
+                                    <Setter Property="Foreground" Value="#E2E8F0"/>
+                                    <Setter Property="Cursor" Value="No"/>
+                                </Trigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
+
                     <TextBlock Text="{Binding SubmitButtonContent}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="10"/>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesManagementSystemFinal.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,30 @@ namespace HumanResourcesManagementSystemFinal.Views
         public LoginControl()
         {
             InitializeComponent();
+        }
+        private void Username_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                txtPassword.Focus();
+                e.Handled = true;
+            }
+        }
+
+        private void Password_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (DataContext is LoginViewModel viewModel)
+                {
+                    var parentWindow = Window.GetWindow(this);
+                    if (viewModel.LoginCommand.CanExecute(parentWindow))
+                    {
+                        viewModel.LoginCommand.Execute(parentWindow);
+                    }
+                }
+                e.Handled = true;
+            }
         }
     }
 }

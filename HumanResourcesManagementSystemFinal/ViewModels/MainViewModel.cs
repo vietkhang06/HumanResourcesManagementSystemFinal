@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -12,7 +11,6 @@ using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
-using System.Windows;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -41,7 +39,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             _currentAccount = loggedInAccount;
             IsAdmin = _currentAccount.Role?.RoleName == "Admin" || _currentAccount.Role?.RoleName == "Manager";
+
             WeakReferenceMessenger.Default.Register(this);
+
             _ = LoadCurrentUserAsync();
             NavigateHome();
         }
@@ -69,6 +69,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 {
                     employee.Account = _currentAccount;
                     CurrentUser = employee;
+
+                    AppSession.CurrentUser = employee;
+                    AppSession.CurrentRole = _currentAccount.Role?.RoleName;
+
                     WelcomeMessage = $"Xin chào, {CurrentUser.FullName}!";
                 }
             }
@@ -79,18 +83,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         }
 
         public string CurrentUserName => !string.IsNullOrEmpty(CurrentUser?.EmployeeID) ? CurrentUser.FullName : "Người dùng";
-        public string CurrentUserJob => CurrentUser?.Position?.PositionName ?? "N/A";
+
+        public string CurrentUserJob => CurrentUser?.Position?.PositionName ?? (_isAdmin ? "Administrator" : "N/A");
+
         public string CurrentUserAvatar => CurrentUser?.EmployeeID;
 
         public void Receive(ValueChangedMessage<string> message)
         {
-            if (CurrentUser != null && message.Value == CurrentUser.EmployeeID)
+            if (message.Value == "RefreshUser" || (CurrentUser != null && message.Value == CurrentUser.EmployeeID))
             {
-                string realId = CurrentUser.EmployeeID;
-                CurrentUser.EmployeeID = "REFRESH_TRIGGER_" + DateTime.Now.Ticks;
-                OnPropertyChanged(nameof(CurrentUserAvatar));
-                CurrentUser.EmployeeID = realId;
-                OnPropertyChanged(nameof(CurrentUserAvatar));
+                RefreshCurrentUser();
             }
         }
 
@@ -168,12 +170,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             PageTitle = "Chấm Công";
             CurrentPageName = "TimeSheet";
-
             var viewModel = new TimeSheetViewModel();
             var view = new TimeSheetControl();
-            view.DataContext = viewModel; 
-
-            // 3. Hiển thị View
+            view.DataContext = viewModel;
             CurrentView = view;
         }
 
@@ -221,6 +220,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void Logout(object parameter)
         {
             WeakReferenceMessenger.Default.UnregisterAll(this);
+
+            AppSession.CurrentUser = null;
+            AppSession.CurrentRole = null;
+
             new LoginWindow().Show();
             if (parameter is Window w)
             {
@@ -242,6 +245,24 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void ShowAccessDenied()
         {
             MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        public async void RefreshCurrentUser()
+        {
+            if (string.IsNullOrEmpty(CurrentUser?.EmployeeID)) return;
+
+            await LoadCurrentUserAsync();
+
+            string tempId = CurrentUser.EmployeeID;
+
+            CurrentUser.EmployeeID = null;
+            OnPropertyChanged(nameof(CurrentUserAvatar));
+
+            CurrentUser.EmployeeID = tempId;
+            OnPropertyChanged(nameof(CurrentUserAvatar));
+
+            OnPropertyChanged(nameof(CurrentUserName));
+            OnPropertyChanged(nameof(CurrentUserJob));
         }
     }
 }

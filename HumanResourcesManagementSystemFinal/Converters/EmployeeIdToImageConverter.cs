@@ -10,50 +10,48 @@ namespace HumanResourcesManagementSystemFinal.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string employeeId = value as string;
+            // 1. Lấy ID nhân viên từ Binding
+            string empId = value as string;
+            if (string.IsNullOrEmpty(empId)) return LoadDefault();
 
-            // Đường dẫn thư mục ảnh
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string folder = Path.Combine(baseDir, "Images", "Profiles");
+            // 2. Tạo đường dẫn tới folder ảnh
+            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
 
-            // Ảnh mặc định nếu không tìm thấy
-            string defaultImage = "/Images/default-avatar.png"; // Đảm bảo bạn có ảnh này trong project hoặc dùng đường dẫn online
-            // Hoặc trả về null để hiện màu nền fallback trong XAML
+            // 3. Quét xem có file nào trùng tên không (ưu tiên png -> jpg -> jpeg)
+            string path = "";
+            string png = Path.Combine(folder, empId + ".png");
+            string jpg = Path.Combine(folder, empId + ".jpg");
+            string jpeg = Path.Combine(folder, empId + ".jpeg");
 
-            if (string.IsNullOrEmpty(employeeId)) return null;
+            if (File.Exists(png)) path = png;
+            else if (File.Exists(jpg)) path = jpg;
+            else if (File.Exists(jpeg)) path = jpeg;
 
-            // Tìm file ảnh có tên trùng với EmployeeID (hỗ trợ jpg, png, jpeg)
-            string[] extensions = { ".jpg", ".png", ".jpeg" };
-            string finalPath = null;
+            // Nếu không tìm thấy file -> Trả về ảnh mặc định
+            if (string.IsNullOrEmpty(path)) return LoadDefault();
 
-            foreach (var ext in extensions)
-            {
-                string path = Path.Combine(folder, employeeId + ext);
-                if (File.Exists(path))
-                {
-                    finalPath = path;
-                    break;
-                }
-            }
-
-            if (finalPath == null) return null; // Trả về null để UI tự xử lý (hiện vòng tròn màu)
-
+            // 4. LOAD ẢNH TỪ BYTES (QUAN TRỌNG: Để không bị khóa file và cache cũ)
             try
             {
-                // [QUAN TRỌNG] Kỹ thuật load ảnh không bị khóa file (Non-locking)
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Tải hết vào RAM rồi đóng file ngay
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Bỏ qua cache cũ để luôn lấy ảnh mới
-                bitmap.UriSource = new Uri(finalPath);
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Bỏ qua cache cũ
+                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Load xong ngắt kết nối file ngay
+                bitmap.UriSource = new Uri(path);
                 bitmap.EndInit();
                 bitmap.Freeze(); // Tối ưu hiệu năng
                 return bitmap;
             }
             catch
             {
-                return null;
+                return LoadDefault();
             }
+        }
+
+        private object LoadDefault()
+        {
+            // Đảm bảo bạn có file default_user.png trong thư mục Images của project (Build Action: Resource)
+            return new BitmapImage(new Uri("pack://application:,,,/Images/default_user.png"));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

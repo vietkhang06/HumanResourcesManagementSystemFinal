@@ -29,6 +29,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private string _selectedImagePath = null;
 
         public bool IsEditMode => _editingEmployee != null;
+        public string EditingEmployeeId => _editingEmployee?.EmployeeID;
 
         public ObservableCollection<Department> Departments { get; set; } = new();
         public ObservableCollection<Position> Positions { get; set; } = new();

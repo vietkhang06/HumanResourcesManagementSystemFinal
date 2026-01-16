@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
+using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -47,6 +48,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 SelectedDepartment ??= Departments.FirstOrDefault();
 
                 _allEmployees = context.Employees
+                    .AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
                     .Include(e => e.Manager)
@@ -57,7 +59,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+                var errorMsg = $"Lỗi kết nối CSDL: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMsg += $"\nChi tiết: {ex.InnerException.Message}";
+                }
+                MessageBox.Show(errorMsg, "Lỗi Tải Dữ Liệu", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -88,21 +95,35 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         }
 
         [RelayCommand]
-        private void AddEmployee()
+        private void ShowAddEmployee(Employee existingEmp = null)
         {
-            var window = new AddEmployeeWindow();
+            var addVM = existingEmp != null
+                ? new AddEmployeeViewModel(existingEmp)
+                : new AddEmployeeViewModel();
+
+            var window = new AddEmployeeWindow { DataContext = addVM };
+
             if (window.ShowDialog() == true)
+            {
                 LoadDataFromDb();
+
+                if (addVM.IsEditMode && addVM.EditingEmployeeId == AppSession.CurrentUser?.EmployeeID)
+                {
+                    if (Application.Current.MainWindow.DataContext is MainViewModel mainVM)
+                    {
+                        mainVM.RefreshCurrentUser();
+                    }
+                }
+            }
         }
+
+        [RelayCommand]
+        private void AddEmployee() => ShowAddEmployee(null);
 
         [RelayCommand]
         private void EditEmployee(Employee emp)
         {
-            if (emp == null) return;
-
-            var window = new AddEmployeeWindow(emp);
-            if (window.ShowDialog() == true)
-                LoadDataFromDb();
+            if (emp != null) ShowAddEmployee(emp);
         }
 
         [RelayCommand]
@@ -111,7 +132,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (emp == null) return;
 
             var confirm = MessageBox.Show(
-                $"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?",
+                $"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?\nHành động này sẽ xóa cả tài khoản và hợp đồng liên quan.",
                 "Xác nhận xóa",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -127,7 +148,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     .Include(e => e.WorkContracts)
                     .FirstOrDefaultAsync(e => e.EmployeeID == emp.EmployeeID);
 
-                if (dbEmp == null) return;
+                if (dbEmp == null)
+                {
+                    MessageBox.Show("Nhân viên này không còn tồn tại hoặc đã bị xóa trước đó.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadDataFromDb();
+                    return;
+                }
 
                 if (dbEmp.Account != null)
                     context.Accounts.Remove(dbEmp.Account);
@@ -161,11 +187,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 await context.SaveChangesAsync();
 
                 LoadDataFromDb();
-                MessageBox.Show("Đã xóa thành công!");
+                MessageBox.Show("Đã xóa nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                var innerMsg = dbEx.InnerException?.Message ?? dbEx.Message;
+                MessageBox.Show($"Không thể xóa nhân viên này do ràng buộc dữ liệu.\nChi tiết kỹ thuật: {innerMsg}", "Lỗi CSDL", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show($"Đã xảy ra lỗi không mong muốn:\n{ex.Message}\n\nStack Trace: {ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Input;
 using HumanResourcesManagementSystemFinal.ViewModels;
 
 namespace HumanResourcesManagementSystemFinal.Views;
@@ -11,11 +10,12 @@ public partial class LoginWindow : Window
         InitializeComponent();
         ShowLogin();
     }
+
     public void ShowLogin()
     {
         var loginVM = new LoginViewModel();
         loginVM.NavigateToForgotPasswordAction = () =>
-        { 
+        {
             ShowForgotPassword();
         };
 
@@ -23,6 +23,7 @@ public partial class LoginWindow : Window
         loginView.DataContext = loginVM;
         MainFrame.Content = loginView;
     }
+
     public void ShowForgotPassword()
     {
         var forgotVM = new ForgotPasswordViewModel();
@@ -30,26 +31,5 @@ public partial class LoginWindow : Window
         var forgotView = new ForgotPasswordControl();
         forgotView.DataContext = forgotVM;
         MainFrame.Content = forgotView;
-    }
-    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
-    {
-        this.WindowState = WindowState.Minimized;
-    }
-
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
-    {
-        this.Close();
-    }
-
-    private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        //if (e.ChangedButton == MouseButton.Left)
-        //    this.DragMove();
-    }
-
-    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-    {
-        base.OnMouseLeftButtonDown(e);
-        this.DragMove();
     }
 }

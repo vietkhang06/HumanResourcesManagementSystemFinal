@@ -1,11 +1,16 @@
 ﻿<Window x:Class="HumanResourcesManagementSystemFinal.Views.AddPositionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Thêm Chức Vụ" Height="340" Width="450"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:AddPositionViewModel}"
+        Title="{Binding Title}" Height="340" Width="450"
         WindowStartupLocation="CenterScreen" WindowStyle="None"
         AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
-
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Name="AddPosWindow">
     <Border Background="White" CornerRadius="15" Margin="20">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
@@ -19,13 +24,15 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0">
-                <TextBlock x:Name="lblTitle" Text="Thêm Chức Vụ Mới" FontSize="20" FontWeight="Bold" Foreground="#1A3D64"/>
+                <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" Foreground="#1A3D64"/>
                 <Separator Margin="0,10,0,20"/>
             </StackPanel>
 
             <StackPanel Grid.Row="1">
-                <TextBlock  Text="Tên Chức Vụ" FontWeight="SemiBold" Foreground="#4A5568" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtTitle" Height="40" VerticalContentAlignment="Center" Padding="10,0">
+                <TextBlock Text="Tên Chức Vụ" FontWeight="SemiBold" Foreground="#4A5568" Margin="0,0,0,5"/>
+
+                <TextBox Text="{Binding PosTitle, UpdateSourceTrigger=PropertyChanged}" 
+                         Height="40" VerticalContentAlignment="Center" Padding="10,0">
                     <TextBox.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
@@ -34,7 +41,9 @@
                 </TextBox>
 
                 <TextBlock Text="Mô tả công việc (Ngắn gọn)" FontWeight="SemiBold" Foreground="#4A5568" Margin="0,15,0,5"/>
-                <TextBox x:Name="txtDesc" Height="40" VerticalContentAlignment="Center" Padding="10,0">
+
+                <TextBox Text="{Binding JobDescription, UpdateSourceTrigger=PropertyChanged}" 
+                         Height="40" VerticalContentAlignment="Center" Padding="10,0">
                     <TextBox.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
@@ -44,14 +53,21 @@
             </StackPanel>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button Content="Hủy" Click="Cancel_Click" Width="80" Height="35" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,10,0">
+                <Button Content="Hủy" 
+                        Command="{Binding CancelCommand}"
+                        CommandParameter="{Binding ElementName=AddPosWindow}"
+                        Width="80" Height="35" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,10,0">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
                         </Style>
                     </Button.Resources>
                 </Button>
-                <Button Content="Lưu" Click="Save_Click" Width="100" Height="35" Background="#1A3D64" Foreground="White" FontWeight="Bold" BorderThickness="0">
+
+                <Button Content="Lưu" 
+                        Command="{Binding SaveCommand}"
+                        CommandParameter="{Binding ElementName=AddPosWindow}"
+                        Width="100" Height="35" Background="#1A3D64" Foreground="White" FontWeight="Bold" BorderThickness="0">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>

@@ -10,52 +10,34 @@ namespace HumanResourcesManagementSystemFinal.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string employeeId = value as string;
-
-            // Đường dẫn thư mục ảnh
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string folder = Path.Combine(baseDir, "Images", "Profiles");
-
-            // Ảnh mặc định nếu không tìm thấy
-            string defaultImage = "/Images/default-avatar.png"; // Đảm bảo bạn có ảnh này trong project hoặc dùng đường dẫn online
-            // Hoặc trả về null để hiện màu nền fallback trong XAML
-
-            if (string.IsNullOrEmpty(employeeId)) return null;
-
-            // Tìm file ảnh có tên trùng với EmployeeID (hỗ trợ jpg, png, jpeg)
-            string[] extensions = { ".jpg", ".png", ".jpeg" };
+            string empId = value as string;
+            if (string.IsNullOrEmpty(empId)) return "/Images/default_user.png"; 
+            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
+            string pathPng = Path.Combine(folder, $"{empId}.png");
+            string pathJpg = Path.Combine(folder, $"{empId}.jpg");
+            string pathJpeg = Path.Combine(folder, $"{empId}.jpeg");
             string finalPath = null;
-
-            foreach (var ext in extensions)
+            if (File.Exists(pathPng)) finalPath = pathPng;
+            else if (File.Exists(pathJpg)) finalPath = pathJpg;
+            else if (File.Exists(pathJpeg)) finalPath = pathJpeg;
+            if (finalPath != null)
             {
-                string path = Path.Combine(folder, employeeId + ext);
-                if (File.Exists(path))
+                try
                 {
-                    finalPath = path;
-                    break;
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.UriSource = new Uri(finalPath);
+                    bitmap.EndInit();
+                    return bitmap;
+                }
+                catch
+                {
+                    return "/Images/default_user.png";
                 }
             }
-
-            if (finalPath == null) return null; // Trả về null để UI tự xử lý (hiện vòng tròn màu)
-
-            try
-            {
-                // [QUAN TRỌNG] Kỹ thuật load ảnh không bị khóa file (Non-locking)
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Tải hết vào RAM rồi đóng file ngay
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Bỏ qua cache cũ để luôn lấy ảnh mới
-                bitmap.UriSource = new Uri(finalPath);
-                bitmap.EndInit();
-                bitmap.Freeze(); // Tối ưu hiệu năng
-                return bitmap;
-            }
-            catch
-            {
-                return null;
-            }
+            return "/Images/default_user.png";
         }
-
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

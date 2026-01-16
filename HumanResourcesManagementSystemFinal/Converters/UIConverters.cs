@@ -4,7 +4,6 @@ using System.Windows.Data;
 
 namespace HumanResourcesManagementSystemFinal.Converters
 {
-    //Converter đảo ngược (True -> False)
     public class InverseBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -19,7 +18,7 @@ namespace HumanResourcesManagementSystemFinal.Converters
             return false;
         }
     }
-    //Converter đổi Boolean sang Chữ (True -> "Lưu", False -> "Sửa")
+
     public class BooleanToTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

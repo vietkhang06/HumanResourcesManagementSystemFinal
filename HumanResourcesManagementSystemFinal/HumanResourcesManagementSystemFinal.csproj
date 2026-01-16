@@ -10,12 +10,6 @@
 
 	<ItemGroup>
 		<None Remove="Images\default_user.png" />
-		<None Remove="Images\EmployeeImages\1.jpg" />
-		<None Remove="Images\EmployeeImages\2.jpg" />
-		<None Remove="Images\EmployeeImages\3.jpg" />
-		<None Remove="Images\EmployeeImages\4.jpg" />
-		<None Remove="Images\EmployeeImages\5.jpg" />
-		<None Remove="Images\EmployeeImages\6.jpg" />
 		<None Remove="Images\EmployeeImages\admin_avatar.jpg" />
 		<None Remove="Images\logo PRO.jpg" />
 		<None Remove="Images\png1.png" />
@@ -23,10 +17,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Images\EmployeeImages\5.jpg">
+		<Content Include="Images\EmployeeImages\NV005.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Images\EmployeeImages\6.jpg">
+		<Content Include="Images\EmployeeImages\NV006.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Images\EmployeeImages\admin_avatar.jpg">
@@ -41,16 +35,16 @@
 		<Content Include="Images\default_user.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Images\EmployeeImages\1.jpg">
+		<Content Include="Images\EmployeeImages\NV001.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Images\EmployeeImages\2.jpg">
+		<Content Include="Images\EmployeeImages\NV002.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Images\EmployeeImages\3.jpg">
+		<Content Include="Images\EmployeeImages\NV003.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Images\EmployeeImages\4.jpg">
+		<Content Include="Images\EmployeeImages\NV004.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

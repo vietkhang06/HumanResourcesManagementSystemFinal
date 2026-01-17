@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using HumanResourcesManagementSystemFinal.Models;
+using System.Windows.Input;
 
 namespace HumanResourcesManagementSystemFinal.Views
 {
@@ -13,6 +13,12 @@ namespace HumanResourcesManagementSystemFinal.Views
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
         }
     }
 }

@@ -113,14 +113,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 context.Departments.Add(newDept);
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "CREATE",
                     TableName = "Departments",
                     RecordID = newDept.DepartmentID,
-                    ChangeByUserID = adminID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Thêm phòng: {newDept.DepartmentName}"
                 });
@@ -159,14 +163,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 dbDept.Location = editVM.DeptLocation;
                 dbDept.ManagerID = editVM.SelectedManagerID;
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "UPDATE",
                     TableName = "Departments",
                     RecordID = dbDept.DepartmentID,
-                    ChangeByUserID = adminID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Sửa phòng: {dbDept.DepartmentName}"
                 });
@@ -215,14 +223,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 var dbDept = await context.Departments.FindAsync(dept.DepartmentID);
                 if (dbDept != null) context.Departments.Remove(dbDept);
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "DELETE",
                     TableName = "Departments",
                     RecordID = dept.DepartmentID,
-                    ChangeByUserID = adminID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Xóa phòng: {dept.DepartmentName}"
                 });
@@ -265,14 +277,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 context.Positions.Add(newPos);
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "CREATE",
                     TableName = "Positions",
                     RecordID = newPos.PositionID,
-                    ChangeByUserID = adminID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Thêm chức vụ: {newPos.PositionName}"
                 });
@@ -291,47 +307,83 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (pos == null) return;
 
+            if (string.IsNullOrEmpty(pos.PositionID))
+            {
+                MessageBox.Show("Lỗi dữ liệu: Chức vụ này không có ID hợp lệ. Hãy làm mới danh sách.",
+                                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             var editVM = new AddPositionViewModel(pos);
             var editWindow = new AddPositionWindow { DataContext = editVM };
 
             if (editWindow.ShowDialog() != true) return;
 
             using var context = new DataContext();
+            using var transaction = await context.Database.BeginTransactionAsync();
+
             try
             {
-                var dbPos = await context.Positions.FindAsync(pos.PositionID);
-                if (dbPos == null) return;
+                var dbPos = await context.Positions.FirstOrDefaultAsync(p => p.PositionID == pos.PositionID);
+
+                if (dbPos == null)
+                {
+                    MessageBox.Show("Không tìm thấy chức vụ này trong cơ sở dữ liệu (có thể đã bị xóa).",
+                                    "Lỗi đồng bộ", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 dbPos.PositionName = editVM.PosTitle;
                 dbPos.JobDescription = editVM.JobDescription;
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "UPDATE",
                     TableName = "Positions",
-                    RecordID = pos.PositionID,
-                    ChangeByUserID = adminID,
+                    RecordID = dbPos.PositionID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Sửa chức vụ: {dbPos.PositionName}"
                 });
 
                 await context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                pos.PositionName = editVM.PosTitle;
-                pos.JobDescription = editVM.JobDescription;
+                var updatedPosUI = new Position
+                {
+                    PositionID = pos.PositionID,
+                    PositionName = editVM.PosTitle,
+                    JobDescription = editVM.JobDescription,
+                    DepartmentID = pos.DepartmentID,
+                    Department = pos.Department
+                };
 
                 int index = Positions.IndexOf(pos);
                 if (index != -1)
                 {
-                    Positions[index] = null;
-                    Positions[index] = pos;
+                    Positions[index] = updatedPosUI;
                 }
+                else
+                {
+                    _ = LoadPositionsAsync();
+                }
+            }
+            catch (DbUpdateException dbEx)
+            {
+                await transaction.RollbackAsync();
+                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                MessageBox.Show($"Lỗi CSDL khi lưu:\n{innerMessage}", "Lỗi Database", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi cập nhật chức vụ:\n" + GetDeepErrorMessage(ex));
+                await transaction.RollbackAsync();
+                MessageBox.Show($"Lỗi không xác định:\n{ex.Message}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -355,14 +407,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 var dbPos = await context.Positions.FindAsync(pos.PositionID);
                 if (dbPos != null) context.Positions.Remove(dbPos);
 
-                string adminID = UserSession.CurrentEmployeeId ?? "ADMIN";
+                string currentUserId = UserSession.CurrentEmployeeId;
+                bool userExists = !string.IsNullOrEmpty(currentUserId) &&
+                                  await context.Employees.AnyAsync(e => e.EmployeeID == currentUserId);
+                string logUserId = userExists ? currentUserId : null;
+
                 context.ChangeHistories.Add(new ChangeHistory
                 {
                     LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
                     ActionType = "DELETE",
                     TableName = "Positions",
                     RecordID = pos.PositionID,
-                    ChangeByUserID = adminID,
+                    ChangeByUserID = logUserId,
                     ChangeTime = DateTime.Now,
                     Details = $"Xóa chức vụ: {pos.PositionName}"
                 });

@@ -259,7 +259,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="MÔ TẢ CÔNG VIỆC" Binding="{Binding Description}" Width="3*" Foreground="#475569"/>
+                        <DataGridTextColumn Header="MÔ TẢ CÔNG VIỆC" Binding="{Binding JobDescription}" Width="3*" Foreground="#475569"/>
 
                         <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="100">
                             <DataGridTemplateColumn.CellTemplate>

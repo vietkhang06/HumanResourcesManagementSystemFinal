@@ -85,6 +85,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="HRMS.db">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Others\Settings.settings">
 			<Generator>SettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>

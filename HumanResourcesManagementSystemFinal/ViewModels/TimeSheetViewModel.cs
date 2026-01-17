@@ -29,6 +29,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
     public partial class TimeSheetViewModel : ObservableObject
     {
+        // Các mốc giờ (Để test thì tạm thời không dùng đến logic chặn giờ)
         private readonly TimeSpan _shiftStart = new(8, 0, 0);
         private readonly TimeSpan _lunchStart = new(12, 0, 0);
         private readonly TimeSpan _lunchEnd = new(13, 0, 0);
@@ -90,12 +91,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         private void UpdateButtonStateRealTime()
         {
-            var now = DateTime.Now.TimeOfDay;
+            // --- LOGIC GỐC (Đã bỏ chặn giờ để Test) ---
+            // var now = DateTime.Now.TimeOfDay;
+            // bool isWorkingHours = (now >= _shiftStart && now <= _shiftEnd);
+            // bool isLunchTime = (now >= _lunchStart && now < _lunchEnd);
+            // CanCheckIn = !_dbHasCheckedIn && isWorkingHours && !isLunchTime;
 
-            bool isWorkingHours = (now >= _shiftStart && now <= _shiftEnd);
-            bool isLunchTime = (now >= _lunchStart && now < _lunchEnd);
-
-            CanCheckIn = !_dbHasCheckedIn && isWorkingHours && !isLunchTime;
+            // --- LOGIC ĐỂ TEST: Cho phép bấm nút bất cứ lúc nào ---
+            CanCheckIn = !_dbHasCheckedIn;
             CanCheckOut = _dbHasCheckedIn && !_dbHasCheckedOut;
         }
 
@@ -123,7 +126,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     _dbHasCheckedIn = false;
                     _dbHasCheckedOut = false;
                     TodayStatusText = "Chưa vào ca";
-                    TodayStatusColor = "#718096";
+                    TodayStatusColor = "#718096"; // Xám
                     TodayCheckInStr = "--:--";
                     TodayCheckOutStr = "--:--";
                 }
@@ -136,14 +139,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     {
                         _dbHasCheckedOut = false;
                         TodayStatusText = "Đang làm việc";
-                        TodayStatusColor = "#38A169";
+                        TodayStatusColor = "#38A169"; // Xanh lá
                         TodayCheckOutStr = "--:--";
                     }
                     else
                     {
                         _dbHasCheckedOut = true;
                         TodayStatusText = "Đã kết thúc ca";
-                        TodayStatusColor = "#2B6CB0";
+                        TodayStatusColor = "#2B6CB0"; // Xanh dương
                         TodayCheckOutStr = record.TimeOut?.ToString(@"hh\:mm");
                     }
                 }
@@ -160,6 +163,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             var nowTime = DateTime.Now.TimeOfDay;
 
+            // --- TẠM THỜI BỎ CHẶN GIỜ ĐỂ TEST ---
+            /*
             if (nowTime < _shiftStart || nowTime > _shiftEnd)
             {
                 MessageBox.Show($"Hiện tại là {nowTime:hh\\:mm}, không nằm trong khung giờ làm việc ({_shiftStart:hh\\:mm} - {_shiftEnd:hh\\:mm}).",
@@ -172,6 +177,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 MessageBox.Show("Hiện đang là giờ nghỉ trưa!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            */
 
             try
             {
@@ -194,8 +200,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 context.TimeSheets.Add(newRecord);
                 await context.SaveChangesAsync();
 
-                string msg = "Check-in thành công!";
-                if (nowTime > _lateThreshold) msg += "\n(Lưu ý: Bạn đã đi muộn)";
+                string msg = "Check-in thành công (Test Mode)!";
+                if (nowTime > _lateThreshold) msg += "\n(Lưu ý: Đã quá 8:15)";
 
                 MessageBox.Show(msg, "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 await InitializeAsync();
@@ -207,6 +213,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private async Task CheckOutAsync()
         {
             var nowTime = DateTime.Now.TimeOfDay;
+
+            // --- TẠM THỜI BỎ HỎI VỀ SỚM ĐỂ TEST ---
+            /*
             if (nowTime < _shiftEnd)
             {
                 if (MessageBox.Show("Chưa đến giờ tan ca (17:00). Bạn có chắc muốn về sớm?",
@@ -215,6 +224,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     return;
                 }
             }
+            */
 
             try
             {
@@ -232,13 +242,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         TimeSpan inTime = record.TimeIn.Value;
                         TimeSpan outTime = nowTime;
 
+                        // Tính giờ đơn giản để test
+                        totalHours = (outTime - inTime).TotalHours;
+
+                        // Logic trừ giờ nghỉ trưa nếu làm xuyên trưa (giữ lại logic này cũng được)
                         if (inTime < _lunchStart && outTime > _lunchEnd)
                         {
-                            totalHours = (outTime - inTime).TotalHours - 1.0;
-                        }
-                        else
-                        {
-                            totalHours = (outTime - inTime).TotalHours;
+                            totalHours -= 1.0;
                         }
                     }
 
@@ -279,29 +289,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     }
                     else
                     {
-                        bool isLate = item.TimeIn.Value > _lateThreshold;
-                        bool isEarly = item.TimeOut.Value < _shiftEnd;
-
-                        if (!isLate && !isEarly && item.ActualHours >= 8)
-                        {
-                            status = "Đủ công"; color = "#38A169";
-                        }
-                        else if (isLate && isEarly)
-                        {
-                            status = "Muộn & Về sớm"; color = "#DD6B20";
-                        }
-                        else if (isLate)
-                        {
-                            status = "Đi muộn"; color = "#D69E2E";
-                        }
-                        else if (isEarly)
-                        {
-                            status = "Về sớm"; color = "#D69E2E";
-                        }
-                        else
-                        {
-                            status = "Thiếu giờ"; color = "#E53E3E";
-                        }
+                        // Logic xét trạng thái đơn giản hóa
+                        status = "Hoàn thành";
+                        color = "#38A169";
                     }
 
                     HistoryList.Add(new TimeSheetDTO
@@ -321,6 +311,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private async Task ExportReportAsync()
         {
+            // Logic xuất báo cáo giữ nguyên như cũ
             bool isAdmin = AppSession.CurrentRole == "Admin" || AppSession.CurrentRole == "Manager";
             bool exportAll = false;
             if (isAdmin)
@@ -347,7 +338,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (exportAll)
                 {
                     var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-
                     var allRecords = await context.TimeSheets
                         .Include(t => t.Employee)
                         .Where(t => t.WorkDate >= startOfMonth)
@@ -423,17 +413,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                 worksheet.Cell(currentRow, 4).Value = item.CheckInText;
                                 worksheet.Cell(currentRow, 5).Value = item.CheckOutText;
                                 worksheet.Cell(currentRow, 6).Value = item.TotalHoursText;
-
-                                var statusCell = worksheet.Cell(currentRow, 7);
-                                statusCell.Value = item.StatusText;
-
-                                if (item.StatusText.Contains("Muộn") || item.StatusText.Contains("Thiếu"))
-                                    statusCell.Style.Font.FontColor = XLColor.Red;
-                                else if (item.StatusText.Contains("Đủ công"))
-                                    statusCell.Style.Font.FontColor = XLColor.Green;
-                                else
-                                    statusCell.Style.Font.FontColor = XLColor.Orange;
-
+                                worksheet.Cell(currentRow, 7).Value = item.StatusText;
                                 currentRow++;
                             }
 

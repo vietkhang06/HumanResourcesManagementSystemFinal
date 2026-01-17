@@ -285,14 +285,15 @@
                              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" 
                              Background="Transparent" BorderThickness="0" Foreground="#3182CE"/>
 
-                <DataGrid ItemsSource="{Binding Histories}" AutoGenerateColumns="False" 
+                <DataGrid ItemsSource="{Binding Histories}" AutoGenerateColumns="False"
+                          ColumnWidth="*"
                           IsReadOnly="True" CanUserAddRows="False"
                           GridLinesVisibility="Horizontal" HeadersVisibility="Column"
                           Background="Transparent" BorderThickness="0"
                           HorizontalGridLinesBrush="#EDF2F7" VerticalScrollBarVisibility="Auto">
 
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="THỜI GIAN" Width="130">
+                        <DataGridTemplateColumn Header="THỜI GIAN" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -303,7 +304,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="NGƯỜI THỰC HIỆN" Width="220">
+                        <DataGridTemplateColumn Header="NGƯỜI THỰC HIỆN" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -325,7 +326,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="120">
+                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -357,7 +358,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="BẢNG DỮ LIỆU" Width="150">
+                        <DataGridTemplateColumn Header="BẢNG DỮ LIỆU" Width="1.5*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding TableName}" FontWeight="SemiBold" Foreground="#718096" 
@@ -367,7 +368,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="CHI TIẾT" Width="*">
+                        <DataGridTemplateColumn Header="CHI TIẾT" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Background="Transparent" BorderThickness="0" Cursor="Hand" 

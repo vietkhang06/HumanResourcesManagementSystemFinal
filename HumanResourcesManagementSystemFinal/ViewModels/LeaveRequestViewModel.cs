@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Xceed.Document.NET;
+using Xceed.Words.NET;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -134,6 +137,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
 
                 var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
+
+                // FIX: Sort Pending/Đang chờ to top (0), others to bottom (1)
+                list = list.OrderBy(r => (r.Status == "Pending" || r.Status == "Đang chờ") ? 0 : 1)
+                           .ThenByDescending(r => r.StartDate)
+                           .ToList();
+
                 var viewList = new List<LeaveRequestItem>();
 
                 foreach (var req in list)
@@ -245,38 +254,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public async Task ApproveAsync(LeaveRequestItem item)
         {
             if (item == null) return;
-
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
 
-            if (MessageBox.Show($"Duyệt đơn của {empName}?", "Xác nhận",
-                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            // Cho phép thay đổi quyết định nếu đơn đã bị từ chối trước đó
+            string message = (request.Status == "Rejected" || request.Status == "Từ chối")
+                ? $"Thay đổi quyết định: CHẤP THUẬN đơn của {empName}?"
+                : $"Duyệt đơn của {empName}?";
+
+            if (MessageBox.Show(message, "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 try
                 {
                     if (string.IsNullOrEmpty(request.RequestID)) return;
 
-                    var freshRequest = await _leaveService.GetRequestByIdAsync(request.RequestID);
-
-                    if (freshRequest == null)
-                    {
-                        MessageBox.Show("Đơn này không còn tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                        await LoadDataAsync();
-                        return;
-                    }
-
-                    if (freshRequest.Status != "Pending" && freshRequest.Status != "Đang chờ")
-                    {
-                        MessageBox.Show($"Đơn này đã được xử lý trước đó!\nTrạng thái hiện tại: {freshRequest.Status}",
-                                        "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        await LoadDataAsync();
-                        return;
-                    }
+                    // --- ĐÃ XÓA ĐOẠN CODE CHẶN TRẠNG THÁI PENDING Ở ĐÂY ---
 
                     if (await _leaveService.UpdateStatusAsync(request.RequestID, "Approved"))
                     {
                         await LoadDataAsync();
-                        MessageBox.Show("Đã duyệt thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
@@ -290,38 +286,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public async Task RejectAsync(LeaveRequestItem item)
         {
             if (item == null) return;
-
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
 
-            if (MessageBox.Show($"Từ chối đơn của {empName}?", "Xác nhận",
-                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            // Cho phép thay đổi quyết định nếu đơn đã được duyệt trước đó
+            string message = (request.Status == "Approved" || request.Status == "Đã duyệt")
+                ? $"Thay đổi quyết định: TỪ CHỐI đơn của {empName}?"
+                : $"Từ chối đơn của {empName}?";
+
+            if (MessageBox.Show(message, "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 try
                 {
                     if (string.IsNullOrEmpty(request.RequestID)) return;
 
-                    var freshRequest = await _leaveService.GetRequestByIdAsync(request.RequestID);
-
-                    if (freshRequest == null)
-                    {
-                        MessageBox.Show("Đơn này không còn tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                        await LoadDataAsync();
-                        return;
-                    }
-
-                    if (freshRequest.Status != "Pending" && freshRequest.Status != "Đang chờ")
-                    {
-                        MessageBox.Show($"Đơn này đã được xử lý trước đó!\nTrạng thái hiện tại: {freshRequest.Status}",
-                                        "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        await LoadDataAsync();
-                        return;
-                    }
+                    // --- ĐÃ XÓA ĐOẠN CODE CHẶN TRẠNG THÁI PENDING Ở ĐÂY ---
 
                     if (await _leaveService.UpdateStatusAsync(request.RequestID, "Rejected"))
                     {
                         await LoadDataAsync();
-                        MessageBox.Show("Đã từ chối đơn này.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
@@ -410,6 +393,78 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             return true;
         }
 
+        [RelayCommand]
+        public void ExportToWord()
+        {
+            // 1. Kiểm tra dữ liệu
+            if (string.IsNullOrWhiteSpace(Reason))
+            {
+                MessageBox.Show("Vui lòng nhập lý do trước khi xuất đơn.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 2. Mở hộp thoại lưu file
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Word Document (*.docx)|*.docx",
+                FileName = $"Don_Xin_Nghi_{DateTime.Now:yyyyMMdd}_{CurrentUserId}.docx"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // 3. Tạo file Word
+                    using (var doc = DocX.Create(saveFileDialog.FileName))
+                    {
+                        // Tiêu đề
+                        doc.InsertParagraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM")
+                           .FontSize(14).Bold().Alignment = Alignment.center;
+                        doc.InsertParagraph("Độc lập - Tự do - Hạnh phúc")
+                           .FontSize(14).Bold().UnderlineStyle(UnderlineStyle.singleLine).Alignment = Alignment.center;
+                        doc.InsertParagraph("").SpacingAfter(20);
+
+                        doc.InsertParagraph("ĐƠN XIN NGHỈ PHÉP")
+                           .FontSize(20).Bold().Alignment = Alignment.center;
+                        doc.InsertParagraph("").SpacingAfter(20);
+
+                        // Kính gửi
+                        doc.InsertParagraph($"Kính gửi: Ban Giám Đốc Công ty")
+                           .FontSize(14).SpacingAfter(10);
+
+                        // Nội dung
+                        var pInfo = doc.InsertParagraph();
+                        pInfo.FontSize(14).SpacingBefore(10); // Đã sửa từ LineSpacingBefore thành SpacingBefore                        pInfo.Append($"Tôi tên là: {CurrentUserId}\n"); // Nếu có tên thật thì thay vào đây
+                        pInfo.Append($"Chức vụ: Nhân viên\n");
+                        pInfo.Append($"Nay tôi làm đơn này để xin phép được nghỉ loại: {LeaveType}\n");
+                        pInfo.Append($"Từ ngày: {StartDate:dd/MM/yyyy}   Đến ngày: {EndDate:dd/MM/yyyy}\n");
+                        pInfo.Append($"Lý do: {Reason}\n");
+
+                        doc.InsertParagraph("").SpacingAfter(20);
+
+                        // Chữ ký
+                        var table = doc.AddTable(1, 2);
+                        table.Design = TableDesign.None;
+                        table.Alignment = Alignment.center;
+                        table.Rows[0].Cells[0].Paragraphs[0].Append("").Alignment = Alignment.center;
+                        table.Rows[0].Cells[1].Paragraphs[0].Append($"Ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}\nNgười làm đơn")
+                            .FontSize(14).Italic().Alignment = Alignment.center;
+
+                        doc.InsertTable(table);
+
+                        // 4. Lưu file
+                        doc.Save();
+                    }
+
+                    MessageBox.Show("Xuất đơn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         protected override async Task PerformSilentUpdateAsync()
         {
             try
@@ -418,12 +473,20 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
 
+                // --- KHẮC PHỤC: THÊM LOGIC SẮP XẾP VÀO ĐÂY GIỐNG LOADDATAASYNC ---
+                list = list.OrderBy(r => (r.Status == "Pending" || r.Status == "Đang chờ") ? 0 : 1)
+                           .ThenByDescending(r => r.StartDate)
+                           .ToList();
+                // ------------------------------------------------------------------
+
                 if (list.Count == RequestItems.Count)
                 {
                     bool hasChange = false;
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (list[i].Status != RequestItems[i].Request.Status)
+                        // So sánh Status hoặc ID để xem có thay đổi không
+                        if (list[i].Status != RequestItems[i].Request.Status ||
+                            list[i].RequestID != RequestItems[i].Request.RequestID)
                         {
                             hasChange = true;
                             break;
@@ -440,7 +503,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     viewList.Add(new LeaveRequestItem { Request = req, CanApprove = canApprove, CanEdit = canEdit });
                 }
 
-                RequestItems = new ObservableCollection<LeaveRequestItem>(viewList);
+                // Cập nhật lại UI trên Thread chính
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    RequestItems = new ObservableCollection<LeaveRequestItem>(viewList);
+                });
             }
             catch { }
         }

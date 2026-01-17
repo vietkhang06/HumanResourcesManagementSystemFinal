@@ -195,44 +195,84 @@
 
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="0" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
             <DataGrid x:Name="dgEmployees"
-                      ItemsSource="{Binding Employees}" 
-                      SelectedItem="{Binding SelectedEmployee}"
-                      AutoGenerateColumns="False" 
-                      CanUserAddRows="False" 
-                      HeadersVisibility="Column"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#F7FAFC"
-                      VerticalGridLinesBrush="Transparent"
-                      Background="Transparent"
-                      BorderThickness="0"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      CanUserResizeColumns="False">
+              ItemsSource="{Binding Employees}" 
+              SelectedItem="{Binding SelectedEmployee}"
+          
+              IsReadOnly="True"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
+              CanUserResizeColumns="False"
+              CanUserResizeRows="False"
+          
+              AutoGenerateColumns="False" 
+              HeadersVisibility="Column"
+              GridLinesVisibility="Horizontal"
+          
+              HorizontalGridLinesBrush="#EDF2F7"
+              VerticalGridLinesBrush="Transparent"
+              Background="Transparent"
+              BorderThickness="0"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">        
 
                 <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#2D3748"/>
+                </DataGrid.Resources>
+
+                <DataGrid.InputBindings>
+                    <MouseBinding Gesture="LeftDoubleClick" 
+                      Command="{Binding DataContext.OpenDetailEmployeeCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                      CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                </DataGrid.InputBindings>
+
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.CellStyle>
+
+                <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="White"/>
-                        <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="MinHeight" Value="45"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="MinHeight" Value="50"/>
                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
                         <Setter Property="BorderBrush" Value="#EDF2F7"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                         <Setter Property="Cursor" Value="Hand"/>
                         <Setter Property="ToolTip" Value="Nhấn đúp để xem chi tiết"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
 
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#F7FAFC"/>
                             </Trigger>
+
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="#EBF8FF"/>
-                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="Foreground" Value="#2D3748"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
-                </DataGrid.Resources>
+                </DataGrid.RowStyle>
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeID}" Width="70" FontWeight="Bold" Foreground="#4A5568">
+                    <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeID}" Width="80" FontWeight="Bold" Foreground="#4A5568">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -244,11 +284,10 @@
                     <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-                                    <Ellipse Width="34" Height="34" Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,4">
+                                    <Ellipse Width="36" Height="36" Margin="0,0,12,0">
                                         <Ellipse.Fill>
-                                            <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" 
-                                                        Stretch="UniformToFill"/>
+                                            <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" Stretch="UniformToFill"/>
                                         </Ellipse.Fill>
                                         <Ellipse.Stroke>
                                             <SolidColorBrush Color="#E2E8F0"/>
@@ -256,7 +295,7 @@
                                         <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
                                     </Ellipse>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#2D3748" FontSize="13"/>
+                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="#2D3748" FontSize="13"/>
                                         <TextBlock Text="{Binding Email}" Foreground="#718096" FontSize="11"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -270,7 +309,7 @@
                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                 <Setter Property="Foreground" Value="#4A5568"/>
-                                <Setter Property="Margin" Value="10, 0, 0, 0" />
+                                <Setter Property="Margin" Value="10,0,0,0"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
@@ -281,18 +320,17 @@
                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                 <Setter Property="Foreground" Value="#4A5568"/>
-                                <Setter Property="Margin" Value="10, 0, 0, 0" />
+                                <Setter Property="Margin" Value="10,0,0,0"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Header="TRẠNG THÁI" Width="120">
+                    <DataGridTemplateColumn Header="TRẠNG THÁI" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="10" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Margin" Value="10, 0, 0, 0" />
                                             <Setter Property="Background" Value="#EDF2F7"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Status}" Value="Active">
@@ -303,12 +341,6 @@
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Resigned">
                                                     <Setter Property="Background" Value="#FED7D7"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Status}" Value="Đã nghỉ việc">
-                                                    <Setter Property="Background" Value="#FED7D7"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Status}" Value="OnLeave">
-                                                    <Setter Property="Background" Value="#FEEBC8"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Nghỉ phép">
                                                     <Setter Property="Background" Value="#FEEBC8"/>
@@ -331,12 +363,6 @@
                                                     <DataTrigger Binding="{Binding Status}" Value="Resigned">
                                                         <Setter Property="Foreground" Value="#822727"/>
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Status}" Value="Đã nghỉ việc">
-                                                        <Setter Property="Foreground" Value="#822727"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Status}" Value="OnLeave">
-                                                        <Setter Property="Foreground" Value="#7B341E"/>
-                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="Nghỉ phép">
                                                         <Setter Property="Foreground" Value="#7B341E"/>
                                                     </DataTrigger>
@@ -349,23 +375,21 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="" Width="90">
+                    <DataGridTemplateColumn Header="" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
-
-                                    <Button Style="{StaticResource ActionButton}" Background="#EBF8FF" ToolTip="Sửa"
-                                            Command="{Binding DataContext.EditEmployeeCommand, ElementName=dgEmployees}"
-                                            CommandParameter="{Binding}">
+                                    <Button Style="{StaticResource ActionButton}" Background="#EBF8FF" ToolTip="Sửa" Margin="0,0,8,0"
+                                Command="{Binding DataContext.EditEmployeeCommand, ElementName=dgEmployees}"
+                                CommandParameter="{Binding}">
                                         <Path Data="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
-                                              Stroke="#3182CE" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform"/>
+                                  Stroke="#3182CE" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>
-
                                     <Button Style="{StaticResource ActionButton}" Background="#FFF5F5" ToolTip="Xóa"
-                                            Command="{Binding DataContext.DeleteEmployeeCommand, ElementName=dgEmployees}"
-                                            CommandParameter="{Binding}">
+                                Command="{Binding DataContext.DeleteEmployeeCommand, ElementName=dgEmployees}"
+                                CommandParameter="{Binding}">
                                         <Path Data="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" 
-                                              Stroke="#E53E3E" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform"/>
+                                  Stroke="#E53E3E" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>
                                 </StackPanel>
                             </DataTemplate>

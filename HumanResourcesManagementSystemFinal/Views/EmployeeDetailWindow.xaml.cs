@@ -5,10 +5,9 @@ namespace HumanResourcesManagementSystemFinal.Views
 {
     public partial class EmployeeDetailWindow : Window
     {
-        public EmployeeDetailWindow(Employee emp)
+        public EmployeeDetailWindow()
         {
             InitializeComponent();
-            this.DataContext = emp;
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

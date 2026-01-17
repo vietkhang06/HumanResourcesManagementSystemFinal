@@ -34,19 +34,23 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 using var context = new DataContext();
 
+                // 1. Tải phòng ban
                 var deptList = context.Departments.ToList();
                 deptList.Insert(0, new Department
                 {
                     DepartmentID = "",
-                    DepartmentName = "--- Tất cả ---"
+                    DepartmentName = "Tất cả"
                 });
 
                 Departments.Clear();
                 foreach (var dept in deptList)
                     Departments.Add(dept);
 
-                SelectedDepartment ??= Departments.FirstOrDefault();
+                // Giữ lại lựa chọn cũ nếu có, nếu không thì chọn cái đầu tiên
+                if (SelectedDepartment == null)
+                    SelectedDepartment = Departments.FirstOrDefault();
 
+                // 2. Tải nhân viên
                 _allEmployees = context.Employees
                     .AsNoTracking()
                     .Include(e => e.Department)
@@ -59,15 +63,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
             catch (Exception ex)
             {
-                var errorMsg = $"Lỗi kết nối CSDL: {ex.Message}";
-                if (ex.InnerException != null)
-                {
-                    errorMsg += $"\nChi tiết: {ex.InnerException.Message}";
-                }
-                MessageBox.Show(errorMsg, "Lỗi Tải Dữ Liệu", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        // Tự động lọc khi gõ chữ hoặc chọn phòng ban
         partial void OnSearchTextChanged(string value) => FilterEmployees();
         partial void OnSelectedDepartmentChanged(Department value) => FilterEmployees();
 
@@ -75,11 +75,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             IEnumerable<Employee> query = _allEmployees;
 
+            // Lọc theo phòng ban
             if (SelectedDepartment != null && !string.IsNullOrEmpty(SelectedDepartment.DepartmentID))
             {
                 query = query.Where(e => e.DepartmentID == SelectedDepartment.DepartmentID);
             }
 
+            // Lọc theo từ khóa tìm kiếm
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 string keyword = SearchText.ToLower();
@@ -89,13 +91,23 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     (e.EmployeeID ?? "").ToLower().Contains(keyword));
             }
 
+            // Cập nhật lên giao diện
             Employees.Clear();
             foreach (var emp in query)
                 Employees.Add(emp);
         }
 
         [RelayCommand]
-        private void ShowAddEmployee(Employee existingEmp = null)
+        private void AddEmployee() => ShowAddEmployeeWindow(null);
+
+        [RelayCommand]
+        private void EditEmployee(Employee emp)
+        {
+            if (emp != null) ShowAddEmployeeWindow(emp);
+        }
+
+        // Hàm chung để mở cửa sổ Thêm/Sửa
+        private void ShowAddEmployeeWindow(Employee existingEmp)
         {
             var addVM = existingEmp != null
                 ? new AddEmployeeViewModel(existingEmp)
@@ -105,25 +117,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
             if (window.ShowDialog() == true)
             {
-                LoadDataFromDb();
-
-                if (addVM.IsEditMode && addVM.EditingEmployeeId == AppSession.CurrentUser?.EmployeeID)
-                {
-                    if (Application.Current.MainWindow.DataContext is MainViewModel mainVM)
-                    {
-                        mainVM.RefreshCurrentUser();
-                    }
-                }
+                LoadDataFromDb(); // Tải lại danh sách sau khi thêm/sửa
             }
-        }
-
-        [RelayCommand]
-        private void AddEmployee() => ShowAddEmployee(null);
-
-        [RelayCommand]
-        private void EditEmployee(Employee emp)
-        {
-            if (emp != null) ShowAddEmployee(emp);
         }
 
         [RelayCommand]
@@ -132,7 +127,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (emp == null) return;
 
             var confirm = MessageBox.Show(
-                $"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?\nHành động này sẽ xóa cả tài khoản và hợp đồng liên quan.",
+                $"Bạn có chắc chắn muốn xóa nhân viên {emp.FullName}?",
                 "Xác nhận xóa",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -142,68 +137,65 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 using var context = new DataContext();
-
                 var dbEmp = await context.Employees
                     .Include(e => e.Account)
                     .Include(e => e.WorkContracts)
                     .FirstOrDefaultAsync(e => e.EmployeeID == emp.EmployeeID);
 
-                if (dbEmp == null)
+                if (dbEmp != null)
                 {
-                    MessageBox.Show("Nhân viên này không còn tồn tại hoặc đã bị xóa trước đó.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Xóa các bảng phụ trước
+                    if (dbEmp.Account != null) context.Accounts.Remove(dbEmp.Account);
+                    if (dbEmp.WorkContracts != null) context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
+
+                    // Cập nhật nhân viên cấp dưới (bỏ ManagerID)
+                    var subs = context.Employees.Where(e => e.ManagerID == dbEmp.EmployeeID);
+                    foreach (var sub in subs) sub.ManagerID = null;
+
+                    // Ghi lịch sử
+                    context.ChangeHistories.Add(new ChangeHistory
+                    {
+                        LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
+                        TableName = "Employees",
+                        ActionType = "DELETE",
+                        RecordID = dbEmp.EmployeeID,
+                        ChangeByUserID = UserSession.CurrentEmployeeId ?? "ADMIN",
+                        ChangeTime = DateTime.Now,
+                        Details = $"Xóa nhân viên: {dbEmp.FullName}"
+                    });
+
+                    // Xóa nhân viên
+                    context.Employees.Remove(dbEmp);
+                    await context.SaveChangesAsync();
+
                     LoadDataFromDb();
-                    return;
+                    MessageBox.Show("Đã xóa thành công!", "Thông báo");
                 }
-
-                if (dbEmp.Account != null)
-                    context.Accounts.Remove(dbEmp.Account);
-
-                if (dbEmp.WorkContracts != null)
-                    context.WorkContracts.RemoveRange(dbEmp.WorkContracts);
-
-                var subordinates = context.Employees
-                    .Where(e => e.ManagerID == dbEmp.EmployeeID)
-                    .ToList();
-
-                foreach (var sub in subordinates)
-                    sub.ManagerID = null;
-
-                string adminID = string.IsNullOrEmpty(UserSession.CurrentEmployeeId)
-                    ? "ADMIN"
-                    : UserSession.CurrentEmployeeId;
-
-                context.ChangeHistories.Add(new ChangeHistory
-                {
-                    LogID = Guid.NewGuid().ToString("N")[..8].ToUpper(),
-                    TableName = "Employees",
-                    ActionType = "DELETE",
-                    RecordID = dbEmp.EmployeeID,
-                    ChangeByUserID = adminID,
-                    ChangeTime = DateTime.Now,
-                    Details = $"Xóa nhân viên: {dbEmp.FullName} (ID: {dbEmp.EmployeeID})"
-                });
-
-                context.Employees.Remove(dbEmp);
-                await context.SaveChangesAsync();
-
-                LoadDataFromDb();
-                MessageBox.Show("Đã xóa nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMsg = dbEx.InnerException?.Message ?? dbEx.Message;
-                MessageBox.Show($"Không thể xóa nhân viên này do ràng buộc dữ liệu.\nChi tiết kỹ thuật: {innerMsg}", "Lỗi CSDL", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Đã xảy ra lỗi không mong muốn:\n{ex.Message}\n\nStack Trace: {ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi xóa: {ex.Message}", "Lỗi CSDL", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        // [QUAN TRỌNG] Đổi tên thành ViewDetail để khớp với lỗi CS1061
         [RelayCommand]
         private void ViewDetail(Employee emp)
         {
-            if (emp == null) return;
+            if (emp == null)
+            {
+                MessageBox.Show("Nhưng chưa lấy được thông tin nhân viên (emp bị null)");
+                return;
+            }
+            // 2. Tạo ViewModel và Window
+            var detailVM = new EmployeeDetailViewModel(emp);
+            var detailWindow = new EmployeeDetailWindow
+            {
+                DataContext = detailVM
+            };
+
+            // 3. Hiện cửa sổ
+            detailWindow.ShowDialog();
         }
     }
 }

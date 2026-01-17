@@ -3,10 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32; // Cần thêm cái này để dùng SaveFileDialog
+using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
-using System.IO;       // Cần thêm cái này để ghi file
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +23,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private decimal _totalSalaryFund;
         [ObservableProperty] private string _payrollStatus;
         [ObservableProperty] private string _statusColor;
+
+        // --- BỔ SUNG: PHÂN QUYỀN VÀ DỮ LIỆU NHÂN VIÊN ---
+        [ObservableProperty] private bool _isAdmin = true; // Fix lỗi IsAdmin
+        [ObservableProperty] private PayrollDTO _currentEmployeePayroll; // Fix lỗi CurrentEmployeePayroll
+        [ObservableProperty] private decimal _advancePayment = 1000000; // Tạm ứng mặc định
 
         // --- 2. CÁC BIẾN THỦ CÔNG ---
         private int _selectedMonth;
@@ -47,9 +52,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
+        private readonly string _targetEmployeeId; // Lưu ID nhân viên cần xem
+
         // --- 3. CONSTRUCTOR ---
-        public PayrollViewModel()
+
+        // Constructor mặc định cho Admin
+        public PayrollViewModel() : this(null) { }
+
+        // Constructor cho Nhân viên cụ thể
+        public PayrollViewModel(string employeeId)
         {
+            _targetEmployeeId = employeeId;
+            IsAdmin = string.IsNullOrEmpty(employeeId); // Nếu có ID truyền vào thì IsAdmin = false
+
             PayrollList = new ObservableCollection<PayrollDTO>();
             Months = new ObservableCollection<int>();
             Years = new ObservableCollection<int>();
@@ -65,12 +80,11 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             _ = CalculatePayrollAsync();
         }
 
-        // --- 4. HÀM TÍNH LƯƠNG (GIỮ NGUYÊN LOGIC CŨ) ---
+        // --- 4. HÀM TÍNH LƯƠNG ---
         private async Task CalculatePayrollAsync()
         {
             try
             {
-                // Logic kiểm tra tương lai
                 var now = DateTime.Now;
                 if (SelectedYear > now.Year || (SelectedYear == now.Year && SelectedMonth > now.Month))
                 {
@@ -85,12 +99,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 var startOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
                 var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
-                var employees = await context.Employees
-                    .AsNoTracking()
+                // Lọc nhân viên: Nếu có ID thì chỉ lấy 1 người, nếu không lấy tất cả (Admin)
+                var query = context.Employees.AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
                     .Include(e => e.WorkContracts)
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (!string.IsNullOrEmpty(_targetEmployeeId)) // Fix lỗi so sánh string/int
+                {
+                    query = query.Where(e => e.EmployeeID == _targetEmployeeId);
+                }
+
+                var employees = await query.ToListAsync();
 
                 var allTimeSheets = await context.TimeSheets
                     .AsNoTracking()
@@ -114,13 +135,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     var empTimeSheets = allTimeSheets.Where(t => t.EmployeeID == emp.EmployeeID).ToList();
                     double workDays = empTimeSheets.Count;
 
-                    decimal actualSalary = 0;
-                    if (baseSalary > 0)
-                        actualSalary = (baseSalary / 26m) * (decimal)workDays;
-
+                    decimal actualSalary = baseSalary > 0 ? (baseSalary / 26m) * (decimal)workDays : 0;
                     decimal totalIncome = Math.Round(actualSalary, 0);
-                    decimal deduction = 0;
-                    decimal netSalary = totalIncome - deduction;
+                    decimal netSalary = totalIncome; // Giả định chưa có khấu trừ
 
                     grandTotal += netSalary;
 
@@ -133,7 +150,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         ContractSalary = Math.Round(baseSalary, 0),
                         ActualWorkDays = workDays,
                         TotalIncome = totalIncome,
-                        TotalDeduction = deduction,
                         NetSalary = netSalary
                     });
                 }
@@ -141,18 +157,17 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 PayrollList = resultList;
                 TotalSalaryFund = grandTotal;
 
+                // Cập nhật dữ liệu cho giao diện nhân viên
+                if (!IsAdmin && resultList.Count > 0)
+                {
+                    CurrentEmployeePayroll = resultList[0];
+                }
+
+                // Cập nhật trạng thái
                 if (PayrollList.Count > 0)
                 {
-                    if (SelectedMonth == now.Month && SelectedYear == now.Year)
-                    {
-                        PayrollStatus = "Dự tính";
-                        StatusColor = "#10B981";
-                    }
-                    else
-                    {
-                        PayrollStatus = "Đã tính toán";
-                        StatusColor = "#3B82F6";
-                    }
+                    PayrollStatus = (SelectedMonth == now.Month && SelectedYear == now.Year) ? "Dự tính" : "Đã tính toán";
+                    StatusColor = (SelectedMonth == now.Month && SelectedYear == now.Year) ? "#10B981" : "#3B82F6";
                 }
                 else
                 {
@@ -166,48 +181,37 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // --- 5. HÀM XUẤT EXCEL (CSV) ---
+        // --- COMMANDS ĐIỀU HƯỚNG THÁNG ---
+        [RelayCommand]
+        private void PreviousMonth()
+        {
+            if (SelectedMonth == 1) { SelectedMonth = 12; SelectedYear--; }
+            else SelectedMonth--;
+        }
+
+        [RelayCommand]
+        private void NextMonth()
+        {
+            if (SelectedMonth == 12) { SelectedMonth = 1; SelectedYear++; }
+            else SelectedMonth++;
+        }
+
         [RelayCommand]
         private void ExportToExcel()
         {
-            if (PayrollList == null || PayrollList.Count == 0)
+            if (PayrollList == null || PayrollList.Count == 0) return;
+
+            SaveFileDialog sfd = new SaveFileDialog { Filter = "CSV (*.csv)|*.csv", FileName = $"Payroll_{SelectedMonth}_{SelectedYear}.csv" };
+            if (sfd.ShowDialog() == true)
             {
-                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                // Mở hộp thoại chọn nơi lưu
-                SaveFileDialog saveFileDialog = new SaveFileDialog
+                var sb = new StringBuilder();
+                sb.AppendLine("Mã NV,Họ Tên,Phòng Ban,Ngày Công,Thực Lĩnh");
+                foreach (var item in PayrollList)
                 {
-                    Filter = "Excel CSV (*.csv)|*.csv",
-                    FileName = $"BangLuong_Thang{SelectedMonth}_{SelectedYear}.csv"
-                };
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    var sb = new StringBuilder();
-
-                    // 1. Tiêu đề cột
-                    sb.AppendLine("Mã NV,Họ Tên,Phòng Ban,Chức Vụ,Ngày Công,Lương HĐ,Tổng Thu,Khấu Trừ,Thực Lĩnh");
-
-                    // 2. Dữ liệu
-                    foreach (var item in PayrollList)
-                    {
-                        // Lưu ý: Cần xử lý dấu phẩy trong tên nếu có (bằng cách đặt trong ngoặc kép)
-                        sb.AppendLine($"{item.EmployeeID},\"{item.FullName}\",\"{item.DepartmentName}\",\"{item.PositionName}\",{item.ActualWorkDays},{item.ContractSalary},{item.TotalIncome},{item.TotalDeduction},{item.NetSalary}");
-                    }
-
-                    // 3. Ghi file với Encoding UTF8 (có BOM) để Excel hiển thị đúng tiếng Việt
-                    File.WriteAllText(saveFileDialog.FileName, sb.ToString(), Encoding.UTF8);
-
-                    MessageBox.Show("Xuất file thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    sb.AppendLine($"{item.EmployeeID},{item.FullName},{item.DepartmentName},{item.ActualWorkDays},{item.NetSalary}");
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                MessageBox.Show("Xuất thành công!");
             }
         }
     }

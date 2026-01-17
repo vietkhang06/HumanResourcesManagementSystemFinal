@@ -11,6 +11,7 @@ using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
+using HumanResourcesManagementSystemFinal.ViewModels; // Đảm bảo có namespace này
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -83,9 +84,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         }
 
         public string CurrentUserName => !string.IsNullOrEmpty(CurrentUser?.EmployeeID) ? CurrentUser.FullName : "Người dùng";
-
         public string CurrentUserJob => CurrentUser?.Position?.PositionName ?? (_isAdmin ? "Administrator" : "N/A");
-
         public string CurrentUserAvatar => CurrentUser?.EmployeeID;
 
         public void Receive(ValueChangedMessage<string> message)
@@ -118,11 +117,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void NavigateEmployee()
         {
-            if (!IsAdmin)
-            {
-                ShowAccessDenied();
-                return;
-            }
+            if (!IsAdmin) { ShowAccessDenied(); return; }
             PageTitle = "Quản Lý Nhân Viên";
             CurrentPageName = "Employee";
             CurrentView = new ManageEmployeeControl();
@@ -131,11 +126,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void NavigateDepartment()
         {
-            if (!IsAdmin)
-            {
-                ShowAccessDenied();
-                return;
-            }
+            if (!IsAdmin) { ShowAccessDenied(); return; }
             PageTitle = "Phòng Ban & Vị Trí";
             CurrentPageName = "Department";
             CurrentView = new Department_Position_Control();
@@ -144,15 +135,30 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void NavigatePayroll()
         {
-            PageTitle = "Bảng Lương";
-            CurrentPageName = "Payroll";
             if (IsAdmin)
             {
+                // Admin: Xem toàn bộ danh sách, dùng view quản lý lương
                 CurrentView = new PayrollControl();
+                // DataContext của PayrollControl thường được gán tự động là PayrollViewModel mặc định
+                PageTitle = "Quản Lý Bảng Lương";
             }
             else
             {
-                MessageBox.Show("Chức năng xem lương cá nhân đang được phát triển.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Nhân viên: Truyền EmployeeID vào để lọc dữ liệu ngay từ đầu
+                string empId = CurrentUser?.EmployeeID;
+
+                if (!string.IsNullOrEmpty(empId))
+                {
+                    // Tạo ViewModel mới và truyền ID vào constructor
+                    var viewModel = new PayrollViewModel(empId);
+
+                    // Tạo View xem phiếu lương cá nhân
+                    var view = new EmployeePayrollControl();
+                    view.DataContext = viewModel;
+
+                    CurrentView = view;
+                    PageTitle = "Phiếu Lương Của Tôi";
+                }
             }
         }
 
@@ -185,10 +191,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             string empId = CurrentUser?.EmployeeID;
             string role = _currentAccount?.Role?.RoleName ?? "Employee";
             var leaveViewModel = new LeaveRequestViewModel(leaveService, empId, role);
-            CurrentView = new LeaveRequestControl
-            {
-                DataContext = leaveViewModel
-            };
+            CurrentView = new LeaveRequestControl { DataContext = leaveViewModel };
         }
 
         [RelayCommand]
@@ -220,47 +223,26 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void Logout(object parameter)
         {
             WeakReferenceMessenger.Default.UnregisterAll(this);
-
             AppSession.CurrentUser = null;
             AppSession.CurrentRole = null;
-
             new LoginWindow().Show();
-            if (parameter is Window w)
-            {
-                w.Close();
-            }
+            if (parameter is Window w) w.Close();
             else
             {
                 foreach (Window window in Application.Current.Windows)
                 {
-                    if (window is MainWindow || window.DataContext == this)
-                    {
-                        window.Close();
-                        break;
-                    }
+                    if (window is MainWindow || window.DataContext == this) { window.Close(); break; }
                 }
             }
         }
 
-        private void ShowAccessDenied()
-        {
-            MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+        private void ShowAccessDenied() => MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
 
         public async void RefreshCurrentUser()
         {
             if (string.IsNullOrEmpty(CurrentUser?.EmployeeID)) return;
-
             await LoadCurrentUserAsync();
-
-            string tempId = CurrentUser.EmployeeID;
-
-            CurrentUser.EmployeeID = null;
             OnPropertyChanged(nameof(CurrentUserAvatar));
-
-            CurrentUser.EmployeeID = tempId;
-            OnPropertyChanged(nameof(CurrentUserAvatar));
-
             OnPropertyChanged(nameof(CurrentUserName));
             OnPropertyChanged(nameof(CurrentUserJob));
         }

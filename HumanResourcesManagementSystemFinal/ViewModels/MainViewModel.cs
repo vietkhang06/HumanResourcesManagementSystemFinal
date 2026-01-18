@@ -30,7 +30,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _pageTitle = "Trang Chủ";
         [ObservableProperty] private object _currentView;
         [ObservableProperty] private bool _isAdmin;
-
+        public bool IsEmployee => !IsAdmin;
         public MainViewModel(Account loggedInAccount)
         {
             if (loggedInAccount == null)

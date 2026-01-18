@@ -14,5 +14,12 @@ namespace HumanResourcesManagementSystemFinal.Views
             InitializeComponent();
             this.DataContext = new MyProfileViewModel(employeeId);
         }
+        private async void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (DataContext is ProfileViewModel vm)
+            {
+                await vm.LoadUserProfileAsync();
+            }
+        }
     }
 }

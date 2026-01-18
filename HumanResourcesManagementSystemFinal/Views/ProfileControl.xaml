@@ -6,7 +6,12 @@
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
              xmlns:converters="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="750" d:DesignWidth="900" Background="Transparent">
+             d:DesignHeight="750" d:DesignWidth="900" Background="Transparent"
+             Loaded="UserControl_Loaded">
+
+    <UserControl.DataContext>
+        <vm:ProfileViewModel/>
+    </UserControl.DataContext>
 
     <UserControl.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBool"/>
@@ -153,7 +158,6 @@
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40">
                 <StackPanel>
-
                     <Grid Margin="0,0,0,30">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -251,7 +255,6 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-
                 </StackPanel>
             </ScrollViewer>
         </Border>

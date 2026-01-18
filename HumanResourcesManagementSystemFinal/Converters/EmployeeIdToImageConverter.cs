@@ -10,48 +10,38 @@ namespace HumanResourcesManagementSystemFinal.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // 1. Lấy ID nhân viên từ Binding
-            string empId = value as string;
-            if (string.IsNullOrEmpty(empId)) return LoadDefault();
+            string id = value as string;
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string folderPath = Path.Combine(baseDir, "Images", "EmployeeImages");
+            string defaultUri = "pack://application:,,,/Images/default_user.png";
+            string finalPath = null;
 
-            // 2. Tạo đường dẫn tới folder ảnh
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
+            if (!string.IsNullOrEmpty(id))
+            {
+                string pngPath = Path.Combine(folderPath, $"{id}.png");
+                string jpgPath = Path.Combine(folderPath, $"{id}.jpg");
 
-            // 3. Quét xem có file nào trùng tên không (ưu tiên png -> jpg -> jpeg)
-            string path = "";
-            string png = Path.Combine(folder, empId + ".png");
-            string jpg = Path.Combine(folder, empId + ".jpg");
-            string jpeg = Path.Combine(folder, empId + ".jpeg");
+                if (File.Exists(pngPath)) finalPath = pngPath;
+                else if (File.Exists(jpgPath)) finalPath = jpgPath;
+            }
 
-            if (File.Exists(png)) path = png;
-            else if (File.Exists(jpg)) path = jpg;
-            else if (File.Exists(jpeg)) path = jpeg;
+            if (finalPath == null) return new BitmapImage(new Uri(defaultUri));
 
-            // Nếu không tìm thấy file -> Trả về ảnh mặc định
-            if (string.IsNullOrEmpty(path)) return LoadDefault();
-
-            // 4. LOAD ẢNH TỪ BYTES (QUAN TRỌNG: Để không bị khóa file và cache cũ)
             try
             {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Bỏ qua cache cũ
-                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Load xong ngắt kết nối file ngay
-                bitmap.UriSource = new Uri(path);
-                bitmap.EndInit();
-                bitmap.Freeze(); // Tối ưu hiệu năng
-                return bitmap;
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(finalPath, UriKind.Absolute);
+                image.EndInit();
+                image.Freeze();
+                return image;
             }
             catch
             {
-                return LoadDefault();
+                return new BitmapImage(new Uri(defaultUri));
             }
-        }
-
-        private object LoadDefault()
-        {
-            // Đảm bảo bạn có file default_user.png trong thư mục Images của project (Build Action: Resource)
-            return new BitmapImage(new Uri("pack://application:,,,/Images/default_user.png"));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

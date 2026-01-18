@@ -25,6 +25,8 @@ public class Account
     [StringLength(10)]
     public string Password { get; set; } = string.Empty;
 
+    public byte[]? AvatarData { get; set; }
+
     [StringLength(20)]
     public string IsActive { get; set; } = "Active";
 

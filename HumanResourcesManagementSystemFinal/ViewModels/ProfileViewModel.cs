@@ -4,126 +4,166 @@ using HumanResourcesManagementSystemFinal.Data;
 using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
+using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 
-namespace HumanResourcesManagementSystemFinal.ViewModels;
-
-public partial class ProfileViewModel : ObservableObject
+namespace HumanResourcesManagementSystemFinal.ViewModels
 {
-    [ObservableProperty] private Employee _currentUser;
-    [ObservableProperty] private string _accountRole;
-    [ObservableProperty] private string _username;
-    [ObservableProperty] private bool _isEditing;
-
-    public ProfileViewModel()
+    public partial class ProfileViewModel : ObservableObject
     {
-        _ = LoadUserProfileAsync();
-    }
+        [ObservableProperty] private Employee _currentUser;
+        [ObservableProperty] private string _accountRole;
+        [ObservableProperty] private string _username;
+        [ObservableProperty] private bool _isEditing;
 
-    private string GetDeepErrorMessage(Exception ex)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine(ex.Message);
-        var inner = ex.InnerException;
-        while (inner != null)
+        public ProfileViewModel()
         {
-            sb.AppendLine(inner.Message);
-            inner = inner.InnerException;
         }
-        return sb.ToString();
-    }
 
-    private async Task LoadUserProfileAsync()
-    {
-        try
+        private string GetDeepErrorMessage(Exception ex)
         {
-            // 1. Lấy String ID từ Session
-            string currentId = UserSession.CurrentEmployeeId.ToString();
-            if (string.IsNullOrEmpty(currentId)) return;
-
-            using var context = new DataContext();
-
-            // 2. Tìm Employee theo EmployeeID (String)
-            CurrentUser = await context.Employees
-                .AsNoTracking()
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .FirstOrDefaultAsync(e => e.EmployeeID == currentId);
-
-            // 3. Tìm Account theo EmployeeID (String)
-            var account = await context.Accounts
-                .AsNoTracking()
-                .Include(a => a.Role)
-                .FirstOrDefaultAsync(a => a.EmployeeID == currentId);
-
-            if (account != null)
+            var sb = new StringBuilder();
+            sb.AppendLine(ex.Message);
+            var inner = ex.InnerException;
+            while (inner != null)
             {
-                // 4. Sửa Username -> UserName
-                Username = account.UserName;
-                AccountRole = account.Role?.RoleName ?? "N/A";
+                sb.AppendLine(inner.Message);
+                inner = inner.InnerException;
+            }
+            return sb.ToString();
+        }
+
+        public async Task LoadUserProfileAsync()
+        {
+            try
+            {
+                string currentId = UserSession.CurrentEmployeeId;
+                if (string.IsNullOrEmpty(currentId)) return;
+
+                using var context = new DataContext();
+
+                var emp = await context.Employees
+                    .AsNoTracking()
+                    .Include(e => e.Department)
+                    .Include(e => e.Position)
+                    .FirstOrDefaultAsync(e => e.EmployeeID == currentId);
+
+                var account = await context.Accounts
+                    .AsNoTracking()
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.EmployeeID == currentId);
+
+                if (emp != null)
+                {
+                    CurrentUser = emp;
+                }
+
+                if (account != null)
+                {
+                    Username = account.UserName;
+                    AccountRole = account.Role?.RoleName ?? "N/A";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading profile:\n" + GetDeepErrorMessage(ex));
             }
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Lỗi tải thông tin cá nhân:\n" + GetDeepErrorMessage(ex), "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
-    [RelayCommand]
-    private async Task ToggleEditAsync()
-    {
-        if (IsEditing)
+        [RelayCommand]
+        private async Task ToggleEditAsync()
         {
-            await SaveChangesAsync();
-        }
-        else
-        {
-            IsEditing = true;
-        }
-    }
-
-    private async Task SaveChangesAsync()
-    {
-        try
-        {
-            if (CurrentUser == null) return;
-
-            // 5. Validate FullName thay vì First/Last Name
-            if (string.IsNullOrWhiteSpace(CurrentUser.FullName))
+            if (IsEditing)
             {
-                MessageBox.Show("Họ tên không được để trống!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                await SaveChangesAsync();
             }
-
-            using var context = new DataContext();
-            // 6. Tìm bản ghi trong DB để update
-            var empInDb = await context.Employees.FindAsync(CurrentUser.EmployeeID);
-
-            if (empInDb != null)
+            else
             {
-                // 7. Cập nhật các trường thông tin (Dùng FullName)
-                empInDb.FullName = CurrentUser.FullName;
-                empInDb.Email = CurrentUser.Email;
-                empInDb.PhoneNumber = CurrentUser.PhoneNumber;
-                empInDb.Address = CurrentUser.Address;
-                // empInDb.CCCD = CurrentUser.CCCD; // Nếu muốn cho phép sửa CCCD
-
-                await context.SaveChangesAsync();
-
-                MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                IsEditing = false;
+                IsEditing = true;
             }
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Không thể lưu thay đổi:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
-    [RelayCommand]
-    private void ChangePassword()
-    {
-        MessageBox.Show("Vui lòng truy cập menu 'Đổi Mật Khẩu' trên thanh điều hướng để thực hiện chức năng này.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        private async Task SaveChangesAsync()
+        {
+            try
+            {
+                if (CurrentUser == null) return;
+
+                if (string.IsNullOrWhiteSpace(CurrentUser.FullName))
+                {
+                    MessageBox.Show("Họ tên không được để trống!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                using var context = new DataContext();
+                var empInDb = await context.Employees.FindAsync(CurrentUser.EmployeeID);
+
+                if (empInDb != null)
+                {
+                    empInDb.FullName = CurrentUser.FullName;
+                    empInDb.Email = CurrentUser.Email;
+                    empInDb.PhoneNumber = CurrentUser.PhoneNumber;
+                    empInDb.Address = CurrentUser.Address;
+
+                    await context.SaveChangesAsync();
+
+                    MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    IsEditing = false;
+                    await LoadUserProfileAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Không thể lưu thay đổi:\n" + GetDeepErrorMessage(ex), "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private async Task ChangeAvatarAsync()
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                    Title = "Chọn ảnh đại diện"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    string sourcePath = openFileDialog.FileName;
+                    string appDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string destFolder = Path.Combine(appDir, "Images", "EmployeeImages");
+
+                    if (!Directory.Exists(destFolder))
+                        Directory.CreateDirectory(destFolder);
+
+                    string destPath = Path.Combine(destFolder, $"{CurrentUser.EmployeeID}.png");
+
+                    File.Copy(sourcePath, destPath, true);
+
+                    MessageBox.Show("Đổi ảnh đại diện thành công!", "Thông báo");
+
+                    var temp = CurrentUser;
+                    CurrentUser = null;
+                    CurrentUser = temp;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi đổi ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private void ChangePassword()
+        {
+            MessageBox.Show("Vui lòng truy cập menu 'Đổi Mật Khẩu'.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }

@@ -109,6 +109,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
+                // Kiểm tra Account trước
+                if (CurrentUser.Account == null)
+                {
+                    MessageBox.Show("Tài khoản chưa được liên kết, không thể đổi ảnh!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 OpenFileDialog openFileDialog = new OpenFileDialog
                 {
                     Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
@@ -117,39 +124,29 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    string sourceFilePath = openFileDialog.FileName;
-                    string extension = Path.GetExtension(sourceFilePath);
-                    string projectPath = AppDomain.CurrentDomain.BaseDirectory;
-                    string imageFolder = Path.Combine(projectPath, "Images", "Profiles");
+                    byte[] fileBytes = File.ReadAllBytes(openFileDialog.FileName);
 
-                    if (!Directory.Exists(imageFolder))
-                    {
-                        Directory.CreateDirectory(imageFolder);
-                    }
-
-                    string[] oldFiles = Directory.GetFiles(imageFolder, $"{CurrentUser.EmployeeID}.*");
-                    foreach (var file in oldFiles)
-                    {
-                        try { File.Delete(file); } catch { }
-                    }
-
-                    string destFileName = $"{CurrentUser.EmployeeID}{extension}";
-                    string destFilePath = Path.Combine(imageFolder, destFileName);
-
-                    File.Copy(sourceFilePath, destFilePath, true);
-
-                    string tempId = CurrentUser.EmployeeID;
-                    CurrentUser.EmployeeID = "TEMP_REFRESH";
-                    OnPropertyChanged(nameof(CurrentUser));
-                    CurrentUser.EmployeeID = tempId;
+                    // Cập nhật trực tiếp vào Model trong ViewModel này
+                    CurrentUser.Account.AvatarData = fileBytes;
                     OnPropertyChanged(nameof(CurrentUser));
 
-                    WeakReferenceMessenger.Default.Send(new ValueChangedMessage<string>(CurrentUser.EmployeeID));
+                    // Lưu vào DB luôn vì đây là đổi ảnh
+                    using var context = new DataContext();
+                    var accInDb = context.Accounts.Find(CurrentUser.Account.UserID);
+                    if (accInDb != null)
+                    {
+                        accInDb.AvatarData = fileBytes;
+                        context.SaveChanges();
+                    }
+
+                    // Gửi tín hiệu để các màn hình khác (như MainViewModel) cập nhật ảnh
+                    WeakReferenceMessenger.Default.Send(new ValueChangedMessage<string>("RefreshUser"));
+                    MessageBox.Show("Đổi ảnh đại diện thành công!", "Thông báo");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi đổi ảnh: {ex.Message}\nCó thể file đang được mở bởi ứng dụng khác.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi đổi ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

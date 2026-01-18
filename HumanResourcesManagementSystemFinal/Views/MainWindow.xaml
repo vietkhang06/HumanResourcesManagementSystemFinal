@@ -19,6 +19,8 @@
     </d:Window.DataContext>
 
     <Window.Resources>
+        <converters:BinaryImageConverter x:Key="BinaryImageConverter"/>
+
         <converters:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <cnv:UpperCaseConverter x:Key="ToUpperCaseConverter"/>
@@ -300,7 +302,7 @@
                                     <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Ellipse Width="40" Height="40" Stroke="#1A3D64" StrokeThickness="2">
                                             <Ellipse.Fill>
-                                                <ImageBrush ImageSource="{Binding CurrentUserAvatar, Converter={StaticResource IdToImageConverter}}" Stretch="UniformToFill"/>
+                                                <ImageBrush ImageSource="{Binding CurrentUser.Account.AvatarData, Converter={StaticResource BinaryImageConverter}}" Stretch="UniformToFill"/>
                                             </Ellipse.Fill>
                                         </Ellipse>
                                     </Grid>

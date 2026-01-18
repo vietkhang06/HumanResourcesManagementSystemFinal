@@ -50,27 +50,24 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     .AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
+                    .Include(e => e.Account)
+                    .ThenInclude(a => a.Role)
                     .FirstOrDefaultAsync(e => e.EmployeeID == currentId);
-
-                var account = await context.Accounts
-                    .AsNoTracking()
-                    .Include(a => a.Role)
-                    .FirstOrDefaultAsync(a => a.EmployeeID == currentId);
 
                 if (emp != null)
                 {
                     CurrentUser = emp;
-                }
 
-                if (account != null)
-                {
-                    Username = account.UserName;
-                    AccountRole = account.Role?.RoleName ?? "N/A";
+                    if (emp.Account != null)
+                    {
+                        Username = emp.Account.UserName;
+                        AccountRole = emp.Account.Role?.RoleName ?? "N/A";
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading profile:\n" + GetDeepErrorMessage(ex));
+                MessageBox.Show("Lỗi tải thông tin:\n" + GetDeepErrorMessage(ex));
             }
         }
 
@@ -100,22 +97,22 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
 
                 using var context = new DataContext();
-                var empInDb = await context.Employees.FindAsync(CurrentUser.EmployeeID);
 
-                if (empInDb != null)
+                context.Employees.Attach(CurrentUser);
+                context.Entry(CurrentUser).State = EntityState.Modified;
+
+                if (CurrentUser.Account != null)
                 {
-                    empInDb.FullName = CurrentUser.FullName;
-                    empInDb.Email = CurrentUser.Email;
-                    empInDb.PhoneNumber = CurrentUser.PhoneNumber;
-                    empInDb.Address = CurrentUser.Address;
-
-                    await context.SaveChangesAsync();
-
-                    MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    IsEditing = false;
-                    await LoadUserProfileAsync();
+                    context.Accounts.Attach(CurrentUser.Account);
+                    context.Entry(CurrentUser.Account).State = EntityState.Modified;
                 }
+
+                await context.SaveChangesAsync();
+
+                MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                IsEditing = false;
+                await LoadUserProfileAsync();
             }
             catch (Exception ex)
             {
@@ -124,10 +121,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         }
 
         [RelayCommand]
-        private async Task ChangeAvatarAsync()
+        private void ChangeAvatar()
         {
             try
             {
+                if (CurrentUser.Account == null)
+                {
+                    MessageBox.Show("Lỗi: Không tìm thấy tài khoản liên kết!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 OpenFileDialog openFileDialog = new OpenFileDialog
                 {
                     Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
@@ -136,27 +139,21 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    string sourcePath = openFileDialog.FileName;
-                    string appDir = AppDomain.CurrentDomain.BaseDirectory;
-                    string destFolder = Path.Combine(appDir, "Images", "EmployeeImages");
+                    byte[] fileBytes = File.ReadAllBytes(openFileDialog.FileName);
 
-                    if (!Directory.Exists(destFolder))
-                        Directory.CreateDirectory(destFolder);
+                    // Gán dữ liệu ảnh vào Model
+                    CurrentUser.Account.AvatarData = fileBytes;
 
-                    string destPath = Path.Combine(destFolder, $"{CurrentUser.EmployeeID}.png");
+                    // Thông báo cho giao diện cập nhật lại vùng hình ảnh
+                    OnPropertyChanged(nameof(CurrentUser));
 
-                    File.Copy(sourcePath, destPath, true);
-
-                    MessageBox.Show("Đổi ảnh đại diện thành công!", "Thông báo");
-
-                    var temp = CurrentUser;
-                    CurrentUser = null;
-                    CurrentUser = temp;
+                    MessageBox.Show("Đã chọn ảnh mới. Hãy nhấn 'Lưu Thay Đổi' để lưu vào CSDL.", "Thông báo");
+                    IsEditing = true;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi đổi ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi đọc ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

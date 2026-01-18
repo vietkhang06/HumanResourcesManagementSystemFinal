@@ -14,7 +14,7 @@
     </UserControl.DataContext>
 
     <UserControl.Resources>
-        <cnv:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+        <cnv:BinaryImageConverter x:Key="BinaryImageConverter"/>
 
         <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
             <Grid>
@@ -197,22 +197,22 @@
             <DataGrid x:Name="dgEmployees"
               ItemsSource="{Binding Employees}" 
               SelectedItem="{Binding SelectedEmployee}"
-          
+              
               IsReadOnly="True"
               CanUserAddRows="False"
               CanUserDeleteRows="False"
               CanUserResizeColumns="False"
               CanUserResizeRows="False"
-          
+              
               AutoGenerateColumns="False" 
               HeadersVisibility="Column"
               GridLinesVisibility="Horizontal"
-          
+              
               HorizontalGridLinesBrush="#EDF2F7"
               VerticalGridLinesBrush="Transparent"
               Background="Transparent"
               BorderThickness="0"
-              ScrollViewer.HorizontalScrollBarVisibility="Disabled">        
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
@@ -287,7 +287,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,4">
                                     <Ellipse Width="36" Height="36" Margin="0,0,12,0">
                                         <Ellipse.Fill>
-                                            <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" Stretch="UniformToFill"/>
+                                            <ImageBrush ImageSource="{Binding Account.AvatarData, Converter={StaticResource BinaryImageConverter}}" Stretch="UniformToFill"/>
                                         </Ellipse.Fill>
                                         <Ellipse.Stroke>
                                             <SolidColorBrush Color="#E2E8F0"/>

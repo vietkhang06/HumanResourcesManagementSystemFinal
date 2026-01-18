@@ -26,7 +26,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private DateTime _birthDate = DateTime.Now.AddYears(-22);
         private string _gender = "Male";
 
-        private string _selectedImagePath = null;
+        // Thay vì lưu đường dẫn, ta lưu mảng byte tạm thời
+        private byte[] _selectedImageBytes = null;
 
         public bool IsEditMode => _editingEmployee != null;
         public string EditingEmployeeId => _editingEmployee?.EmployeeID;
@@ -59,7 +60,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public AddEmployeeViewModel()
         {
             LoadComboBoxData();
-            AvatarSource = LoadImage("/Images/default_user.png");
+            // Load ảnh mặc định từ Resource
+            AvatarSource = LoadImageFromBytes(null);
         }
 
         public AddEmployeeViewModel(Employee emp) : this()
@@ -67,45 +69,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (emp != null) LoadEmployeeForEdit(emp);
         }
 
-        private string ScanImageInFolder(string empId)
-        {
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-
-            string png = Path.Combine(folder, empId + ".png");
-            string jpg = Path.Combine(folder, empId + ".jpg");
-            string jpeg = Path.Combine(folder, empId + ".jpeg");
-
-            if (File.Exists(png)) return png;
-            if (File.Exists(jpg)) return jpg;
-            if (File.Exists(jpeg)) return jpeg;
-
-            return "/Images/default_user.png";
-        }
-
-        private ImageSource LoadImage(string path)
+        // Hàm chuyển Byte[] sang ImageSource
+        private ImageSource LoadImageFromBytes(byte[] imageData)
         {
             try
             {
-                if (path.StartsWith("/") || path.StartsWith("\\") || !Path.IsPathRooted(path))
+                if (imageData != null && imageData.Length > 0)
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.UriSource = new Uri($"pack://application:,,,{path.Replace('\\', '/')}");
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    return bitmap;
-                }
-
-                if (File.Exists(path))
-                {
-                    byte[] imageBytes = File.ReadAllBytes(path);
-                    using (var ms = new MemoryStream(imageBytes))
+                    using (var ms = new MemoryStream(imageData))
                     {
                         var bitmap = new BitmapImage();
                         bitmap.BeginInit();
-                        bitmap.StreamSource = ms;
                         bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.StreamSource = ms;
                         bitmap.EndInit();
                         bitmap.Freeze();
                         return bitmap;
@@ -113,7 +89,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
             }
             catch { }
-
             return new BitmapImage(new Uri("pack://application:,,,/Images/default_user.png"));
         }
 
@@ -123,8 +98,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             OpenFileDialog dlg = new OpenFileDialog { Filter = "Image files|*.png;*.jpg;*.jpeg" };
             if (dlg.ShowDialog() == true)
             {
-                _selectedImagePath = dlg.FileName;
-                AvatarSource = LoadImage(_selectedImagePath);
+                try
+                {
+                    // Đọc file thành byte ngay lập tức
+                    _selectedImageBytes = File.ReadAllBytes(dlg.FileName);
+                    AvatarSource = LoadImageFromBytes(_selectedImageBytes);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi đọc file ảnh: " + ex.Message);
+                }
             }
         }
 
@@ -147,11 +130,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (pBox.Password != pBoxConfirm.Password) { MessageBox.Show("Mật khẩu xác nhận không khớp!"); return; }
             }
 
-            if (!IsEditMode && string.IsNullOrEmpty(_selectedImagePath))
-            {
-
-            }
-
             using var context = new DataContext();
             using var transaction = context.Database.BeginTransaction();
 
@@ -172,6 +150,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     if (emp == null) return;
 
                     UpdateEmployeeInfo(emp);
+
+                    // Cập nhật ảnh nếu có thay đổi
+                    if (_selectedImageBytes != null)
+                    {
+                        if (emp.Account != null) emp.Account.AvatarData = _selectedImageBytes;
+                    }
 
                     var contract = emp.WorkContracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
                     if (contract == null)
@@ -197,11 +181,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                     string newId = GenerateNewEmployeeID(context);
 
-                    if (!string.IsNullOrEmpty(_selectedImagePath))
-                    {
-                        DeleteOldImages(newId);
-                    }
-
                     emp = new Employee { EmployeeID = newId, Status = "Active" };
                     UpdateEmployeeInfo(emp);
                     context.Employees.Add(emp);
@@ -210,7 +189,17 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     UpdateContractInfo(contract, salary);
                     context.WorkContracts.Add(contract);
 
-                    context.Accounts.Add(new Account { UserID = "TK" + newId, EmployeeID = newId, UserName = Username, Password = pBox.Password, RoleID = SelectedRole?.RoleID, IsActive = "Active" });
+                    var newAccount = new Account
+                    {
+                        UserID = "TK" + newId,
+                        EmployeeID = newId,
+                        UserName = Username,
+                        Password = pBox.Password,
+                        RoleID = SelectedRole?.RoleID,
+                        IsActive = "Active",
+                        AvatarData = _selectedImageBytes // Lưu ảnh vào Account mới
+                    };
+                    context.Accounts.Add(newAccount);
 
                     action = "CREATE";
                     recordId = newId;
@@ -221,12 +210,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                 context.SaveChanges();
                 transaction.Commit();
-
-                if (!string.IsNullOrEmpty(_selectedImagePath))
-                {
-                    DeleteOldImages(emp.EmployeeID);
-                    SaveImageToFolder(emp.EmployeeID, _selectedImagePath);
-                }
 
                 MessageBox.Show("Lưu hồ sơ thành công!");
                 window.DialogResult = true;
@@ -267,15 +250,25 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             BirthDate = emp.DateOfBirth ?? BirthDate;
             Gender = emp.Gender;
 
-            string currentImgPath = ScanImageInFolder(emp.EmployeeID);
-            AvatarSource = LoadImage(currentImgPath);
-
+            // Load ảnh từ Database (thông qua Account)
             using var context = new DataContext();
+            var fullEmp = context.Employees.Include(e => e.WorkContracts).Include(e => e.Account).FirstOrDefault(e => e.EmployeeID == emp.EmployeeID);
+
+            if (fullEmp?.Account?.AvatarData != null)
+            {
+                AvatarSource = LoadImageFromBytes(fullEmp.Account.AvatarData);
+                // Giữ lại byte cũ phòng trường hợp user không đổi ảnh
+                _selectedImageBytes = fullEmp.Account.AvatarData;
+            }
+            else
+            {
+                AvatarSource = LoadImageFromBytes(null);
+            }
+
             SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
             SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
             SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
 
-            var fullEmp = context.Employees.Include(e => e.WorkContracts).Include(e => e.Account).FirstOrDefault(e => e.EmployeeID == emp.EmployeeID);
             if (fullEmp?.WorkContracts.Any() == true)
             {
                 var c = fullEmp.WorkContracts.OrderByDescending(x => x.StartDate).First();
@@ -318,40 +311,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var lastId = context.Employees.Where(e => e.EmployeeID.StartsWith("NV")).OrderByDescending(e => e.EmployeeID).Select(e => e.EmployeeID).FirstOrDefault();
             if (string.IsNullOrEmpty(lastId)) return "NV001";
             return int.TryParse(lastId[2..], out int n) ? $"NV{n + 1:D3}" : $"NV{DateTime.Now.Ticks % 1000:D3}";
-        }
-
-        private void DeleteOldImages(string empId)
-        {
-            try
-            {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-                if (Directory.Exists(folder))
-                {
-                    string[] extensions = { ".png", ".jpg", ".jpeg" };
-                    foreach (var ext in extensions)
-                    {
-                        string path = Path.Combine(folder, empId + ext);
-                        if (File.Exists(path)) File.Delete(path);
-                    }
-                }
-            }
-            catch { }
-        }
-
-        private void SaveImageToFolder(string empId, string sourcePath)
-        {
-            try
-            {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EmployeeImages");
-                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                string dest = Path.Combine(folder, empId + Path.GetExtension(sourcePath));
-                File.Copy(sourcePath, dest, true);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi lưu ảnh: " + ex.Message);
-            }
         }
     }
 }

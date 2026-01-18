@@ -17,7 +17,8 @@
         <converters:InverseBooleanConverter x:Key="InverseBool"/>
         <converters:BooleanToTextConverter x:Key="BoolToText"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <converters:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+
+        <converters:BinaryImageConverter x:Key="BinaryImageConverter"/>
 
         <Geometry x:Key="IconEmail">M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z</Geometry>
         <Geometry x:Key="IconPhone">M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 1.25 0 2.45.2 3.57.57.35.13.75.03 1.02-.24l2.2-2.2z</Geometry>
@@ -36,10 +37,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="6">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                             <ScrollViewer x:Name="PART_ContentHost"/>
                         </Border>
                     </ControlTemplate>
@@ -98,7 +96,7 @@
                             <DropShadowEffect BlurRadius="10" Opacity="0.1"/>
                         </Ellipse.Effect>
                         <Ellipse.Fill>
-                            <ImageBrush ImageSource="{Binding CurrentUser.EmployeeID, Converter={StaticResource IdToImageConverter}}" Stretch="UniformToFill"/>
+                            <ImageBrush ImageSource="{Binding CurrentUser.Account.AvatarData, Converter={StaticResource BinaryImageConverter}}" Stretch="UniformToFill"/>
                         </Ellipse.Fill>
                     </Ellipse>
 
@@ -116,33 +114,23 @@
                 </Grid>
 
                 <StackPanel Grid.Row="1" Margin="20,15,20,30">
-                    <TextBlock Text="{Binding CurrentUser.FullName}" 
-                               FontSize="20" FontWeight="Bold" Foreground="#1E293B" 
-                               HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
-
-                    <TextBlock Text="{Binding CurrentUser.Position.PositionName}" 
-                               FontSize="14" Foreground="#64748B" FontWeight="SemiBold"
-                               HorizontalAlignment="Center" Margin="0,5,0,15"/>
-
-                    <Border Background="#EFF6FF" CornerRadius="12" Padding="15,5" 
-                            HorizontalAlignment="Center" BorderBrush="#DBEAFE" BorderThickness="1">
+                    <TextBlock Text="{Binding CurrentUser.FullName}" FontSize="20" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding CurrentUser.Position.PositionName}" FontSize="14" Foreground="#64748B" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,5,0,15"/>
+                    <Border Background="#EFF6FF" CornerRadius="12" Padding="15,5" HorizontalAlignment="Center" BorderBrush="#DBEAFE" BorderThickness="1">
                         <TextBlock Text="{Binding AccountRole}" Foreground="#2563EB" FontWeight="Bold" FontSize="12"/>
                     </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Row="2" Margin="30,0,30,40">
                     <Separator Background="#F1F5F9" Margin="0,0,0,20"/>
-
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                         <Path Data="{StaticResource IconEmail}" Fill="#94A3B8" Width="16" Height="16" Stretch="Uniform" Margin="0,0,15,0"/>
                         <TextBlock Text="{Binding CurrentUser.Email}" VerticalAlignment="Center" Foreground="#475569" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
-
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                         <Path Data="{StaticResource IconPhone}" Fill="#94A3B8" Width="16" Height="16" Stretch="Uniform" Margin="0,0,15,0"/>
                         <TextBlock Text="{Binding CurrentUser.PhoneNumber}" VerticalAlignment="Center" Foreground="#475569"/>
                     </StackPanel>
-
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconWork}" Fill="#94A3B8" Width="16" Height="16" Stretch="Uniform" Margin="0,0,15,0"/>
                         <TextBlock Text="{Binding CurrentUser.Department.DepartmentName}" VerticalAlignment="Center" Foreground="#475569" TextWrapping="Wrap"/>
@@ -155,7 +143,6 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20" Opacity="0.05" ShadowDepth="5" Color="#000"/>
             </Border.Effect>
-
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40">
                 <StackPanel>
                     <Grid Margin="0,0,0,30">
@@ -163,12 +150,10 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel>
                             <TextBlock Text="Thông Tin Chi Tiết" FontSize="20" FontWeight="Bold" Foreground="#1E293B"/>
                             <TextBlock Text="Quản lý thông tin cá nhân và công việc của bạn" FontSize="13" Foreground="#94A3B8" Margin="0,5,0,0"/>
                         </StackPanel>
-
                         <Button Grid.Column="1" Command="{Binding ToggleEditCommand}" 
                                 Background="{Binding IsEditing, Converter={StaticResource BoolToText}, ConverterParameter='#10B981|#1E3A8A'}" 
                                 Foreground="White" BorderThickness="0" Height="36" Padding="20,0" Cursor="Hand">
@@ -178,76 +163,60 @@
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BoolToText}, ConverterParameter='LƯU THAY ĐỔI|CHỈNH SỬA'}" 
-                                           FontWeight="Bold" FontSize="12"/>
+                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BoolToText}, ConverterParameter='LƯU THAY ĐỔI|CHỈNH SỬA'}" FontWeight="Bold" FontSize="12"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
                     <TextBlock Text="THÔNG TIN CÁ NHÂN" FontSize="13" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,15"/>
-
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Họ và Tên" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding CurrentUser.FullName, UpdateSourceTrigger=PropertyChanged}" 
-                                     IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                            <TextBox Text="{Binding CurrentUser.FullName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-                        </StackPanel>
+                        <StackPanel Grid.Column="2"></StackPanel>
                     </Grid>
 
                     <TextBlock Text="LIÊN HỆ &amp; ĐỊA CHỈ" FontSize="13" FontWeight="Bold" Foreground="#64748B" Margin="0,10,0,15"/>
-
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Email" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding CurrentUser.Email, UpdateSourceTrigger=PropertyChanged}" 
-                                     IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                            <TextBox Text="{Binding CurrentUser.Email, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
-
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Số Điện Thoại" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding CurrentUser.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" 
-                                     IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
+                            <TextBox Text="{Binding CurrentUser.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"/>
                         </StackPanel>
                     </Grid>
 
                     <StackPanel Margin="0,0,0,30">
                         <TextBlock Text="Địa Chỉ Thường Trú" Style="{StaticResource LabelStyle}"/>
-                        <TextBox Text="{Binding CurrentUser.Address, UpdateSourceTrigger=PropertyChanged}" 
-                                 IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}"
-                                 Height="60" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
+                        <TextBox Text="{Binding CurrentUser.Address, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditing, Converter={StaticResource InverseBool}}" Height="60" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
 
                     <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="20">
                         <StackPanel>
                             <TextBlock Text="THÔNG TIN CÔNG VIỆC" FontSize="13" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,15"/>
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Mã Nhân Viên" Style="{StaticResource LabelStyle}"/>
                                     <TextBox Text="{Binding CurrentUser.EmployeeID}" IsReadOnly="True" FontWeight="Bold"/>
                                 </StackPanel>
-
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Phòng Ban" Style="{StaticResource LabelStyle}"/>
                                     <TextBox Text="{Binding CurrentUser.Department.DepartmentName}" IsReadOnly="True" FontWeight="Bold"/>

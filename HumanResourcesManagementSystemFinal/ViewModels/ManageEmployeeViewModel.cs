@@ -22,6 +22,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _searchText;
         [ObservableProperty] private Department _selectedDepartment;
+        [ObservableProperty] private Employee _selectedEmployee;
 
         public ManageEmployeeViewModel()
         {
@@ -50,19 +51,21 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     SelectedDepartment = Departments.FirstOrDefault();
 
                 // 2. Tải danh sách nhân viên
+                // --- SỬA LỖI QUAN TRỌNG Ở ĐÂY ---
                 _allEmployees = context.Employees
                     .AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
                     .Include(e => e.Manager)
                     .Include(e => e.WorkContracts)
+                    .Include(e => e.Account) // <--- BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ LẤY ẢNH
                     .OrderByDescending(e => e.EmployeeID)
                     .ToList();
+                // -------------------------------
 
-                // 3. LẤY DỮ LIỆU CHẤM CÔNG HÔM NAY (SỬA LẠI CHO ĐÚNG MODEL)
+                // 3. LẤY DỮ LIỆU CHẤM CÔNG HÔM NAY
                 var today = DateTime.Today;
 
-                // SỬA: So sánh WorkDate thay vì TimeIn
                 var todayTimeSheets = context.TimeSheets
                     .Where(t => t.WorkDate == today)
                     .ToList();
@@ -70,27 +73,21 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 // 4. CẬP NHẬT TRẠNG THÁI HIỂN THỊ
                 foreach (var emp in _allEmployees)
                 {
-                    // Nếu nhân viên đã nghỉ việc (Status gốc là Resigned/Đã nghỉ việc) thì giữ nguyên
                     if (emp.Status == "Resigned" || emp.Status == "Đã nghỉ việc")
                         continue;
 
-                    // Tìm timesheet của nhân viên này
                     var timesheet = todayTimeSheets.FirstOrDefault(t => t.EmployeeID == emp.EmployeeID);
 
-                    // Logic xét trạng thái
                     if (timesheet == null || timesheet.TimeIn == null)
                     {
-                        // Không có bản ghi hoặc TimeIn null -> Chưa vào
                         emp.Status = "Chưa vào làm";
                     }
                     else if (timesheet.TimeOut != null)
                     {
-                        // Có TimeIn và có TimeOut -> Đã về
                         emp.Status = "Đã tan làm";
                     }
                     else
                     {
-                        // Có TimeIn nhưng chưa có TimeOut -> Đang làm
                         emp.Status = "Đang làm việc";
                     }
                 }

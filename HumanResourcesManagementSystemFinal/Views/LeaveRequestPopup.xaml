@@ -1,0 +1,46 @@
+﻿<Window x:Class="HumanResourcesManagementSystemFinal.Views.LeaveRequestPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+        mc:Ignorable="d"
+        Title="Tạo Đơn Xin Nghỉ" Height="450" Width="500"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance Type=vm:LeaveRequestPopupViewModel}">
+
+    <Border Padding="20" Background="White">
+        <StackPanel>
+            <TextBlock Text="Đơn Xin Nghỉ Phép" FontSize="20" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Loại nghỉ:" Foreground="Gray" Margin="0,0,0,5"/>
+            <ComboBox ItemsSource="{Binding LeaveTypes}" SelectedItem="{Binding SelectedLeaveType}" 
+                      Height="35" Margin="0,0,0,15" Padding="10,0"/>
+
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Từ ngày:" Foreground="Gray" Margin="0,0,0,5"/>
+                    <DatePicker SelectedDate="{Binding StartDate}" Height="35" VerticalContentAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Đến ngày:" Foreground="Gray" Margin="0,0,0,5"/>
+                    <DatePicker SelectedDate="{Binding EndDate}" Height="35" VerticalContentAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="Lý do:" Foreground="Gray" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Height="100" 
+                     TextWrapping="Wrap" AcceptsReturn="True" BorderBrush="#E2E8F0" Padding="8"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Hủy" Command="{Binding CancelCommand}" Width="80" Height="35" Margin="0,0,10,0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"/>
+                <Button Content="Gửi Đơn" Command="{Binding SubmitCommand}" Width="100" Height="35" Background="#1A3D64" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

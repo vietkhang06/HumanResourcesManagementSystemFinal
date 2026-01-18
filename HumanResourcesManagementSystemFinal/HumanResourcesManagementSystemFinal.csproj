@@ -84,6 +84,9 @@
 		<Compile Update="ViewModels\ForgotPasswordViewModel.cs">
 			<Generator>MSBuild:Compile</Generator>
 		</Compile>
+		<Compile Update="ViewModels\LeaveRequestPopupViewModel.cs">
+		  <Generator>MSBuild:Compile</Generator>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>

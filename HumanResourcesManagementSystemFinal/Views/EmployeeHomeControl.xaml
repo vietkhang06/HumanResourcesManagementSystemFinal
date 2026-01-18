@@ -190,51 +190,78 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Lối Tắt" FontSize="18" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,15"/>
 
-                    <Button Height="80" Background="#1A3D64" BorderThickness="0" Cursor="Hand" Margin="0,0,0,15">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="White" Opacity="0.2">
-                                            <TextBlock Text="⏱" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="White"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
-                                            <TextBlock Text="Vào Chấm Công" FontWeight="Bold" Foreground="White" FontSize="16"/>
-                                            <TextBlock Text="Ghi nhận giờ làm việc" FontSize="12" Foreground="#A0AEC0"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
+                    <Button Height="80" BorderThickness="0" Cursor="Hand" Margin="0,0,0,15"
+        Command="{Binding QuickCheckInCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#1A3D64"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="#33FFFFFF">
+                                                        <Path Data="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" 
+                                          Fill="White" Stretch="Uniform" Width="24" Height="24" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
+                                                        <TextBlock Text="Vào Chấm Công" FontWeight="Bold" Foreground="White" FontSize="16"/>
+                                                        <TextBlock Text="Ghi nhận giờ làm việc" FontSize="12" Foreground="#A0AEC0"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#254E7A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                     </Button>
 
-                    <Button Height="80" Background="White" BorderThickness="0" Cursor="Hand">
+                    <Button Height="80" BorderThickness="0" Cursor="Hand" Command="{Binding OpenLeavePopupCommand}">
                         <Button.Effect>
                             <DropShadowEffect BlurRadius="10" Opacity="0.05"/>
                         </Button.Effect>
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="#FFF5F5">
-                                            <TextBlock Text="📝" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
-                                            <TextBlock Text="Tạo Đơn Xin Nghỉ" FontWeight="Bold" Foreground="#2D3748" FontSize="16"/>
-                                            <TextBlock Text="Phép năm, ốm đau..." FontSize="12" Foreground="#718096"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="20">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="#FFF5F5">
+                                                        <TextBlock Text="📝" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
+                                                        <TextBlock Text="Tạo Đơn Xin Nghỉ" FontWeight="Bold" Foreground="#2D3748" FontSize="16"/>
+                                                        <TextBlock Text="Phép năm, ốm đau..." FontSize="12" Foreground="#718096"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F7FAFC"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                     </Button>
 
                 </StackPanel>

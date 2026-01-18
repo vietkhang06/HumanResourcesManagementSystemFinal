@@ -218,6 +218,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             view.DataContext = viewModel;
             CurrentView = view;
         }
+        [RelayCommand]
+        private void NavigateNotification()
+        {
+            PageTitle = "Thông Báo Chung";
+            CurrentPageName = "Notification";
+
+            CurrentView = new NotificationsControl();
+        }
 
         [RelayCommand]
         private void Logout(object parameter)

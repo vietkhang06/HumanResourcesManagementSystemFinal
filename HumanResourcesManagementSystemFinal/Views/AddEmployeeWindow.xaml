@@ -91,9 +91,14 @@
         <ControlTemplate x:Key="CmbToggleButton" TargetType="ToggleButton">
             <Grid>
                 <Border x:Name="Border" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" />
-                <Path Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" 
+                <Path x:Name="Arrow" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" 
                       Fill="#64748B" Data="M7,10L12,15L17,10H7Z" Stretch="Uniform" Width="8"/>
             </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Arrow" Property="Fill" Value="#A0AEC0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
         </ControlTemplate>
 
         <Style TargetType="ComboBox" x:Key="ModernComboBox">
@@ -136,6 +141,13 @@
                             </Trigger>
                             <Trigger Property="IsDropDownOpen" Value="true">
                                 <Setter TargetName="border" Property="BorderBrush" Value="#1A3D64"/>
+                                <Setter TargetName="border" Property="Background" Value="White"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
+                                <Setter Property="Foreground" Value="#A0AEC0"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -145,12 +157,12 @@
 
         <Style TargetType="DatePicker" x:Key="ModernDatePicker">
             <Setter Property="Height" Value="35"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="DatePicker">
@@ -165,7 +177,8 @@
                                 </Grid.ColumnDefinitions>
                                 <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0"
                                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"
-                                                   Background="Transparent" BorderThickness="0" Padding="{TemplateBinding Padding}"/>
+                                                   Background="Transparent" BorderThickness="0" Padding="{TemplateBinding Padding}"
+                                                   FontSize="{TemplateBinding FontSize}"/>
                                 <Button x:Name="PART_Button" Grid.Column="1" Focusable="False" 
                                         HorizontalAlignment="Center" VerticalAlignment="Center"
                                         Background="Transparent" BorderThickness="0" Cursor="Hand">
@@ -239,7 +252,7 @@
                         <TextBlock Text="EMAIL" Style="{StaticResource LabelStyle}" FontSize="10"/>
 
                         <TextBlock Text="{Binding Email, TargetNullValue='Chưa nhập'}" 
-                                   FontSize="13" Foreground="#64748B" TextWrapping="Wrap"/>
+                                   FontSize="13" Foreground="#64748B" FontWeight="Bold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -260,7 +273,7 @@
                 <ScrollViewer Grid.Row="1" Padding="25,0,25,15" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
 
-                        <TextBlock Text="Thông Tin Cá Nhân" FontSize="14" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,10"/>
+                        <TextBlock Text="Thông Tin Cá Nhân *" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,10"/>
                         <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="1"/>
@@ -273,7 +286,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Họ và tên *" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="Họ và tên" Style="{StaticResource LabelStyle}"/>
                                         <TextBox Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputBox}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
@@ -311,9 +324,9 @@
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Giới tính" Style="{StaticResource LabelStyle}"/>
                                         <ComboBox Style="{StaticResource ModernComboBox}" SelectedValue="{Binding Gender}" SelectedValuePath="Content">
-                                            <ComboBoxItem Content="Male"/>
-                                            <ComboBoxItem Content="Female"/>
-                                            <ComboBoxItem Content="Other"/>
+                                            <ComboBoxItem Content="Nam"/>
+                                            <ComboBoxItem Content="Nữ"/>
+                                            <ComboBoxItem Content="Khác"/>
                                         </ComboBox>
                                     </StackPanel>
                                 </Grid>
@@ -325,7 +338,7 @@
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="Công Việc &amp; Hợp Đồng" FontSize="14" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,10"/>
+                        <TextBlock Text="Công Việc &amp; Hợp Đồng *" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,10"/>
                         <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="1"/>
@@ -343,7 +356,7 @@
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Chức vụ" Style="{StaticResource LabelStyle}"/>
-                                        <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" DisplayMemberPath="PositionName"/>
+                                        <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" IsEnabled="{Binding IsPositionEnabled}" DisplayMemberPath="PositionName"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -374,7 +387,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Lương cơ bản *" Style="{StaticResource LabelStyle}" Foreground="#EF4444"/>
+                                        <TextBlock Text="Lương cơ bản" Style="{StaticResource LabelStyle}"/>
                                         <TextBox Text="{Binding SalaryString, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputBox}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
@@ -394,7 +407,7 @@
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="Tài Khoản Hệ Thống" FontSize="14" FontWeight="Bold" Foreground="#1A3D64" Margin="0,0,0,10"/>
+                        <TextBlock Text="Tài Khoản Hệ Thống *" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,10"/>
                         <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,10">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="1"/>
@@ -407,11 +420,11 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Tên đăng nhập *" Style="{StaticResource LabelStyle}" Foreground="#EF4444"/>
+                                        <TextBlock Text="Tên đăng nhập" Style="{StaticResource LabelStyle}"/>
                                         <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputBox}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Vai trò (Role)" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="Vai trò" Style="{StaticResource LabelStyle}"/>
                                         <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="RoleName"/>
                                     </StackPanel>
                                 </Grid>
@@ -423,11 +436,11 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Mật khẩu *" Style="{StaticResource LabelStyle}" Foreground="#EF4444"/>
+                                        <TextBlock Text="Mật khẩu" Style="{StaticResource LabelStyle}"/>
                                         <PasswordBox x:Name="pBox" Style="{StaticResource ModernPasswordBox}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Xác nhận mật khẩu *" Style="{StaticResource LabelStyle}" Foreground="#EF4444"/>
+                                        <TextBlock Text="Xác nhận mật khẩu" Style="{StaticResource LabelStyle}"/>
                                         <PasswordBox x:Name="pBoxConfirm" Style="{StaticResource ModernPasswordBox}"/>
                                     </StackPanel>
                                 </Grid>

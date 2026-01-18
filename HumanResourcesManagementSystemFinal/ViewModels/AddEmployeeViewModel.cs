@@ -5,6 +5,7 @@ using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic; // Cần thêm cái này để dùng List<>
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -24,10 +25,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private string _phone;
         private string _address;
         private DateTime _birthDate = DateTime.Now.AddYears(-22);
-        private string _gender = "Male";
-
-        // Thay vì lưu đường dẫn, ta lưu mảng byte tạm thời
+        private string _gender = "Nam";
         private byte[] _selectedImageBytes = null;
+
+        // --- DANH SÁCH GỐC ---
+        // Lưu toàn bộ chức vụ lấy từ DB để lọc sau này
+        private List<Position> _allPositions = new();
 
         public bool IsEditMode => _editingEmployee != null;
         public string EditingEmployeeId => _editingEmployee?.EmployeeID;
@@ -39,7 +42,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private string _windowTitle = "THÊM NHÂN VIÊN MỚI";
         [ObservableProperty] private ImageSource _avatarSource;
+
+        // Khi SelectedDepartment thay đổi, hàm OnSelectedDepartmentChanged bên dưới sẽ chạy
         [ObservableProperty] private Department _selectedDepartment;
+
         [ObservableProperty] private Position _selectedPosition;
         [ObservableProperty] private Employee _selectedManager;
         [ObservableProperty] private string _contractType = "Full-time";
@@ -48,6 +54,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private DateTime _endDate = DateTime.Now.AddYears(1);
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
+
+        // --- THUỘC TÍNH MỚI: ĐIỀU KHIỂN KHÓA/MỞ CHỨC VỤ ---
+        [ObservableProperty] private bool _isPositionEnabled = false;
 
         public string FullName { get => _fullName; set { _fullName = string.IsNullOrWhiteSpace(value) ? null : value; OnPropertyChanged(); } }
         public string CCCD { get => _cccd; set => SetProperty(ref _cccd, value); }
@@ -60,7 +69,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public AddEmployeeViewModel()
         {
             LoadComboBoxData();
-            // Load ảnh mặc định từ Resource
             AvatarSource = LoadImageFromBytes(null);
         }
 
@@ -69,7 +77,34 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (emp != null) LoadEmployeeForEdit(emp);
         }
 
-        // Hàm chuyển Byte[] sang ImageSource
+        // --- LOGIC QUAN TRỌNG NHẤT: TỰ ĐỘNG LỌC CHỨC VỤ KHI CHỌN PHÒNG BAN ---
+        partial void OnSelectedDepartmentChanged(Department value)
+        {
+            // 1. Xóa danh sách chức vụ hiện tại trên UI
+            Positions.Clear();
+            SelectedPosition = null;
+
+            if (value == null)
+            {
+                // Nếu không chọn phòng ban -> Khóa Chức vụ
+                IsPositionEnabled = false;
+            }
+            else
+            {
+                // Nếu đã chọn phòng ban -> Lọc chức vụ thuộc phòng đó từ danh sách gốc
+                var filteredPositions = _allPositions.Where(p => p.DepartmentID == value.DepartmentID).ToList();
+
+                foreach (var p in filteredPositions)
+                {
+                    Positions.Add(p);
+                }
+
+                // Mở khóa Chức vụ
+                IsPositionEnabled = true;
+            }
+        }
+        // -----------------------------------------------------------------------
+
         private ImageSource LoadImageFromBytes(byte[] imageData)
         {
             try
@@ -100,7 +135,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 try
                 {
-                    // Đọc file thành byte ngay lập tức
                     _selectedImageBytes = File.ReadAllBytes(dlg.FileName);
                     AvatarSource = LoadImageFromBytes(_selectedImageBytes);
                 }
@@ -119,15 +153,29 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
 
-            if (string.IsNullOrWhiteSpace(FullName)) { MessageBox.Show("Vui lòng nhập Họ và Tên."); return; }
-            if (SelectedDepartment == null || SelectedPosition == null) { MessageBox.Show("Vui lòng chọn Phòng ban và Chức vụ."); return; }
-            if (!decimal.TryParse(SalaryString, out decimal salary)) { MessageBox.Show("Lương cơ bản phải là số."); return; }
-            if (!IsEditMode && string.IsNullOrWhiteSpace(Username)) { MessageBox.Show("Vui lòng nhập Tên đăng nhập."); return; }
+            // Validation
+            if (string.IsNullOrWhiteSpace(FullName)) { MessageBox.Show("Vui lòng nhập Họ và Tên!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (string.IsNullOrWhiteSpace(CCCD)) { MessageBox.Show("Vui lòng nhập số CCCD/CMND!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (string.IsNullOrWhiteSpace(Email)) { MessageBox.Show("Vui lòng nhập Email!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (string.IsNullOrWhiteSpace(Phone)) { MessageBox.Show("Vui lòng nhập Số điện thoại!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (string.IsNullOrWhiteSpace(Address)) { MessageBox.Show("Vui lòng nhập Địa chỉ thường trú!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+
+            if (SelectedDepartment == null) { MessageBox.Show("Vui lòng chọn Phòng ban!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (SelectedPosition == null) { MessageBox.Show("Vui lòng chọn Chức vụ!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+
+            if (string.IsNullOrWhiteSpace(SalaryString)) { MessageBox.Show("Vui lòng nhập Lương cơ bản!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (!decimal.TryParse(SalaryString, out decimal salary)) { MessageBox.Show("Lương cơ bản phải là số hợp lệ!", "Lỗi định dạng", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+
+            if (!IsEditMode)
+            {
+                if (string.IsNullOrWhiteSpace(Username)) { MessageBox.Show("Vui lòng nhập Tên đăng nhập!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                if (string.IsNullOrEmpty(pBox.Password)) { MessageBox.Show("Vui lòng nhập Mật khẩu!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            }
 
             if (!IsEditMode || !string.IsNullOrEmpty(pBox.Password))
             {
-                if (string.IsNullOrEmpty(pBox.Password)) { MessageBox.Show("Vui lòng nhập mật khẩu."); return; }
-                if (pBox.Password != pBoxConfirm.Password) { MessageBox.Show("Mật khẩu xác nhận không khớp!"); return; }
+                if (string.IsNullOrEmpty(pBox.Password)) { MessageBox.Show("Vui lòng nhập mật khẩu!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                if (pBox.Password != pBoxConfirm.Password) { MessageBox.Show("Mật khẩu xác nhận không khớp!", "Lỗi mật khẩu", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             }
 
             using var context = new DataContext();
@@ -151,10 +199,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                     UpdateEmployeeInfo(emp);
 
-                    // Cập nhật ảnh nếu có thay đổi
-                    if (_selectedImageBytes != null)
+                    if (_selectedImageBytes != null && emp.Account != null)
                     {
-                        if (emp.Account != null) emp.Account.AvatarData = _selectedImageBytes;
+                        emp.Account.AvatarData = _selectedImageBytes;
                     }
 
                     var contract = emp.WorkContracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
@@ -177,7 +224,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
                 else
                 {
-                    if (context.Accounts.Any(a => a.UserName == Username)) { MessageBox.Show("Tên đăng nhập này đã tồn tại."); return; }
+                    if (context.Accounts.Any(a => a.UserName == Username)) { MessageBox.Show("Tên đăng nhập này đã tồn tại!", "Trùng dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
 
                     string newId = GenerateNewEmployeeID(context);
 
@@ -197,7 +244,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         Password = pBox.Password,
                         RoleID = SelectedRole?.RoleID,
                         IsActive = "Active",
-                        AvatarData = _selectedImageBytes // Lưu ảnh vào Account mới
+                        AvatarData = _selectedImageBytes
                     };
                     context.Accounts.Add(newAccount);
 
@@ -211,14 +258,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 context.SaveChanges();
                 transaction.Commit();
 
-                MessageBox.Show("Lưu hồ sơ thành công!");
+                MessageBox.Show("Lưu hồ sơ thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 window.DialogResult = true;
                 window.Close();
             }
             catch (Exception ex)
             {
                 transaction.Rollback();
-                MessageBox.Show("Có lỗi xảy ra: " + ex.Message);
+                MessageBox.Show("Có lỗi xảy ra: " + ex.Message, "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -229,11 +276,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             using var context = new DataContext();
             Departments = new(context.Departments.ToList());
-            Positions = new(context.Positions.ToList());
+
+            // Tải toàn bộ chức vụ vào danh sách gốc (chưa hiển thị ngay)
+            _allPositions = context.Positions.ToList();
+
             Roles = new(context.Roles.ToList());
             Managers = new(context.Employees.ToList());
 
-            if (!IsEditMode) SelectedRole = Roles.FirstOrDefault(r => r.RoleID == "R002");
+            if (!IsEditMode)
+            {
+                SelectedRole = Roles.FirstOrDefault(r => r.RoleID == "R002");
+                IsPositionEnabled = false; // Mặc định chưa chọn phòng thì khóa chức vụ
+            }
         }
 
         private void LoadEmployeeForEdit(Employee emp)
@@ -250,23 +304,26 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             BirthDate = emp.DateOfBirth ?? BirthDate;
             Gender = emp.Gender;
 
-            // Load ảnh từ Database (thông qua Account)
             using var context = new DataContext();
             var fullEmp = context.Employees.Include(e => e.WorkContracts).Include(e => e.Account).FirstOrDefault(e => e.EmployeeID == emp.EmployeeID);
 
             if (fullEmp?.Account?.AvatarData != null)
             {
                 AvatarSource = LoadImageFromBytes(fullEmp.Account.AvatarData);
-                // Giữ lại byte cũ phòng trường hợp user không đổi ảnh
                 _selectedImageBytes = fullEmp.Account.AvatarData;
             }
             else
             {
                 AvatarSource = LoadImageFromBytes(null);
+                _selectedImageBytes = null;
             }
 
+            // Gán dữ liệu (Thứ tự quan trọng: gán Department trước để trigger lọc Position)
             SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
+
+            // Sau khi SelectedDepartment gán xong, danh sách Positions đã được lọc. Giờ ta chọn đúng Position của user.
             SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
+
             SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
 
             if (fullEmp?.WorkContracts.Any() == true)

@@ -224,7 +224,17 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             PageTitle = "Thông Báo Chung";
             CurrentPageName = "Notification";
 
-            CurrentView = new NotificationsControl();
+            // 1. Tạo ViewModel và truyền quyền Admin vào
+            var viewModel = new NotificationsViewModel(IsAdmin);
+
+            // 2. Tạo View
+            var view = new NotificationsControl();
+
+            // 3. Gán ViewModel vào DataContext của View
+            view.DataContext = viewModel;
+
+            // 4. Hiển thị View
+            CurrentView = view;
         }
 
         [RelayCommand]

@@ -8,99 +8,6 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
-<ControlTemplate x:Key="BlueComboBoxToggleButton" TargetType="ToggleButton">
-        <Border x:Name="templateRoot" Background="Transparent" BorderThickness="0" CornerRadius="8">
-            <Grid HorizontalAlignment="Right" Width="30">
-                <Path x:Name="arrow" Data="M0,0 L4,4 L8,0 Z" Fill="White" 
-                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,5,0"/>
-            </Grid>
-        </Border>
-    </ControlTemplate>
-
-    <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ComboBox">
-                    <Grid>
-                        <Border x:Name="border" Background="#1A3D64" CornerRadius="8" BorderThickness="0">
-                            <Grid>
-                                <ToggleButton Name="ToggleButton" Template="{StaticResource BlueComboBoxToggleButton}" 
-                                              Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" 
-                                              ClickMode="Press" Background="Transparent"/>
-                                
-                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" 
-                                                  Content="{TemplateBinding SelectionBoxItem}" 
-                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
-                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
-                                                  Margin="15,0,35,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            </Grid>
-                        </Border>
-                        
-                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                            <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="8" Margin="0,5,0,0">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="15" Opacity="0.15" ShadowDepth="3" Color="Black"/>
-                                    </Border.Effect>
-                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
-                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-                        </Popup>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#254E7A"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ItemContainerStyle">
-            <Setter.Value>
-                <Style TargetType="ComboBoxItem">
-                    <Setter Property="Padding" Value="10"/>
-                    <Setter Property="Foreground" Value="#2D3748"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#EBF8FF"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#1A3D64"/>
-                            <Setter Property="Foreground" Value="White"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="RoundedButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#1E3A8A"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="19">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Opacity" Value="0.9"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
         <Style TargetType="Button" x:Key="NotificationButtonStyle">
             <Setter Property="Background" Value="#F1F5F9"/>
             <Setter Property="Foreground" Value="#1E3A8A"/>
@@ -109,9 +16,38 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="20">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#1E3A8A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="19">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -124,9 +60,112 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="20">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E3A8A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="BlueComboBoxToggleButton" TargetType="ToggleButton">
+            <Border x:Name="templateRoot" Background="Transparent" BorderThickness="0" CornerRadius="8">
+                <Grid HorizontalAlignment="Right" Width="30">
+                    <Path x:Name="arrow" Data="M0,0 L4,4 L8,0 Z" Fill="White" 
+                          HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border" Background="#1A3D64" CornerRadius="8" BorderThickness="0">
+                                <Grid>
+                                    <ToggleButton Name="ToggleButton" Template="{StaticResource BlueComboBoxToggleButton}" 
+                                                  Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" 
+                                                  ClickMode="Press" Background="Transparent"/>
+                                    <ContentPresenter Name="ContentSite" IsHitTestVisible="False" 
+                                                      Content="{TemplateBinding SelectionBoxItem}" 
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
+                                                      Margin="15,0,35,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                </Grid>
+                            </Border>
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="8" Margin="0,5,0,0">
+                                        <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Padding" Value="10"/>
+                        <Setter Property="Foreground" Value="#2D3748"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EBF8FF"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#1A3D64"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NotificationItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Padding="15,12">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F8FAFC"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#1E3A8A"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#E0F2FE"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#1E3A8A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -152,57 +191,92 @@
                 </StackPanel>
 
                 <ListBox Grid.Row="1" x:Name="ListNotifications"
-                         MouseDoubleClick="ListNotifications_MouseDoubleClick"
-                         Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,15">
+                         ItemsSource="{Binding FilteredNotifications}"
+                         SelectedItem="{Binding SelectedNotification}"
+                         ItemContainerStyle="{StaticResource NotificationItemStyle}"
+                         Background="Transparent" BorderThickness="0" Margin="0,0,0,15"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Background="Transparent">
+                                <Grid.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick" 
+                                                  Command="{Binding DataContext.ItemDoubleClickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                  CommandParameter="{Binding}" />
+                                </Grid.InputBindings>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" 
+                                          Fill="#1E3A8A" Width="16" Height="16" Stretch="Uniform" Margin="0,0,10,0" Opacity="0.8"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#1E3A8A" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+
+                                <Border Grid.Column="1" Background="#F1F5F9" CornerRadius="6" Padding="8,4" Margin="10,0,0,0">
+                                    <TextBlock Text="{Binding Date, StringFormat='dd/MM/yyyy'}" FontSize="12" FontWeight="Medium" Foreground="#64748B"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                 </ListBox>
 
                 <Grid Grid.Row="2">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-                        <Button Content="Thêm" Click="AddButton_Click" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0"/>
-                        <Button Content="Xóa" Click="DeleteButton_Click" Style="{StaticResource NotificationButtonStyle}"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="{Binding IsAdminView, Converter={StaticResource BoolToVis}}">
+                        <Button Content="Thêm" Command="{Binding AddNotificationCommand}" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0"/>
+                        <Button Content="Xóa" Command="{Binding DeleteNotificationCommand}" Style="{StaticResource NotificationButtonStyle}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Hiển thị tất cả" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0" Click="BtnShowAll_Click"/>
-                        <Button Content="Xuất PDF" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0" Click="BtnExportPDF_Click" />
-                        <ToggleButton x:Name="FilterToggleButton" Style="{StaticResource FilterToggleButtonStyle}"> 
+                        <Button Content="Hiển thị tất cả" Command="{Binding ShowAllCommand}" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0"/>
+                        <Button Content="Xuất Word" Command="{Binding ExportWordCommand}" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0" />
+
+                        <ToggleButton x:Name="FilterToggleButton" IsChecked="{Binding IsFilterOpen}" Style="{StaticResource FilterToggleButtonStyle}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" Fill="#1E3A8A" Width="16" Stretch="Uniform" Margin="0,0,8,0"/>
-                                <TextBlock Text="Bộ lọc" Foreground="#1E3A8A" VerticalAlignment="Center"/>
+                                <Path Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" 
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" 
+                                      Width="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                                <TextBlock Text="Bộ lọc" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ToggleButton>
                     </StackPanel>
-                    <Popup IsOpen="{Binding IsChecked, ElementName=FilterToggleButton}" 
-                       StaysOpen="False" 
-                       Placement="Top" 
-                       PlacementTarget="{Binding ElementName=FilterToggleButton}" 
-                       AllowsTransparency="True"
-                       Focusable="True">
+
+                    <Popup IsOpen="{Binding IsFilterOpen, Mode=TwoWay}" 
+                           StaysOpen="False" 
+                           Placement="Top" 
+                           PlacementTarget="{Binding ElementName=FilterToggleButton}" 
+                           AllowsTransparency="True"
+                           Focusable="True">
                         <Border Background="White" CornerRadius="15" Padding="15" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="15" Color="#64748B" Opacity="0.1" ShadowDepth="2"/>
                             </Border.Effect>
                             <StackPanel Width="220">
                                 <TextBlock Text="Ngày thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
-                                <DatePicker x:Name="FilterDate" Margin="0,0,0,12" Height="35" VerticalContentAlignment="Center"/>
+                                <DatePicker SelectedDate="{Binding FilterDate}" Margin="0,0,0,12" Height="35" VerticalContentAlignment="Center"/>
 
                                 <TextBlock Text="Loại thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
-                                <ComboBox x:Name="CboFilterType" Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,12" Height="35">
-                                    <ComboBoxItem Content="Chung" IsSelected="True"/>
+                                <ComboBox SelectedValue="{Binding SelectedType}" SelectedValuePath="Content"
+                                          Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,12" Height="35">
+                                    <ComboBoxItem Content="Chung"/>
                                     <ComboBoxItem Content="Khẩn cấp"/>
                                 </ComboBox>
 
                                 <TextBlock Text="Phòng ban" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
-                                <ComboBox x:Name="CboFilterDepartment" Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,15" Height="35">
-                                    <ComboBoxItem Content="Tất cả" IsSelected="True"/>
-                                    <ComboBoxItem Content="Nhân sự"/>
-                                    <ComboBoxItem Content="Kỹ thuật"/>
-                                    <ComboBoxItem Content="Kế toán"/>
+                                <ComboBox ItemsSource="{Binding Departments}"
+                                          DisplayMemberPath="DepartmentName"
+                                          SelectedValuePath="DepartmentName"
+                                          SelectedValue="{Binding SelectedDepartment}"
+                                          Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,15" Height="35">
                                 </ComboBox>
 
-                                <Button Content="Lọc ngay" Height="38" Width="190" FontWeight="Bold"
-                    Style="{StaticResource RoundedButtonStyle}" Margin="0,5,0,5"
-                    Click="BtnFilter_Click"/>
+                                <Button Content="Lọc ngay" Command="{Binding ApplyFilterCommand}"
+                                        Height="38" Width="190" FontWeight="Bold"
+                                        Style="{StaticResource RoundedButtonStyle}" Margin="0,5,0,5"/>
                             </StackPanel>
                         </Border>
                     </Popup>

@@ -20,6 +20,7 @@ namespace HumanResourcesManagementSystemFinal.Data
         public DbSet<TimeSheet> TimeSheets { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<ChangeHistory> ChangeHistories { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

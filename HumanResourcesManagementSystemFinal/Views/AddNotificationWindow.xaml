@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Thêm thông báo mới" Height="600" Width="520" 
         WindowStartupLocation="CenterScreen" Background="Transparent"
-        AllowsTransparency="True" WindowStyle="None">
-
+        AllowsTransparency="True" WindowStyle="None"
+        Name="AddWindow">
     <Window.Resources>
         <ControlTemplate x:Key="BlueComboBoxToggleButton" TargetType="ToggleButton">
             <Border x:Name="templateRoot" Background="Transparent" BorderThickness="0" CornerRadius="8">
@@ -164,8 +164,15 @@
             <Grid Grid.Row="0" Margin="0,0,0,25">
                 <TextBlock Text="THÊM THÔNG BÁO MỚI" FontSize="24" FontWeight="Bold" Foreground="#1E3A8A"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-15,-15,0">
-                    <Button Content="—" Click="MinimizeButton_Click" Style="{StaticResource WindowControlStyle}" FontSize="12"/>
-                    <Button Content="✕" Click="Cancel_Click" Style="{StaticResource WindowControlStyle}" Foreground="#EF4444" FontSize="16"/>
+                    <Button Content="—" 
+                            Command="{Binding MinimizeCommand}" 
+                            CommandParameter="{Binding ElementName=AddWindow}"
+                            Style="{StaticResource WindowControlStyle}" FontSize="12"/>
+
+                    <Button Content="✕" 
+                            Command="{Binding CancelCommand}"
+                            CommandParameter="{Binding ElementName=AddWindow}"
+                            Style="{StaticResource WindowControlStyle}" Foreground="#EF4444" FontSize="16"/>
                 </StackPanel>
                 <Separator VerticalAlignment="Bottom" Background="#F1F5F9" Height="1" Margin="0,15,0,0"/>
             </Grid>
@@ -173,7 +180,8 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
                 <StackPanel>
                     <TextBlock Text="Tiêu đề thông báo" FontSize ="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TxtNewTitle" Height="40" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
+                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" 
+                             Height="40" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
@@ -184,34 +192,41 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Loại thông báo" FontSize ="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
-                            <ComboBox x:Name="CboType" Style="{StaticResource BlueComboBoxStyle}" Height="32">
-                                <ComboBoxItem Content="Chung" IsSelected="True"/>
+                            <ComboBox SelectedValue="{Binding SelectedType}" SelectedValuePath="Content"
+                                      Style="{StaticResource BlueComboBoxStyle}" Height="32">
+                                <ComboBoxItem Content="Chung"/>
                                 <ComboBoxItem Content="Khẩn cấp"/>
                             </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Phòng ban" FontSize ="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
-                            <ComboBox x:Name="CboDepartment" Style="{StaticResource BlueComboBoxStyle}" Height="32">
-                                <ComboBoxItem Content="Tất cả" IsSelected="True"/>
-                                <ComboBoxItem Content="Nhân sự"/>
-                                <ComboBoxItem Content="Kỹ thuật"/>
-                                <ComboBoxItem Content="Kế toán"/>
+
+                            <ComboBox ItemsSource="{Binding Departments}"
+                                      DisplayMemberPath="DepartmentName"
+                                      SelectedValuePath="DepartmentName"
+                                      SelectedValue="{Binding SelectedDepartment}"
+                                      Style="{StaticResource BlueComboBoxStyle}" Height="32">
                             </ComboBox>
                         </StackPanel>
                     </Grid>
 
                     <TextBlock Text="Nội dung chi tiết" FontSize ="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
-                    <TextBox x:Name="TxtNewContent" Height="150" TextWrapping="Wrap" AcceptsReturn="True" 
+                    <TextBox Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}"
+                             Height="150" TextWrapping="Wrap" AcceptsReturn="True" 
                              Style="{StaticResource ModernTextBoxStyle}" VerticalContentAlignment="Top" Padding="10"/>
                 </StackPanel>
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Hủy bỏ" FontSize ="16" FontWeight="SemiBold" Width="100" Height="42" Margin="0,0,15,0" 
-                        Style="{StaticResource RoundedButtonStyle}" Background="#F1F5F9" Foreground="#64748B" Click="Cancel_Click"/>
+                        Command="{Binding CancelCommand}" 
+                        CommandParameter="{Binding ElementName=AddWindow}"
+                        Style="{StaticResource RoundedButtonStyle}" Background="#F1F5F9" Foreground="#64748B"/>
+
                 <Button Content="Thêm thông báo" Width="170" Height="42" 
-                        Style="{StaticResource RoundedButtonStyle}" Background="#1E3A8A" Foreground="White" FontWeight="Bold" Click="Add_Click"/>
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource RoundedButtonStyle}" Background="#1E3A8A" Foreground="White" FontWeight="Bold"/>
             </StackPanel>
         </Grid>
     </Border>

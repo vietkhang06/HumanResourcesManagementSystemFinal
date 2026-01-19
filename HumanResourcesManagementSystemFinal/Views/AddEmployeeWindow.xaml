@@ -9,7 +9,8 @@
         Title="{Binding WindowTitle}" Height="630" Width="850"
         WindowStartupLocation="CenterScreen" WindowStyle="None" 
         AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded">
 
     <Window.DataContext>
         <vm:AddEmployeeViewModel/>
@@ -51,6 +52,10 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="#1A3D64"/>
                                 <Setter TargetName="border" Property="Background" Value="White"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#CBD5E1"/>
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -81,6 +86,9 @@
                             <Trigger Property="IsFocused" Value="True">
                                 <Setter TargetName="border" Property="BorderBrush" Value="#1A3D64"/>
                                 <Setter TargetName="border" Property="Background" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#CBD5E1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -143,7 +151,6 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="#1A3D64"/>
                                 <Setter TargetName="border" Property="Background" Value="White"/>
                             </Trigger>
-
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
@@ -421,7 +428,9 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Tên đăng nhập" Style="{StaticResource LabelStyle}"/>
-                                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputBox}"/>
+                                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Style="{StaticResource ModernInputBox}"
+                                                 IsEnabled="{Binding IsUsernameEditable}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Vai trò" Style="{StaticResource LabelStyle}"/>
@@ -437,11 +446,13 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Mật khẩu" Style="{StaticResource LabelStyle}"/>
-                                        <PasswordBox x:Name="pBox" Style="{StaticResource ModernPasswordBox}"/>
+                                        <PasswordBox x:Name="pBox" Style="{StaticResource ModernPasswordBox}"
+                                                     IsEnabled="{Binding IsUsernameEditable}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Xác nhận mật khẩu" Style="{StaticResource LabelStyle}"/>
-                                        <PasswordBox x:Name="pBoxConfirm" Style="{StaticResource ModernPasswordBox}"/>
+                                        <PasswordBox x:Name="pBoxConfirm" Style="{StaticResource ModernPasswordBox}"
+                                                     IsEnabled="{Binding IsUsernameEditable}"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>

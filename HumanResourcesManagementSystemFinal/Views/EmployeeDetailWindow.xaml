@@ -1,22 +1,37 @@
 ﻿<Window x:Class="HumanResourcesManagementSystemFinal.Views.EmployeeDetailWindow"
-            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-            xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
-            xmlns:cnv="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
-            mc:Ignorable="d"
-            d:DataContext="{d:DesignInstance Type=vm:EmployeeDetailViewModel}"
-            Title="Hồ Sơ Nhân Viên" Height="650" Width="900"
-            WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
-            WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-            MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
+        xmlns:cnv="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:EmployeeDetailViewModel}"
+        Title="Hồ Sơ Nhân Viên" Height="650" Width="900"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.Resources>
         <cnv:BinaryImageConverter x:Key="BinaryImageConverter"/>
-
         <cnv:InverseBooleanConverter x:Key="InverseBool"/>
         <cnv:BooleanToTextConverter x:Key="BoolToText"/>
+
+        <Style x:Key="StatusBorderStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="Background" Value="#94A3B8"/>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Employee.Status}" Value="Đang làm việc">
+                    <Setter Property="Background" Value="#10B981"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Employee.Status}" Value="Online">
+                    <Setter Property="Background" Value="#10B981"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border Background="White" CornerRadius="20" Margin="20">
@@ -39,26 +54,47 @@
                 </Border.Background>
 
                 <StackPanel Margin="25,50,25,25">
-                    <Border Width="130" Height="130" CornerRadius="65" Background="White" Margin="0,0,0,20" BorderThickness="3" BorderBrush="White">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="10" Opacity="0.3"/>
-                        </Border.Effect>
+
+                    <Border Width="134" Height="134" CornerRadius="67" Background="Transparent" Margin="0,0,0,20" BorderThickness="4">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BorderBrush" Value="#94A3B8"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Employee.Status}" Value="Đang làm việc">
+                                        <Setter Property="BorderBrush" Value="#10B981"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#10B981" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Employee.Status}" Value="Online">
+                                        <Setter Property="BorderBrush" Value="#10B981"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#10B981" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
                         <Grid>
-                            <Ellipse>
+                            <Ellipse Margin="2">
                                 <Ellipse.Fill>
                                     <ImageBrush ImageSource="{Binding Employee.Account.AvatarData, Converter={StaticResource BinaryImageConverter}}" Stretch="UniformToFill"/>
                                 </Ellipse.Fill>
                             </Ellipse>
                         </Grid>
                     </Border>
-
                     <TextBlock Text="{Binding Employee.FullName}" 
-                                   Foreground="White" FontSize="22" FontWeight="Bold" 
-                                   TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,8"/>
+                               Foreground="White" FontSize="22" FontWeight="Bold" 
+                               TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,8"/>
 
                     <Border Background="#30FFFFFF" CornerRadius="12" Padding="15,5" HorizontalAlignment="Center" Margin="0,0,0,30">
                         <TextBlock Text="{Binding Employee.Position.PositionName}" 
-                                       Foreground="#E2E8F0" FontSize="13" FontWeight="SemiBold"/>
+                                   Foreground="#E2E8F0" FontSize="13" FontWeight="SemiBold"/>
                     </Border>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
@@ -68,7 +104,7 @@
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="Trạng thái: " Foreground="#94A3B8"/>
-                        <Border Background="#10B981" CornerRadius="4" Padding="6,1" Margin="5,0,0,0">
+                        <Border Style="{StaticResource StatusBorderStyle}">
                             <TextBlock Text="{Binding Employee.Status}" Foreground="White" FontSize="11" FontWeight="Bold"/>
                         </Border>
                     </StackPanel>

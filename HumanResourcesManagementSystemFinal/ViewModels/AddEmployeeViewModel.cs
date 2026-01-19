@@ -27,6 +27,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private DateTime _birthDate = DateTime.Now.AddYears(-22);
         private string _gender = "Nam";
         private byte[] _selectedImageBytes = null;
+        public bool IsUsernameEditable => !IsEditMode;
 
         // --- DANH SÁCH GỐC ---
         // Lưu toàn bộ chức vụ lấy từ DB để lọc sau này
@@ -65,6 +66,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public string Address { get => _address; set => SetProperty(ref _address, value); }
         public DateTime BirthDate { get => _birthDate; set => SetProperty(ref _birthDate, value); }
         public string Gender { get => _gender; set => SetProperty(ref _gender, value); }
+
+
 
         public AddEmployeeViewModel()
         {
@@ -295,6 +298,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             _editingEmployee = emp;
             WindowTitle = "CẬP NHẬT THÔNG TIN";
             OnPropertyChanged(nameof(IsEditMode));
+            OnPropertyChanged(nameof(IsUsernameEditable));
 
             FullName = emp.FullName;
             CCCD = emp.CCCD;
@@ -317,6 +321,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 AvatarSource = LoadImageFromBytes(null);
                 _selectedImageBytes = null;
             }
+
+
 
             // Gán dữ liệu (Thứ tự quan trọng: gán Department trước để trigger lọc Position)
             SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);

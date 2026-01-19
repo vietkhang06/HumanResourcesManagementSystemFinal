@@ -28,14 +28,22 @@ namespace HumanResourcesManagementSystemFinal.Views
         }
         private void ListNotifications_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (ListNotifications.SelectedItem is ListBoxItem selectedItem)
+            if (ListNotifications.SelectedItem is ListBoxItem selectedItem && selectedItem.Tag is NotificationData data)
             {
                 NotificationsDetailWindow detailWindow = new NotificationsDetailWindow();
 
-                string title = selectedItem.Content.ToString();
-                string content = selectedItem.Tag?.ToString() ?? "Không có nội dung chi tiết.";
-                detailWindow.TxtTitle.Text = title;
-                detailWindow.TxtContent.Text = content;
+                detailWindow.TxtTitle.Text = data.Title;
+                detailWindow.TxtContent.Text = data.Content;
+                detailWindow.TxtDate.Text = data.Date.ToString("dd/MM/yyyy");
+                detailWindow.TxtType.Text = data.Type;
+                detailWindow.TxtDepartment.Text = $"Phòng: {data.Department}";
+
+                if (data.Type == "Khẩn cấp")
+                {
+                    detailWindow.TxtType.Foreground = System.Windows.Media.Brushes.Red;
+                    detailWindow.BrdrType.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(254, 226, 226));
+                }
+
                 detailWindow.Show();
             }
         }
@@ -65,15 +73,17 @@ namespace HumanResourcesManagementSystemFinal.Views
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ListNotifications.SelectedItem != null)
+            MessageBoxResult result = MessageBox.Show("Bạn có chắc chắn muốn xóa không?", "Xác nhận", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
             {
-                var result = MessageBox.Show("Bạn có chắc chắn muốn xóa không?", "Xác nhận", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes)
+                if (ListNotifications.SelectedItem != null)
                 {
                     ListNotifications.Items.Remove(ListNotifications.SelectedItem);
                 }
             }
         }
+
         private void BtnFilter_Click(object sender, RoutedEventArgs e)
         {
             DateTime? filterDate = FilterDate.SelectedDate;

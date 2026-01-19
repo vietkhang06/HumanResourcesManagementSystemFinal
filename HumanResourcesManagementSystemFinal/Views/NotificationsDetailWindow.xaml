@@ -56,8 +56,14 @@
                     <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4" Margin="0,0,10,0">
                         <TextBlock x:Name="TxtSender" Text="Người gửi: Admin" FontSize="12" Foreground="#64748B"/>
                     </Border>
-                    <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4">
+                    <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4" Margin="0,0,10,0">
                         <TextBlock x:Name="TxtDate" Text="19/01/2026" FontSize="12" Foreground="#64748B"/>
+                    </Border>
+                    <Border x:Name="BrdrType" Background="#E0F2FE" CornerRadius="10" Padding="10,4" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtType" Text="Loại" FontSize="12" Foreground="#0369A1" FontWeight="Medium"/>
+                    </Border>
+                    <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtDepartment" Text="Phòng ban" FontSize="12" Foreground="#475569" FontWeight="Medium"/>
                     </Border>
                 </StackPanel>
                 <Separator Background="#F1F5F9" Margin="0,20,0,0" Height="1"/>

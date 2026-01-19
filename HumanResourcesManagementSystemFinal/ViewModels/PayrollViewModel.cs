@@ -16,7 +16,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class PayrollViewModel : ObservableObject
     {
-        // --- 1. CÁC BIẾN TỰ ĐỘNG ---
         [ObservableProperty] private ObservableCollection<PayrollDTO> _payrollList;
         [ObservableProperty] private ObservableCollection<int> _months;
         [ObservableProperty] private ObservableCollection<int> _years;
@@ -24,12 +23,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _payrollStatus;
         [ObservableProperty] private string _statusColor;
 
-        // --- BỔ SUNG: PHÂN QUYỀN VÀ DỮ LIỆU NHÂN VIÊN ---
-        [ObservableProperty] private bool _isAdmin = true; // Fix lỗi IsAdmin
-        [ObservableProperty] private PayrollDTO _currentEmployeePayroll; // Fix lỗi CurrentEmployeePayroll
-        [ObservableProperty] private decimal _advancePayment = 1000000; // Tạm ứng mặc định
+        [ObservableProperty] private bool _isAdmin = true;
+        [ObservableProperty] private PayrollDTO _currentEmployeePayroll;
+        [ObservableProperty] private decimal _advancePayment = 1000000;
 
-        // --- 2. CÁC BIẾN THỦ CÔNG ---
         private int _selectedMonth;
         public int SelectedMonth
         {
@@ -52,18 +49,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        private readonly string _targetEmployeeId; // Lưu ID nhân viên cần xem
+        private readonly string _targetEmployeeId;
 
-        // --- 3. CONSTRUCTOR ---
-
-        // Constructor mặc định cho Admin
         public PayrollViewModel() : this(null) { }
 
-        // Constructor cho Nhân viên cụ thể
         public PayrollViewModel(string employeeId)
         {
             _targetEmployeeId = employeeId;
-            IsAdmin = string.IsNullOrEmpty(employeeId); // Nếu có ID truyền vào thì IsAdmin = false
+            IsAdmin = string.IsNullOrEmpty(employeeId);
 
             PayrollList = new ObservableCollection<PayrollDTO>();
             Months = new ObservableCollection<int>();
@@ -80,7 +73,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             _ = CalculatePayrollAsync();
         }
 
-        // --- 4. HÀM TÍNH LƯƠNG ---
         private async Task CalculatePayrollAsync()
         {
             try
@@ -99,14 +91,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 var startOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
                 var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
-                // Lọc nhân viên: Nếu có ID thì chỉ lấy 1 người, nếu không lấy tất cả (Admin)
                 var query = context.Employees.AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
                     .Include(e => e.WorkContracts)
+                    .Include(e => e.Account)
                     .AsQueryable();
 
-                if (!string.IsNullOrEmpty(_targetEmployeeId)) // Fix lỗi so sánh string/int
+                if (!string.IsNullOrEmpty(_targetEmployeeId))
                 {
                     query = query.Where(e => e.EmployeeID == _targetEmployeeId);
                 }
@@ -137,7 +129,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
                     decimal actualSalary = baseSalary > 0 ? (baseSalary / 26m) * (decimal)workDays : 0;
                     decimal totalIncome = Math.Round(actualSalary, 0);
-                    decimal netSalary = totalIncome; // Giả định chưa có khấu trừ
+                    decimal netSalary = totalIncome;
 
                     grandTotal += netSalary;
 
@@ -150,20 +142,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         ContractSalary = Math.Round(baseSalary, 0),
                         ActualWorkDays = workDays,
                         TotalIncome = totalIncome,
-                        NetSalary = netSalary
+                        NetSalary = netSalary,
+                        AvatarData = emp.Account?.AvatarData
                     });
                 }
 
                 PayrollList = resultList;
                 TotalSalaryFund = grandTotal;
 
-                // Cập nhật dữ liệu cho giao diện nhân viên
                 if (!IsAdmin && resultList.Count > 0)
                 {
                     CurrentEmployeePayroll = resultList[0];
                 }
 
-                // Cập nhật trạng thái
                 if (PayrollList.Count > 0)
                 {
                     PayrollStatus = (SelectedMonth == now.Month && SelectedYear == now.Year) ? "Dự tính" : "Đã tính toán";
@@ -181,7 +172,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // --- COMMANDS ĐIỀU HƯỚNG THÁNG ---
         [RelayCommand]
         private void PreviousMonth()
         {

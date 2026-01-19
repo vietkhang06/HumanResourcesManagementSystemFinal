@@ -14,10 +14,13 @@
 
     <UserControl.Resources>
         <cnv:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
-        <cnv:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+
+        <cnv:BinaryImageConverter x:Key="BinaryImageConverter"/>
+
         <Geometry x:Key="IconMoney">M96 0C60.7 0 32 28.7 32 64s28.7 64 64 64l48 0 0 32-57 0c-31.6 0-58.5 23.1-63.3 54.4L1.1 364.1C.4 368.8 0 373.6 0 378.4L0 448c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-69.6c0-4.8-.4-9.6-1.1-14.4L488.2 214.4C483.5 183.1 456.6 160 425 160l-217 0 0-32 48 0c35.3 0 64-28.7 64-64S291.3 0 256 0L96 0z</Geometry>
         <Geometry x:Key="IconExport">M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z</Geometry>
         <Geometry x:Key="DownArrowGeometry">M7,10L12,15L17,10H7Z</Geometry>
+
         <Style x:Key="ModernComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="Padding" Value="10"/>
@@ -42,7 +45,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <Style x:Key="ModernComboBoxStyle" TargetType="{x:Type ComboBox}">
             <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItemStyle}"/>
             <Setter Property="SnapsToDevicePixels" Value="true"/>
@@ -60,10 +63,10 @@
                     <ControlTemplate TargetType="{x:Type ComboBox}">
                         <Grid>
                             <ToggleButton Name="ToggleButton" 
-                                          BorderBrush="{TemplateBinding BorderBrush}" 
-                                          Background="{TemplateBinding Background}"
-                                          Grid.Column="2" Focusable="false"
-                                          IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press">
+                                              BorderBrush="{TemplateBinding BorderBrush}" 
+                                              Background="{TemplateBinding Background}"
+                                              Grid.Column="2" Focusable="false"
+                                              IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="{x:Type ToggleButton}">
                                         <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6">
@@ -275,7 +278,7 @@
 
                                         <Ellipse>
                                             <Ellipse.Fill>
-                                                <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" 
+                                                <ImageBrush ImageSource="{Binding AvatarData, Converter={StaticResource BinaryImageConverter}}" 
                                                             Stretch="UniformToFill"/>
                                             </Ellipse.Fill>
                                         </Ellipse>

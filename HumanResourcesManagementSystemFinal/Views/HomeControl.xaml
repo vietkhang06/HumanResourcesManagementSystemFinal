@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:HumanResourcesManagementSystemFinal.ViewModels"
              xmlns:converters="clr-namespace:HumanResourcesManagementSystemFinal.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="850" d:DesignWidth="1100" Background="Transparent">
+             d:DesignHeight="850" d:DesignWidth="1200" Background="Transparent">
 
     <UserControl.DataContext>
         <vm:HomeViewModel/>
@@ -14,8 +14,7 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-
-        <converters:EmployeeIdToImageConverter x:Key="IdToImageConverter"/>
+        <converters:BinaryImageConverter x:Key="BinaryImageConverter"/>
 
         <Style x:Key="HeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
@@ -24,9 +23,21 @@
             <Setter Property="Margin" Value="0,0,0,15"/>
         </Style>
 
+        <Style x:Key="CardPanel" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="4" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="MetricNumberStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="36"/>
-            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -38,21 +49,9 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,2"/>
         </Style>
-
-        <Style x:Key="CardPanel" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="0,0,20,20"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="4" Color="Black"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,5,0">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -60,103 +59,196 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,10,0,30">
+            <Grid Grid.Row="0" Margin="0,10,0,20">
                 <StackPanel>
                     <TextBlock Text="{Binding GreetingMessage, StringFormat='{}{0},'}" 
                                FontSize="16" Foreground="#64748B"/>
                     <TextBlock Text="{Binding DataContext.CurrentUserName, RelativeSource={RelativeSource AncestorType=Window}, TargetNullValue='Quản Trị Viên'}"
-                               FontSize="28" FontWeight="Bold" Foreground="#1E293B"/>
+                               FontSize="28" FontWeight="ExtraBold" Foreground="#1E3A8A"/>
                 </StackPanel>
-
-                <Button Command="{Binding LoadDashboardDataCommand}" 
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Background="White" BorderBrush="#E2E8F0" BorderThickness="1" 
-                        Padding="15,8" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6"/>
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" 
-                              Fill="#64748B" Width="12" Height="12" Stretch="Uniform" Margin="0,0,8,0"/>
-                        <TextBlock Text="Làm mới" FontSize="13" FontWeight="SemiBold" Foreground="#475569"/>
-                    </StackPanel>
-                </Button>
             </Grid>
 
-            <Border Grid.Row="1" Style="{StaticResource CardPanel}" Padding="30,20">
-                <Grid>
+            <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="0.8*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" Grid.ColumnSpan="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="68"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="15"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Column="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="TỔNG NHÂN SỰ" Style="{StaticResource MetricLabelStyle}"/>
-                            <TextBlock Text="{Binding TotalEmployees}" Style="{StaticResource MetricNumberStyle}"/>
-                        </StackPanel>
-                    </Grid>
+                    <Border Grid.Row="0" Grid.Column="0" Background="White" CornerRadius="10" Padding="15,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="3" Color="#64748B"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TotalEmployees}" FontSize="22" FontWeight="Bold" Foreground="#1D4ED8" LineHeight="22"/>
+                                <TextBlock Text="Tổng nhân sự" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <Rectangle Grid.Column="1" Width="1" Fill="#F1F5F9" Margin="15,5"/>
+                    <Border Grid.Row="0" Grid.Column="2" Background="White" CornerRadius="10" Padding="15,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="3" Color="#64748B"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding AttendanceStatus}" FontSize="22" FontWeight="Bold" Foreground="#15803D" LineHeight="22"/>
+                                <TextBlock Text="Đang làm việc" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <Grid Grid.Column="2" Margin="30,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="ĐANG LÀM VIỆC" Style="{StaticResource MetricLabelStyle}"/>
-                            <TextBlock Text="{Binding AttendanceStatus}" Style="{StaticResource MetricNumberStyle}" Foreground="#166534"/>
-                        </StackPanel>
-                    </Grid>
+                    <Border Grid.Row="2" Grid.Column="0" Background="White" CornerRadius="10" Padding="15,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="3" Color="#64748B"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding PendingLeavesList.Count}" FontSize="22" FontWeight="Bold" Foreground="#C2410C" LineHeight="22"/>
+                                <TextBlock Text="Đơn chờ duyệt" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <Rectangle Grid.Column="3" Width="1" Fill="#F1F5F9" Margin="15,5"/>
-
-                    <Grid Grid.Column="4" Margin="30,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="CHỜ DUYỆT" Style="{StaticResource MetricLabelStyle}"/>
-                            <TextBlock Text="{Binding PendingLeavesList.Count}" Style="{StaticResource MetricNumberStyle}" Foreground="#EA580C"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Rectangle Grid.Column="5" Width="1" Fill="#F1F5F9" Margin="15,5"/>
-
-                    <Grid Grid.Column="6" Margin="30,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="SẮP HẾT HẠN" Style="{StaticResource MetricLabelStyle}"/>
-                            <TextBlock Text="{Binding ExpiringContractEmployees.Count}" Style="{StaticResource MetricNumberStyle}" Foreground="#DC2626"/>
-                        </StackPanel>
-                    </Grid>
+                    <Border Grid.Row="2" Grid.Column="2" Background="White" CornerRadius="10" Padding="15,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="3" Color="#64748B"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ExpiringContractEmployees.Count}" FontSize="22" FontWeight="Bold" Foreground="#B91C1C" LineHeight="22"/>
+                                <TextBlock Text="Hợp đồng gấp" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </Border>
+
+                <Border Grid.Column="4" Style="{StaticResource CardPanel}">
+                    <StackPanel>
+                        <TextBlock Text="Nhân Sự Mới" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,10"/>
+                        <ItemsControl ItemsSource="{Binding RecentEmployees}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="36"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse Width="32" Height="32">
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding Account.AvatarData, Converter={StaticResource BinaryImageConverter}}" Stretch="UniformToFill"/>
+                                            </Ellipse.Fill>
+                                            <Ellipse.Stroke>
+                                                <SolidColorBrush Color="#E2E8F0"/>
+                                            </Ellipse.Stroke>
+                                            <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
+                                        </Ellipse>
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="12" Foreground="#334155"/>
+                                            <TextBlock Text="{Binding Department.DepartmentName}" FontSize="10" Foreground="#64748B"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Không có nhân sự mới" FontSize="11" FontStyle="Italic" Foreground="#94A3B8" 
+                                   Visibility="{Binding RecentEmployees.Count, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6" Style="{StaticResource CardPanel}">
+                    <StackPanel>
+                        <TextBlock Text="Lối Tắt" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,10"/>
+
+                        <Button Click="BtnAddEmployee_Click" Height="36" Margin="0,0,0,8"
+                                Background="#F8FAFC" BorderThickness="1" BorderBrush="#E2E8F0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" BorderThickness="1" BorderBrush="#E2E8F0">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0">
+                                            <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" 
+                                                  Fill="#2563EB" Width="14" Height="14" Stretch="Uniform"
+                                                  VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Thêm Nhân Viên" FontSize="12" VerticalAlignment="Center" Foreground="#334155" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="White"/>
+                                            <Setter Property="BorderBrush" Value="#2563EB"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Command="{Binding DataContext.NavigatePayrollCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Height="36" Background="#F8FAFC" BorderThickness="1" BorderBrush="#E2E8F0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" BorderThickness="1" BorderBrush="#E2E8F0">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0">
+                                            <Path Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" 
+                                                  Fill="#16A34A" Width="14" Height="14" Stretch="Uniform"
+                                                  VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Tính Lương" FontSize="12" VerticalAlignment="Center" Foreground="#334155" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="White"/>
+                                            <Setter Property="BorderBrush" Value="#16A34A"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.5*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="20"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
+                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" Padding="15" Margin="0,0,0,20">
                         <Border.Style>
                             <Style TargetType="Border" BasedOn="{StaticResource CardPanel}">
                                 <Style.Triggers>
@@ -166,18 +258,19 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-
                         <StackPanel>
-                            <TextBlock Text="⚠️ CẢNH BÁO HỢP ĐỒNG" FontSize="13" FontWeight="Bold" Foreground="#991B1B" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                <TextBlock Text="⚠️" Margin="0,0,10,0"/>
+                                <TextBlock Text="CẢNH BÁO HỢP ĐỒNG SẮP HẾT HẠN" FontSize="13" FontWeight="Bold" Foreground="#991B1B"/>
+                            </StackPanel>
                             <ItemsControl ItemsSource="{Binding ExpiringContractEmployees}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock>
-                                                <Run Text="{Binding FullName, Mode=OneWay}" FontWeight="Bold" Foreground="#7F1D1D"/>
-                                                <Run Text=" - Sắp hết hạn trong 30 ngày tới" Foreground="#B91C1C"/>
-                                            </TextBlock>
-                                        </Grid>
+                                        <TextBlock Margin="25,0,0,2">
+                                            <Run Text="●" Foreground="#EF4444" FontSize="10"/>
+                                            <Run Text="{Binding FullName, Mode=OneWay}" FontWeight="Bold" Foreground="#7F1D1D"/>
+                                            <Run Text="- Hết hạn trong 30 ngày" Foreground="#B91C1C" FontSize="11"/>
+                                        </TextBlock>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -187,9 +280,9 @@
                     <Border Style="{StaticResource CardPanel}">
                         <StackPanel>
                             <DockPanel LastChildFill="False" Margin="0,0,0,15">
-                                <TextBlock Text="Đơn Từ Cần Duyệt" Style="{StaticResource HeaderStyle}" Margin="0"/>
+                                <TextBlock Text="Đơn Nghỉ Phép Cần Duyệt" Style="{StaticResource HeaderStyle}" Margin="0"/>
                                 <Border Background="#F1F5F9" CornerRadius="12" Padding="12,4" DockPanel.Dock="Right">
-                                    <TextBlock Text="{Binding PendingLeavesList.Count, StringFormat='{}{0} Yêu cầu'}" 
+                                    <TextBlock Text="{Binding PendingLeavesList.Count, StringFormat='{}{0} Đơn'}" 
                                                FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
                                 </Border>
                             </DockPanel>
@@ -199,8 +292,7 @@
                                       CanUserResizeColumns="False" CanUserReorderColumns="False" IsReadOnly="True"
                                       GridLinesVisibility="Horizontal" HeadersVisibility="Column"
                                       Background="White" BorderThickness="0"
-                                      HorizontalGridLinesBrush="#F1F5F9"
-                                      RowHeaderWidth="0"
+                                      HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0"
                                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
                                 <DataGrid.Resources>
@@ -216,9 +308,9 @@
                                     <Style TargetType="DataGridRow">
                                         <Setter Property="Background" Value="White"/>
                                         <Setter Property="FontSize" Value="13"/>
-                                        <Setter Property="Padding" Value="0,15"/>
+                                        <Setter Property="Padding" Value="0,12"/>
                                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                        <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                                        <Setter Property="BorderBrush" Value="#F8FAFC"/>
                                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                                     </Style>
                                 </DataGrid.Resources>
@@ -227,15 +319,15 @@
                                     <DataGridTemplateColumn Header="NHÂN VIÊN" Width="2*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <StackPanel Margin="10,0">
-                                                    <TextBlock Text="{Binding Employee.FullName}" FontWeight="Bold" Foreground="#334155"/>
-                                                    <TextBlock Text="{Binding Employee.Department.DepartmentName}" FontSize="11" Foreground="#94A3B8"/>
+                                                <StackPanel Margin="10,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Requester.FullName}" FontWeight="Bold" Foreground="#334155"/>
+                                                    <TextBlock Text="{Binding Requester.Department.DepartmentName}" FontSize="11" Foreground="#94A3B8"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn Header="THỜI GIAN / LÝ DO" Width="2.5*">
+                                    <DataGridTemplateColumn Header="THỜI GIAN &amp; LÝ DO" Width="3*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel VerticalAlignment="Center">
@@ -244,7 +336,7 @@
                                                         <Run Text=" ➜ " Foreground="#CBD5E1"/>
                                                         <Run Text="{Binding EndDate, StringFormat=dd/MM}"/>
                                                     </TextBlock>
-                                                    <TextBlock Text="{Binding Reason}" FontSize="12" Foreground="#64748B" FontStyle="Italic"/>
+                                                    <TextBlock Text="{Binding Reason}" FontSize="12" Foreground="#64748B" FontStyle="Italic" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -256,7 +348,7 @@
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
                                                     <Button Command="{Binding DataContext.ApproveLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}"
-                                                            Content="Duyệt" 
+                                                            Content="✓" 
                                                             Background="#DCFCE7" Foreground="#15803D" FontWeight="Bold" FontSize="11"
                                                             BorderThickness="0" Cursor="Hand" Padding="12,6" Margin="0,0,8,0">
                                                         <Button.Resources>
@@ -268,7 +360,7 @@
 
                                                     <Button Command="{Binding DataContext.RejectLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}"
-                                                            Content="Từ chối" 
+                                                            Content="✕" 
                                                             Background="#FEE2E2" Foreground="#B91C1C" FontWeight="Bold" FontSize="11"
                                                             BorderThickness="0" Cursor="Hand" Padding="12,6">
                                                         <Button.Resources>
@@ -285,101 +377,85 @@
                             </DataGrid>
 
                             <StackPanel Visibility="{Binding PendingLeavesList.Count, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
-                                        HorizontalAlignment="Center" Margin="0,30">
-                                <TextBlock Text="🎉" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                                <TextBlock Text="Không có yêu cầu nào cần xử lý" Foreground="#94A3B8" FontStyle="Italic"/>
+                                        HorizontalAlignment="Center" Margin="0,40">
+                                <TextBlock Text="🎉" FontSize="30" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                <TextBlock Text="Tuyệt vời! Không có yêu cầu nào cần xử lý." Foreground="#94A3B8" FontStyle="Italic"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1">
-
+                <StackPanel Grid.Column="2">
                     <Border Style="{StaticResource CardPanel}">
                         <StackPanel>
-                            <TextBlock Text="Nhân Sự Mới" Style="{StaticResource HeaderStyle}"/>
+                            <DockPanel LastChildFill="False" Margin="0,0,0,15">
+                                <TextBlock Text="Thông Báo Mới" Style="{StaticResource HeaderStyle}" Margin="0"/>
+                                <Border Background="#EFF6FF" CornerRadius="12" Padding="12,4" DockPanel.Dock="Right">
+                                    <TextBlock Text="New" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                                </Border>
+                            </DockPanel>
 
-                            <ItemsControl ItemsSource="{Binding RecentEmployees}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,0,0,15">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="40"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
+                            <DataGrid ItemsSource="{Binding Notifications}" 
+                                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                                      Background="White" BorderThickness="0"
+                                      HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0">
 
-                                            <Ellipse Width="36" Height="36">
-                                                <Ellipse.Fill>
-                                                    <ImageBrush ImageSource="{Binding EmployeeID, Converter={StaticResource IdToImageConverter}}" 
-                                                                Stretch="UniformToFill"/>
-                                                </Ellipse.Fill>
-                                                <Ellipse.Stroke>
-                                                    <SolidColorBrush Color="#E2E8F0"/>
-                                                </Ellipse.Stroke>
-                                                <Ellipse.StrokeThickness>1</Ellipse.StrokeThickness>
-                                            </Ellipse>
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="White"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="#94A3B8"/>
+                                        <Setter Property="Padding" Value="5,10"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                    </Style>
+                                    <Style TargetType="DataGridRow">
+                                        <Setter Property="Padding" Value="0,12"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Property="BorderBrush" Value="#F8FAFC"/>
+                                    </Style>
+                                </DataGrid.Resources>
 
-                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding FullName}" FontWeight="Bold" Foreground="#334155" FontSize="13"/>
-                                                <TextBlock Text="{Binding HireDate, StringFormat='Ngày vào: {0:dd/MM}'}" FontSize="11" Foreground="#94A3B8"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="NỘI DUNG" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="5,0">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="#334155" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Content}" FontSize="11" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="NGÀY" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding CreatedDate, StringFormat='dd/MM'}" 
+                                                           VerticalAlignment="Center" FontSize="11" Foreground="#94A3B8" Margin="10,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="LOẠI" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" Foreground="#475569"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button Content="Xem tất cả" HorizontalAlignment="Center" Margin="0,15,0,0"
+                                    Background="Transparent" BorderThickness="0" Foreground="#2563EB" Cursor="Hand" FontSize="12"/>
                         </StackPanel>
                     </Border>
-
-                    <TextBlock Text="Lối Tắt" FontSize="14" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
-
-                    <Button Click="BtnAddEmployee_Click" Height="50" Margin="0,0,20,10"
-                            Background="White" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Left" Padding="15,0">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="2" Color="Black"/>
-                        </Button.Effect>
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="White" CornerRadius="8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Width="28" Height="28" Fill="#EFF6FF"/>
-                                        <TextBlock Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#2563EB" FontWeight="Bold" FontSize="16"/>
-
-                                        <TextBlock Grid.Column="1" Text="Thêm Nhân Viên" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#334155"/>
-                                    </Grid>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-
-                    <Button Command="{Binding DataContext.NavigatePayrollCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                            Height="50" Margin="0,0,20,0"
-                            Background="White" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Left" Padding="15,0">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="2" Color="Black"/>
-                        </Button.Effect>
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="White" CornerRadius="8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Width="28" Height="28" Fill="#F0FDF4"/>
-                                        <TextBlock Text="$" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A" FontWeight="Bold" FontSize="14"/>
-
-                                        <TextBlock Grid.Column="1" Text="Tính Lương" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#334155"/>
-                                    </Grid>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-
                 </StackPanel>
+
             </Grid>
         </Grid>
     </ScrollViewer>

@@ -17,4 +17,5 @@ public class PayrollDTO
     public decimal TotalIncome { get; set; }
     public decimal TotalDeduction { get; set; }
     public decimal NetSalary { get; set; }
+    public byte[] AvatarData { get; set; }
 }

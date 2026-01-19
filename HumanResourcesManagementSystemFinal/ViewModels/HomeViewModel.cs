@@ -26,6 +26,7 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
     public ObservableCollection<Employee> ExpiringContractEmployees { get; set; } = new();
     public ObservableCollection<DepartmentStat> DepartmentStats { get; set; } = new();
     public ObservableCollection<LeaveRequest> PendingLeavesList { get; set; } = new();
+    public ObservableCollection<NotificationModel> Notifications { get; set; } = new();
 
     public HomeViewModel()
     {
@@ -68,6 +69,8 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
 
             var newHires = await context.Employees
                 .AsNoTracking()
+                .Include(e => e.Department)
+                .Include(e => e.Account)
                 .OrderByDescending(e => e.EmployeeID)
                 .Take(2)
                 .ToListAsync();
@@ -79,7 +82,7 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
             var thirtyDaysLater = DateTime.Now.AddDays(30);
             var expiringList = await context.WorkContracts
                 .AsNoTracking()
-                .Include(c => c.Employee)
+                .Include(c => c.Employee).ThenInclude(e => e.Account)
                 .Where(c => c.EndDate > DateTime.Now && c.EndDate <= thirtyDaysLater)
                 .Select(c => c.Employee)
                 .ToListAsync();
@@ -105,14 +108,19 @@ public partial class HomeViewModel : ObservableObject, IRecipient<ReloadRequestM
 
             var pendings = await context.LeaveRequests
                 .AsNoTracking()
-                .Include(l => l.Requester)
+                .Include(l => l.Requester).ThenInclude(r => r.Department)
                 .Where(l => l.Status == "Đang chờ" || l.Status == "Pending")
                 .OrderByDescending(l => l.StartDate)
+                .Take(2)
                 .ToListAsync();
 
             PendingLeavesList.Clear();
             foreach (var item in pendings)
                 PendingLeavesList.Add(item);
+
+            Notifications.Clear();
+            Notifications.Add(new NotificationModel { Title = "Lịch nghỉ Tết Nguyên Đán", Content = "Công ty nghỉ từ 28AL đến mùng 6...", CreatedDate = DateTime.Now.AddDays(-1), Type = "Tin tức" });
+            Notifications.Add(new NotificationModel { Title = "Chúc mừng sinh nhật tháng 2", Content = "Danh sách nhân viên có sinh nhật...", CreatedDate = DateTime.Now.AddDays(-5), Type = "Công đoàn" });
         }
         catch (Exception ex)
         {
@@ -212,4 +220,12 @@ public class DepartmentStat
 {
     public string DepartmentName { get; set; }
     public int Count { get; set; }
+}
+
+public class NotificationModel
+{
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public string Type { get; set; }
 }

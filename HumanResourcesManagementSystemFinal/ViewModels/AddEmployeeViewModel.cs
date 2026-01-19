@@ -29,8 +29,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private byte[] _selectedImageBytes = null;
         public bool IsUsernameEditable => !IsEditMode;
 
-        // --- DANH SÁCH GỐC ---
-        // Lưu toàn bộ chức vụ lấy từ DB để lọc sau này
         private List<Position> _allPositions = new();
 
         public bool IsEditMode => _editingEmployee != null;
@@ -44,7 +42,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _windowTitle = "THÊM NHÂN VIÊN MỚI";
         [ObservableProperty] private ImageSource _avatarSource;
 
-        // Khi SelectedDepartment thay đổi, hàm OnSelectedDepartmentChanged bên dưới sẽ chạy
         [ObservableProperty] private Department _selectedDepartment;
 
         [ObservableProperty] private Position _selectedPosition;
@@ -56,7 +53,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _username;
         [ObservableProperty] private Role _selectedRole;
 
-        // --- THUỘC TÍNH MỚI: ĐIỀU KHIỂN KHÓA/MỞ CHỨC VỤ ---
         [ObservableProperty] private bool _isPositionEnabled = false;
 
         public string FullName { get => _fullName; set { _fullName = string.IsNullOrWhiteSpace(value) ? null : value; OnPropertyChanged(); } }
@@ -80,21 +76,17 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (emp != null) LoadEmployeeForEdit(emp);
         }
 
-        // --- LOGIC QUAN TRỌNG NHẤT: TỰ ĐỘNG LỌC CHỨC VỤ KHI CHỌN PHÒNG BAN ---
         partial void OnSelectedDepartmentChanged(Department value)
         {
-            // 1. Xóa danh sách chức vụ hiện tại trên UI
             Positions.Clear();
             SelectedPosition = null;
 
             if (value == null)
             {
-                // Nếu không chọn phòng ban -> Khóa Chức vụ
                 IsPositionEnabled = false;
             }
             else
             {
-                // Nếu đã chọn phòng ban -> Lọc chức vụ thuộc phòng đó từ danh sách gốc
                 var filteredPositions = _allPositions.Where(p => p.DepartmentID == value.DepartmentID).ToList();
 
                 foreach (var p in filteredPositions)
@@ -102,11 +94,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     Positions.Add(p);
                 }
 
-                // Mở khóa Chức vụ
                 IsPositionEnabled = true;
             }
         }
-        // -----------------------------------------------------------------------
 
         private ImageSource LoadImageFromBytes(byte[] imageData)
         {

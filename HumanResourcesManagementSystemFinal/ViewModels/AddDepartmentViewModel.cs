@@ -19,18 +19,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _deptLocation;
         [ObservableProperty] private string _selectedManagerID;
 
-        // Danh sách nhân viên để hiển thị trong ComboBox
         public ObservableCollection<Employee> Employees { get; set; } = new();
 
         public AddDepartmentViewModel()
         {
-            // Constructor mặc định dùng cho Thêm mới
             _ = LoadEmployeesAsync();
         }
 
         public AddDepartmentViewModel(Department existingDept)
         {
-            // Constructor dùng cho Chỉnh sửa
             Title = "Cập Nhật Phòng Ban";
             DeptName = existingDept.DepartmentName;
             DeptLocation = existingDept.Location;
@@ -44,7 +41,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 using var context = new DataContext();
-                // Chỉ lấy ID và Tên để nhẹ dữ liệu
                 var list = await context.Employees
                     .Select(e => new Employee { EmployeeID = e.EmployeeID, FullName = e.FullName })
                     .ToListAsync();
@@ -52,7 +48,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 Employees.Clear();
                 foreach (var emp in list) Employees.Add(emp);
             }
-            catch { /* Xử lý lỗi nếu cần */ }
+            catch {}
         }
 
         [RelayCommand]
@@ -63,8 +59,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 MessageBox.Show("Vui lòng nhập tên phòng ban!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            // Đóng cửa sổ và trả về True
             if (window != null)
             {
                 window.DialogResult = true;

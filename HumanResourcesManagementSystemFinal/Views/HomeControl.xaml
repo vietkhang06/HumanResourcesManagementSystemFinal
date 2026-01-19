@@ -240,15 +240,20 @@
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="20"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" Padding="15" Margin="0,0,0,20">
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" Padding="15" Margin="0,0,0,20">
                         <Border.Style>
                             <Style TargetType="Border" BasedOn="{StaticResource CardPanel}">
                                 <Style.Triggers>
@@ -277,9 +282,15 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource CardPanel}">
-                        <StackPanel>
-                            <DockPanel LastChildFill="False" Margin="0,0,0,15">
+                    <Border Grid.Row="1" Style="{StaticResource CardPanel}" Margin="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,15">
                                 <TextBlock Text="Đơn Nghỉ Phép Cần Duyệt" Style="{StaticResource HeaderStyle}" Margin="0"/>
                                 <Border Background="#F1F5F9" CornerRadius="12" Padding="12,4" DockPanel.Dock="Right">
                                     <TextBlock Text="{Binding PendingLeavesList.Count, StringFormat='{}{0} Đơn'}" 
@@ -288,12 +299,13 @@
                             </DockPanel>
 
                             <DataGrid ItemsSource="{Binding PendingLeavesList}" 
-                                      AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" 
-                                      CanUserResizeColumns="False" CanUserReorderColumns="False" IsReadOnly="True"
-                                      GridLinesVisibility="Horizontal" HeadersVisibility="Column"
-                                      Background="White" BorderThickness="0"
-                                      HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" 
+                                    CanUserResizeColumns="False" CanUserReorderColumns="False" IsReadOnly="True"
+                                    GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                                    Background="White" BorderThickness="0"
+                                    HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0"
+                                    VerticalScrollBarVisibility="Auto"
+                                    RowHeight="40">
 
                                 <DataGrid.Resources>
                                     <Style TargetType="DataGridColumnHeader">
@@ -347,8 +359,7 @@
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
                                                     <Button Command="{Binding DataContext.ApproveLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                            CommandParameter="{Binding}"
-                                                            Content="✓" 
+                                                            CommandParameter="{Binding}" Content="✓" 
                                                             Background="#DCFCE7" Foreground="#15803D" FontWeight="Bold" FontSize="11"
                                                             BorderThickness="0" Cursor="Hand" Padding="12,6" Margin="0,0,8,0">
                                                         <Button.Resources>
@@ -359,8 +370,7 @@
                                                     </Button>
 
                                                     <Button Command="{Binding DataContext.RejectLeaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                            CommandParameter="{Binding}"
-                                                            Content="✕" 
+                                                            CommandParameter="{Binding}" Content="✕" 
                                                             Background="#FEE2E2" Foreground="#B91C1C" FontWeight="Bold" FontSize="11"
                                                             BorderThickness="0" Cursor="Hand" Padding="12,6">
                                                         <Button.Resources>
@@ -376,86 +386,91 @@
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <StackPanel Visibility="{Binding PendingLeavesList.Count, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
-                                        HorizontalAlignment="Center" Margin="0,40">
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center" 
+                                        Visibility="{Binding PendingLeavesList.Count, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
+                                        HorizontalAlignment="Center">
                                 <TextBlock Text="🎉" FontSize="30" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 <TextBlock Text="Tuyệt vời! Không có yêu cầu nào cần xử lý." Foreground="#94A3B8" FontStyle="Italic"/>
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
                     </Border>
-                </StackPanel>
+                </Grid>
 
-                <StackPanel Grid.Column="2">
-                    <Border Style="{StaticResource CardPanel}">
-                        <StackPanel>
-                            <DockPanel LastChildFill="False" Margin="0,0,0,15">
-                                <TextBlock Text="Thông Báo Mới" Style="{StaticResource HeaderStyle}" Margin="0"/>
-                                <Border Background="#EFF6FF" CornerRadius="12" Padding="12,4" DockPanel.Dock="Right">
-                                    <TextBlock Text="New" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
-                                </Border>
-                            </DockPanel>
+                <Border Grid.Column="2" Style="{StaticResource CardPanel}" Margin="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                            <DataGrid ItemsSource="{Binding Notifications}" 
-                                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                                      GridLinesVisibility="Horizontal" HeadersVisibility="Column"
-                                      Background="White" BorderThickness="0"
-                                      HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0">
+                        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,15">
+                            <TextBlock Text="Thông Báo Mới" Style="{StaticResource HeaderStyle}" Margin="0"/>
+                            <Border Background="#EFF6FF" CornerRadius="12" Padding="12,4" DockPanel.Dock="Right">
+                                <TextBlock Text="New" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                            </Border>
+                        </DockPanel>
 
-                                <DataGrid.Resources>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="White"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="Foreground" Value="#94A3B8"/>
-                                        <Setter Property="Padding" Value="5,10"/>
-                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
-                                    </Style>
-                                    <Style TargetType="DataGridRow">
-                                        <Setter Property="Padding" Value="0,12"/>
-                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                        <Setter Property="BorderBrush" Value="#F8FAFC"/>
-                                    </Style>
-                                </DataGrid.Resources>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Notifications}" 
+                                  AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                                  Background="White" BorderThickness="0"
+                                  HorizontalGridLinesBrush="#F1F5F9" RowHeaderWidth="0"
+                                  VerticalScrollBarVisibility="Auto">
 
-                                <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="NỘI DUNG" Width="*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Margin="5,0">
-                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="#334155" TextWrapping="Wrap"/>
-                                                    <TextBlock Text="{Binding Content}" FontSize="11" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                    <Setter Property="Padding" Value="5,10"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                </Style>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Padding" Value="0,12"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#F8FAFC"/>
+                                </Style>
+                            </DataGrid.Resources>
 
-                                    <DataGridTemplateColumn Header="NGÀY" Width="Auto">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding CreatedDate, StringFormat='dd/MM'}" 
-                                                           VerticalAlignment="Center" FontSize="11" Foreground="#94A3B8" Margin="10,0"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="NỘI DUNG" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="5,0">
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="#334155" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding Content}" FontSize="11" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn Header="LOẠI" Width="Auto">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
-                                                    <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" Foreground="#475569"/>
-                                                </Border>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                                <DataGridTemplateColumn Header="NGÀY" Width="Auto">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding CreatedDate, StringFormat='dd/MM'}" 
+                                                       VerticalAlignment="Center" FontSize="11" Foreground="#94A3B8" Margin="10,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <Button Content="Xem tất cả" HorizontalAlignment="Center" Margin="0,15,0,0"
-                                    Background="Transparent" BorderThickness="0" Foreground="#2563EB" Cursor="Hand" FontSize="12"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
+                                <DataGridTemplateColumn Header="LOẠI" Width="Auto">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding Type}" FontSize="10" FontWeight="SemiBold" Foreground="#475569"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
 
+                        <Button Grid.Row="2" Content="Xem tất cả" HorizontalAlignment="Center" Margin="0,15,0,0"
+                                Background="Transparent" BorderThickness="0" Foreground="#2563EB" Cursor="Hand" FontSize="12"/>
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </ScrollViewer>

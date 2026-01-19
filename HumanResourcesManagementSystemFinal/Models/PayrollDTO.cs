@@ -19,3 +19,4 @@ public class PayrollDTO
     public decimal NetSalary { get; set; }
     public byte[] AvatarData { get; set; }
 }
+ 

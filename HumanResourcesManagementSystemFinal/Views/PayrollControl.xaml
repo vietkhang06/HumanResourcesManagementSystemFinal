@@ -330,7 +330,7 @@
                     <DataGridTemplateColumn Header="TỔNG THU" Width="140">
                         <DataGridTemplateColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Right" />
                             </Style>
                         </DataGridTemplateColumn.HeaderStyle>
                         <DataGridTemplateColumn.CellTemplate>
@@ -338,6 +338,21 @@
                                 <TextBlock Text="{Binding TotalIncome, StringFormat={}{0:N0}}" 
                                            FontWeight="Bold" Foreground="#2563EB" FontSize="13"
                                            VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTemplateColumn Header="TỔNG CHI" Width="140">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TotalIncome, StringFormat={}{0:N0}}" 
+                       FontWeight="Bold" Foreground="#2563EB" FontSize="13"
+                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

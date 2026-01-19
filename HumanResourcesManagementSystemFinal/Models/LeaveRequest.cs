@@ -12,12 +12,12 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class LeaveRequest
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string RequestID { get; set; } = string.Empty;
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? EmployeeID { get; set; }
 
     [ForeignKey(nameof(EmployeeID))]
@@ -40,8 +40,8 @@ public class LeaveRequest
     [StringLength(20)]
     public string Status { get; set; } = "Pending";
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? ApproverID { get; set; }
 
     [ForeignKey(nameof(ApproverID))]

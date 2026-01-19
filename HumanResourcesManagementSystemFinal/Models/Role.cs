@@ -12,8 +12,8 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Role
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string RoleID { get; set; } = string.Empty;
 
     [Required]

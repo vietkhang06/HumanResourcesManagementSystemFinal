@@ -449,8 +449,8 @@
                                 <DataGridTemplateColumn Header="NGÀY" Width="Auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding CreatedDate, StringFormat='dd/MM'}" 
-                                                       VerticalAlignment="Center" FontSize="11" Foreground="#94A3B8" Margin="10,0"/>
+                                            <TextBlock Text="{Binding Date, StringFormat='dd/MM'}" 
+                       VerticalAlignment="Center" FontSize="11" Foreground="#94A3B8" Margin="10,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -468,7 +468,8 @@
                         </DataGrid>
 
                         <Button Grid.Row="2" Content="Xem tất cả" HorizontalAlignment="Center" Margin="0,15,0,0"
-                                Background="Transparent" BorderThickness="0" Foreground="#2563EB" Cursor="Hand" FontSize="12"/>
+                                    Background="Transparent" BorderThickness="0" Foreground="#2563EB" Cursor="Hand" FontSize="12"
+                                    Command="{Binding DataContext.NavigateNotificationCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
                     </Grid>
                 </Border>
             </Grid>

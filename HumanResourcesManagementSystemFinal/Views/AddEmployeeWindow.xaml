@@ -338,7 +338,7 @@
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="Công Việc &amp; Hợp Đồng *" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,10"/>
+                        <TextBlock Text="Hợp Đồng Lao Động *" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,10"/>
                         <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="10" Opacity="0.05" ShadowDepth="1"/>

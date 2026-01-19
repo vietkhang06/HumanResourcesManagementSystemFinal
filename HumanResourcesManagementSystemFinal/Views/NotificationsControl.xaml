@@ -6,14 +6,106 @@
              mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="900">
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+<ControlTemplate x:Key="BlueComboBoxToggleButton" TargetType="ToggleButton">
+        <Border x:Name="templateRoot" Background="Transparent" BorderThickness="0" CornerRadius="8">
+            <Grid HorizontalAlignment="Right" Width="30">
+                <Path x:Name="arrow" Data="M0,0 L4,4 L8,0 Z" Fill="White" 
+                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            </Grid>
+        </Border>
+    </ControlTemplate>
+
+    <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Border x:Name="border" Background="#1A3D64" CornerRadius="8" BorderThickness="0">
+                            <Grid>
+                                <ToggleButton Name="ToggleButton" Template="{StaticResource BlueComboBoxToggleButton}" 
+                                              Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" 
+                                              ClickMode="Press" Background="Transparent"/>
+                                
+                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" 
+                                                  Content="{TemplateBinding SelectionBoxItem}" 
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
+                                                  Margin="15,0,35,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            </Grid>
+                        </Border>
+                        
+                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                            <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="8" Margin="0,5,0,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="15" Opacity="0.15" ShadowDepth="3" Color="Black"/>
+                                    </Border.Effect>
+                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="border" Property="Background" Value="#254E7A"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem">
+                    <Setter Property="Padding" Value="10"/>
+                    <Setter Property="Foreground" Value="#2D3748"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#EBF8FF"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#1A3D64"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RoundedButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#1E3A8A"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="19">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.9"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
         <Style TargetType="Button" x:Key="NotificationButtonStyle">
             <Setter Property="Background" Value="#F1F5F9"/>
             <Setter Property="Foreground" Value="#1E3A8A"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="Width" Value="100"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -23,12 +115,8 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E2E8F0"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
+
         <Style TargetType="ToggleButton" x:Key="FilterToggleButtonStyle">
             <Setter Property="Background" Value="#F1F5F9"/>
             <Setter Property="Height" Value="40"/>
@@ -45,7 +133,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="10">
+    <Grid Margin="15">
         <Border Background="White" CornerRadius="15">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="15" Color="#64748B" Opacity="0.1" ShadowDepth="2"/>
@@ -54,73 +142,70 @@
             <Grid Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="150"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
                     <Path Data="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" Fill="#1E3A8A" Width="20" Stretch="Uniform" Margin="0,0,10,0"/>
                     <TextBlock Text="Danh sách thông báo" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A"/>
                 </StackPanel>
 
-                <ListBox Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,5">
-                    <ListBoxItem Content="Thông báo nghỉ lễ Tết 2026" Padding="5"/>
-                    <ListBoxItem Content="Cập nhật quy định chấm công mới" Padding="5"/>
+                <ListBox Grid.Row="1" x:Name="ListNotifications"
+                         MouseDoubleClick="ListNotifications_MouseDoubleClick"
+                         Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,15">
                 </ListBox>
 
-                <Grid Grid.Row="2" Margin="0,0,0,20">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                        <Button Content="Thêm" Style="{StaticResource NotificationButtonStyle}" Margin="0,5,10,0"/>
-                        <Button Content="Xóa" Style="{StaticResource NotificationButtonStyle}" Margin="0,5,10,0"/>
+                <Grid Grid.Row="2">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                        <Button Content="Thêm" Click="AddButton_Click" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0"/>
+                        <Button Content="Xóa" Click="DeleteButton_Click" Style="{StaticResource NotificationButtonStyle}"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,10,0">
-                        <Button Content="Hiển thị" Style="{StaticResource NotificationButtonStyle}" Margin="0,5,10,0"/>
-                        <Button Content="Xuất PDF" Style="{StaticResource NotificationButtonStyle}" Margin="0,5,10,0"/>
 
-                        <ToggleButton x:Name="FilterToggleButton" Style="{StaticResource FilterToggleButtonStyle}" Margin="0,5,10,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hiển thị tất cả" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0" Click="BtnShowAll_Click"/>
+                        <Button Content="Xuất PDF" Style="{StaticResource NotificationButtonStyle}" Margin="0,0,10,0" Click="BtnExportPDF_Click" />
+                        <ToggleButton x:Name="FilterToggleButton" Style="{StaticResource FilterToggleButtonStyle}"> 
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" Fill="#1E3A8A" Width="16" Stretch="Uniform" Margin="0,0,8,0"/>
-                                <TextBlock Text="Bộ lọc" VerticalAlignment="Center" Foreground="#1E3A8A" FontSize="15" Margin="0,0,10,0"/>
+                                <TextBlock Text="Bộ lọc" Foreground="#1E3A8A" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ToggleButton>
-
-                        <Popup IsOpen="{Binding IsChecked, ElementName=FilterToggleButton}" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=FilterToggleButton}" AllowsTransparency="True">
-                            <Border Background="White" CornerRadius="15" Padding="15" Margin="5" BorderThickness="1" BorderBrush="#CBD5E1">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="10" Opacity="0.2" ShadowDepth="2"/>
-                                </Border.Effect>
-                                <StackPanel Width="220">
-                                    <TextBlock Text="Ngày thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B"/>
-                                    <DatePicker Margin="0,0,0,10"/>
-                                    <TextBlock Text="Loại thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B"/>
-                                    <ComboBox Margin="0,0,0,10"/>
-                                    <TextBlock Text="Phòng ban" Margin="0,0,0,5" FontSize="12" Foreground="#64748B"/>
-                                    <ComboBox Margin="0,0,0,10"/>
-                                    <Button Content="Lọc ngay" Height="30" Width="190" Background="#1E3A8A" Foreground="White">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="15">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
-                        </Popup>
                     </StackPanel>
-                </Grid>
+                    <Popup IsOpen="{Binding IsChecked, ElementName=FilterToggleButton}" 
+                       StaysOpen="False" 
+                       Placement="Top" 
+                       PlacementTarget="{Binding ElementName=FilterToggleButton}" 
+                       AllowsTransparency="True"
+                       Focusable="True">
+                        <Border Background="White" CornerRadius="15" Padding="15" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="15" Color="#64748B" Opacity="0.1" ShadowDepth="2"/>
+                            </Border.Effect>
+                            <StackPanel Width="220">
+                                <TextBlock Text="Ngày thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                                <DatePicker x:Name="FilterDate" Margin="0,0,0,12" Height="35" VerticalContentAlignment="Center"/>
 
-                <Grid Grid.Row="3">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Chi tiết thông báo" FontSize="18" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,10"/>
-                    <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12">
-                        <TextBlock Text="Nội dung sẽ hiện ở đây..." Margin="20" Foreground="#64748B"/>
-                    </Border>
+                                <TextBlock Text="Loại thông báo" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                                <ComboBox x:Name="CboFilterType" Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,12" Height="35">
+                                    <ComboBoxItem Content="Chung" IsSelected="True"/>
+                                    <ComboBoxItem Content="Khẩn cấp"/>
+                                </ComboBox>
+
+                                <TextBlock Text="Phòng ban" Margin="0,0,0,5" FontSize="12" Foreground="#64748B" FontWeight="Medium"/>
+                                <ComboBox x:Name="CboFilterDepartment" Style="{StaticResource BlueComboBoxStyle}" Margin="0,0,0,15" Height="35">
+                                    <ComboBoxItem Content="Tất cả" IsSelected="True"/>
+                                    <ComboBoxItem Content="Nhân sự"/>
+                                    <ComboBoxItem Content="Kỹ thuật"/>
+                                    <ComboBoxItem Content="Kế toán"/>
+                                </ComboBox>
+
+                                <Button Content="Lọc ngay" Height="38" Width="190" FontWeight="Bold"
+                    Style="{StaticResource RoundedButtonStyle}" Margin="0,5,0,5"
+                    Click="BtnFilter_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                 </Grid>
             </Grid>
         </Border>

@@ -1,0 +1,71 @@
+﻿<Window x:Class="HumanResourcesManagementSystemFinal.Views.NotificationsDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chi tiết thông báo" Height="600" Width="800" 
+        WindowStartupLocation="CenterScreen" Background="#F1F5F9"
+        AllowsTransparency="True" WindowStyle="None">
+
+    <Window.Resources>
+        <Style x:Key="CloseButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="20" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Color="#64748B" Opacity="0.15" ShadowDepth="0"/>
+        </Border.Effect>
+
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Path Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" 
+              Fill="#1E3A8A" Width="18" Stretch="Uniform" Margin="0,0,10,0"/>
+                    <TextBlock Text="THÔNG TIN CHI TIẾT" Foreground="#1E3A8A" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="—" Click="MinimizeButton_Click" Style="{StaticResource CloseButtonStyle}" Margin="0,0,15,0" FontSize="16"/>
+                    <Button Content="▢" Click="MaximizeButton_Click" Style="{StaticResource CloseButtonStyle}" Margin="0,0,15,0" FontSize="18"/>
+                    <Button Content="✕" Click="CloseButton_Click" Style="{StaticResource CloseButtonStyle}" FontSize="18"/>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Margin="0,0,0,25">
+                <TextBlock x:Name="TxtTitle" FontSize="28" FontWeight="Bold" Foreground="#0F172A" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtSender" Text="Người gửi: Admin" FontSize="12" Foreground="#64748B"/>
+                    </Border>
+                    <Border Background="#F1F5F9" CornerRadius="10" Padding="10,4">
+                        <TextBlock x:Name="TxtDate" Text="19/01/2026" FontSize="12" Foreground="#64748B"/>
+                    </Border>
+                </StackPanel>
+                <Separator Background="#F1F5F9" Margin="0,20,0,0" Height="1"/>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="TxtContent" FontSize="16" LineHeight="28" Foreground="#334155" TextWrapping="Wrap" Padding="0,0,10,0"/>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</Window>

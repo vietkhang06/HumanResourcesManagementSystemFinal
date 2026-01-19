@@ -13,8 +13,8 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Department
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string DepartmentID { get; set; } = string.Empty;
 
     [Required]
@@ -24,7 +24,7 @@ public class Department
     [StringLength(100)]
     public string? Location { get; set; }
 
-    [StringLength(5)]
+    [StringLength(10)]
     public string? ManagerID { get; set; }
 
     public virtual ICollection<Position> Positions { get; set; } = new HashSet<Position>();

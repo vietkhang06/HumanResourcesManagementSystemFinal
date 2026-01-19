@@ -13,8 +13,8 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Position
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string PositionID { get; set; } = string.Empty;
 
     [Required]
@@ -24,7 +24,7 @@ public class Position
     [StringLength(200)]
     public string? JobDescription { get; set; }
 
-    [Column(TypeName = "char(5)")]
+    [Column(TypeName = "varchar(10)")]
     public string DepartmentID { get; set; } = string.Empty;
 
     [ForeignKey(nameof(DepartmentID))]

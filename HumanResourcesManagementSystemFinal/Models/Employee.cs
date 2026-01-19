@@ -13,8 +13,8 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Employee
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string EmployeeID { get; set; } = string.Empty;
 
     [Required]
@@ -44,22 +44,22 @@ public class Employee
     [StringLength(20)]
     public string Status { get; set; } = "Active";
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "char(10)")]
+    [StringLength(10)]
     public string? DepartmentID { get; set; }
 
     [ForeignKey(nameof(DepartmentID))]
     public virtual Department? Department { get; set; }
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "char(10)")]
+    [StringLength(10)]
     public string? PositionID { get; set; }
 
     [ForeignKey(nameof(PositionID))]
     public virtual Position? Position { get; set; }
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? ManagerID { get; set; }
 
     [ForeignKey(nameof(ManagerID))]

@@ -12,12 +12,12 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class WorkContract
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string ContractID { get; set; } = string.Empty;
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? EmployeeID { get; set; }
 
     [ForeignKey(nameof(EmployeeID))]

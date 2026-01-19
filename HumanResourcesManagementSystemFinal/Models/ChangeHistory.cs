@@ -27,8 +27,8 @@ public class ChangeHistory
 
     public DateTime ChangeTime { get; set; } = DateTime.Now;
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? ChangeByUserID { get; set; }
 
     [ForeignKey(nameof(ChangeByUserID))]

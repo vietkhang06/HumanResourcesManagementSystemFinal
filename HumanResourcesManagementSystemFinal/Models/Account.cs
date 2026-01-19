@@ -13,8 +13,8 @@ namespace HumanResourcesManagementSystemFinal.Models;
 public class Account
 {
     [Key]
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string UserID { get; set; } = string.Empty;
 
     [Required]
@@ -30,15 +30,15 @@ public class Account
     [StringLength(20)]
     public string IsActive { get; set; } = "Active";
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? EmployeeID { get; set; }
 
     [ForeignKey(nameof(EmployeeID))]
     public virtual Employee? Employee { get; set; }
 
-    [Column(TypeName = "char(5)")]
-    [StringLength(5)]
+    [Column(TypeName = "varchar(10)")]
+    [StringLength(10)]
     public string? RoleID { get; set; }
 
     [ForeignKey(nameof(RoleID))]

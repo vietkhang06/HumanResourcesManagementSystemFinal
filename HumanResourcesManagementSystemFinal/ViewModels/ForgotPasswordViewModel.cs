@@ -52,11 +52,10 @@ public partial class ForgotPasswordViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(Username) ||
             string.IsNullOrWhiteSpace(EmailAddress) ||
-            string.IsNullOrWhiteSpace(PhoneNumber) ||
-            string.IsNullOrWhiteSpace(_cccd))
+            string.IsNullOrWhiteSpace(PhoneNumber) )
         {
             MessageBox.Show(
-                "Vui lòng nhập đầy đủ thông tin: Tên đăng nhập, Email, SĐT và CCCD.",
+                "Vui lòng nhập đầy đủ thông tin: Tên đăng nhập, Email, SĐT",
                 "Thiếu thông tin",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -91,14 +90,12 @@ public partial class ForgotPasswordViewModel : ObservableObject
                 {
                     string dbEmail = account.Employee.Email ?? string.Empty;
                     string dbPhone = account.Employee.PhoneNumber ?? string.Empty;
-                    string dbCCCD = account.Employee.CCCD ?? string.Empty;
 
                     bool isEmailMatch = dbEmail.Trim()
                         .Equals(EmailAddress.Trim(), StringComparison.OrdinalIgnoreCase);
                     bool isPhoneMatch = dbPhone.Trim() == PhoneNumber.Trim();
-                    bool isCccdMatch = dbCCCD.Trim() == _cccd.Trim();
 
-                    if (isEmailMatch && isPhoneMatch && isCccdMatch)
+                    if (isEmailMatch && isPhoneMatch)
                     {
                         existingPassword = account.Password;
                         targetEmail = dbEmail;
@@ -121,7 +118,7 @@ public partial class ForgotPasswordViewModel : ObservableObject
             else
             {
                 MessageBox.Show(
-                    "Thông tin xác thực không chính xác.\nVui lòng kiểm tra lại Tên đăng nhập, Email, SĐT và CCCD.",
+                    "Thông tin xác thực không chính xác.\nVui lòng kiểm tra lại Tên đăng nhập, Email, SĐT.",
                     "Không tìm thấy tài khoản",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -155,8 +152,7 @@ public partial class ForgotPasswordViewModel : ObservableObject
         return !_isBusy &&
                !string.IsNullOrWhiteSpace(Username) &&
                !string.IsNullOrWhiteSpace(EmailAddress) &&
-               !string.IsNullOrWhiteSpace(PhoneNumber) &&
-               !string.IsNullOrWhiteSpace(_cccd);
+               !string.IsNullOrWhiteSpace(PhoneNumber);
     }
 
     private bool IsValidEmail(string email)

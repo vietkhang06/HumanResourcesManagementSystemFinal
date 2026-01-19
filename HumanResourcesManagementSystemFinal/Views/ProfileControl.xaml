@@ -69,7 +69,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="White" CornerRadius="15" Margin="0,0,20,0" VerticalAlignment="Top">
+        <Border Grid.Column="0" Background="White" CornerRadius="15" Margin="0,0,20,0" VerticalAlignment="Center" Height="710">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20" Opacity="0.05" ShadowDepth="5" Color="#000"/>
             </Border.Effect>
@@ -81,7 +81,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" CornerRadius="15,15,0,0" Height="100" VerticalAlignment="Top">
+                <Border Grid.Row="0" CornerRadius="15,15,0,0" Height="126" VerticalAlignment="Top">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#1E3A8A" Offset="0"/>
@@ -91,7 +91,7 @@
                 </Border>
 
                 <Grid Grid.Row="0" Margin="0,40,0,0" HorizontalAlignment="Center">
-                    <Ellipse Width="120" Height="120" Stroke="White" StrokeThickness="4">
+                    <Ellipse Width="120" Height="120" Stroke="White" StrokeThickness="4" Margin="0,28,0,-28">
                         <Ellipse.Effect>
                             <DropShadowEffect BlurRadius="10" Opacity="0.1"/>
                         </Ellipse.Effect>
@@ -113,7 +113,7 @@
                     </Button>
                 </Grid>
 
-                <StackPanel Grid.Row="1" Margin="20,15,20,30">
+                <StackPanel Grid.Row="1" Margin="20,40,20,30">
                     <TextBlock Text="{Binding CurrentUser.FullName}" FontSize="20" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
                     <TextBlock Text="{Binding CurrentUser.Position.PositionName}" FontSize="14" Foreground="#64748B" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,5,0,15"/>
                     <Border Background="#EFF6FF" CornerRadius="12" Padding="15,5" HorizontalAlignment="Center" BorderBrush="#DBEAFE" BorderThickness="1">
@@ -123,11 +123,11 @@
 
                 <StackPanel Grid.Row="2" Margin="30,0,30,40">
                     <Separator Background="#F1F5F9" Margin="0,0,0,20"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,25">
                         <Path Data="{StaticResource IconEmail}" Fill="#94A3B8" Width="16" Height="16" Stretch="Uniform" Margin="0,0,15,0"/>
                         <TextBlock Text="{Binding CurrentUser.Email}" VerticalAlignment="Center" Foreground="#475569" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,25">
                         <Path Data="{StaticResource IconPhone}" Fill="#94A3B8" Width="16" Height="16" Stretch="Uniform" Margin="0,0,15,0"/>
                         <TextBlock Text="{Binding CurrentUser.PhoneNumber}" VerticalAlignment="Center" Foreground="#475569"/>
                     </StackPanel>

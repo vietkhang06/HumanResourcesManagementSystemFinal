@@ -1,5 +1,7 @@
 ﻿using HumanResourcesManagementSystemFinal.Data;
 using System.Windows;
+using OfficeOpenXml;
+
 
 namespace HumanResourcesManagementSystemFinal
 {
@@ -9,7 +11,8 @@ namespace HumanResourcesManagementSystemFinal
         {
             base.OnStartup(e);
 
-            // Khởi tạo Database và Seed data
+            ExcelPackage.License.SetNonCommercialPersonal("HRMS Project");
+
             using (var context = new DataContext())
             {
                 DbSeeder.Seed(context);

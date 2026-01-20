@@ -20,15 +20,15 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Account", b =>
                 {
                     b.Property<string>("UserID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<byte[]>("AvatarData")
                         .HasColumnType("BLOB");
 
                     b.Property<string>("EmployeeID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("IsActive")
                         .IsRequired()
@@ -41,8 +41,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RoleID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -66,15 +66,15 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("char(8)");
 
                     b.Property<string>("AccountUserID")
-                        .HasColumnType("char(5)");
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("ActionType")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ChangeByUserID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<DateTime>("ChangeTime")
                         .HasColumnType("TEXT");
@@ -103,8 +103,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Department", b =>
                 {
                     b.Property<string>("DepartmentID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
@@ -116,7 +116,7 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ManagerID")
-                        .HasMaxLength(5)
+                        .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
                     b.HasKey("DepartmentID");
@@ -127,8 +127,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Employee", b =>
                 {
                     b.Property<string>("EmployeeID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("Address")
                         .HasMaxLength(100)
@@ -142,8 +142,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("DepartmentID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("char(10)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(100)
@@ -160,16 +160,16 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ManagerID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PositionID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("char(10)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -190,16 +190,16 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.LeaveRequest", b =>
                 {
                     b.Property<string>("RequestID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("ApproverID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("EmployeeID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("smalldatetime");
@@ -270,15 +270,55 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Payroll", b =>
+                {
+                    b.Property<string>("PayrollID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Allowance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Bonus")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Deductions")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("EmployeeID")
+                        .IsRequired()
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("NetSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<double>("WorkingDays")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PayrollID");
+
+                    b.HasIndex("EmployeeID");
+
+                    b.ToTable("Payrolls");
+                });
+
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Position", b =>
                 {
                     b.Property<string>("PositionID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("DepartmentID")
                         .IsRequired()
-                        .HasColumnType("char(5)");
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("JobDescription")
                         .HasMaxLength(200)
@@ -299,8 +339,8 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Role", b =>
                 {
                     b.Property<string>("RoleID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -315,15 +355,15 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.TimeSheet", b =>
                 {
                     b.Property<string>("TimeSheetID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<double?>("ActualHours")
                         .HasColumnType("REAL");
 
                     b.Property<string>("EmployeeID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<TimeSpan?>("TimeIn")
                         .HasColumnType("TEXT");
@@ -344,16 +384,16 @@ namespace HumanResourcesManagementSystemFinal.Migrations
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.WorkContract", b =>
                 {
                     b.Property<string>("ContractID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("ContractType")
                         .HasMaxLength(40)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EmployeeID")
-                        .HasMaxLength(5)
-                        .HasColumnType("char(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("smalldatetime");
@@ -438,6 +478,17 @@ namespace HumanResourcesManagementSystemFinal.Migrations
                     b.Navigation("Approver");
 
                     b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Payroll", b =>
+                {
+                    b.HasOne("HumanResourcesManagementSystemFinal.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("HumanResourcesManagementSystemFinal.Models.Position", b =>

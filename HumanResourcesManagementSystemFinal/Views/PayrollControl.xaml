@@ -13,6 +13,17 @@
     </UserControl.DataContext>
 
     <UserControl.Resources>
+        <Style x:Key="FilterTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+        </Style>
         <cnv:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
 
         <cnv:BinaryImageConverter x:Key="BinaryImageConverter"/>
@@ -296,7 +307,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="CÔNG" Width="100">
+                    <DataGridTemplateColumn Header="CÔNG" Width="70">
                         <DataGridTemplateColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -341,7 +352,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    
+
                     <DataGridTemplateColumn Header="TỔNG CHI" Width="140">
                         <DataGridTemplateColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
@@ -350,33 +361,82 @@
                         </DataGridTemplateColumn.HeaderStyle>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding TotalIncome, StringFormat={}{0:N0}}" 
-                       FontWeight="Bold" Foreground="#2563EB" FontSize="13"
-                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding TotalDeduction, StringFormat={}{0:N0}}" 
+                                           FontWeight="Bold" Foreground="#EF4444" FontSize="13"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="THỰC LĨNH" Width="180">
-                        <DataGridTemplateColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                                <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                                <Setter Property="Padding" Value="10,12,20,12"/>
-                            </Style>
-                        </DataGridTemplateColumn.HeaderStyle>
+                    <DataGridTemplateColumn Width="200">
+                        <DataGridTemplateColumn.Header>
+                            <Grid HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="70,0,10,0">
+                                    <TextBlock Text="THỰC LĨNH" Foreground="#64748B" FontSize="12" />
+                                    <Button x:Name="BtnFilterSalary" 
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="12,0,0,0"
+                        Command="{Binding DataContext.ToggleFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                        <Path Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" 
+                          Fill="#94A3B8" Stretch="Uniform" Width="14" Height="14"/>
+                                    </Button>
+                                </StackPanel>
+
+                                <Popup IsOpen="{Binding DataContext.IsFilterPopupOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=BtnFilterSalary}" AllowsTransparency="True" Focusable="True">
+                                    <Border Background="White" CornerRadius="20" Padding="20" Margin="10" BorderThickness="1" BorderBrush="#F1F5F9">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="25" Color="#64748B"  Opacity="0.15" ShadowDepth="8"  Direction="270"/>
+                                        </Border.Effect>
+                                        <StackPanel Width="220" DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                            <TextBlock Text="Lọc Theo Mức Lương"  Margin="0,0,0,18"  FontSize="16"  Foreground="#1A3D64" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+                                            <TextBlock Text="Mức lương tối thiểu (VNĐ)" Margin="0,0,0,6" FontSize="12" Foreground="#64748B" FontWeight="SemiBold"/>
+
+                                            <TextBox Text="{Binding MinSalary, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15" Height="38" VerticalContentAlignment="Center" Padding="12,0" BorderBrush="#E2E8F0">
+                                                <TextBox.Resources>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Setter Property="CornerRadius" Value="10"/>
+                                                    </Style>
+                                                </TextBox.Resources>
+                                            </TextBox>
+
+                                            <TextBlock Text="Mức lương tối đa (VNĐ)" Margin="0,0,0,6" FontSize="12" Foreground="#64748B" FontWeight="SemiBold"/>
+
+                                            <TextBox Text="{Binding MaxSalary, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" Height="38" VerticalContentAlignment="Center" Padding="12,0" BorderBrush="#E2E8F0">
+                                                <TextBox.Resources>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Setter Property="CornerRadius" Value="10"/>
+                                                    </Style>
+                                                </TextBox.Resources>
+                                            </TextBox>
+
+                                            <Button Content="Lọc ngay" Command="{Binding ApplyFilterCommand}" Height="42" Width="200" FontWeight="Bold" Background="#10B981"  Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="12"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Content="Xóa lọc hiện tại" 
+                Command="{Binding ResetFilterCommand}" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="12" FontWeight="Medium" Cursor="Hand" Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </DataGridTemplateColumn.Header>
+
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border Background="#F0FDF4" CornerRadius="8" Padding="12,6" HorizontalAlignment="Right" Margin="0,0,10,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding NetSalary, StringFormat={}{0:N0}}" 
-                                                   FontWeight="Bold" Foreground="#15803D" FontSize="15"/>
+                               FontWeight="Bold" Foreground="#15803D" FontSize="15"/>
                                         <TextBlock Text=" VNĐ" Foreground="#15803D" FontSize="12" VerticalAlignment="Bottom" Margin="2,0,0,2"/>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

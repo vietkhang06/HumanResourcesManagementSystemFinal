@@ -5,12 +5,15 @@ using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.IO;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -213,6 +216,53 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 DataContext = detailVM
             };
             detailWindow.ShowDialog();
+        }
+        [RelayCommand]
+        private void ExportToExcel()
+        {
+            // 1. Kiểm tra danh sách có dữ liệu không
+            if (Employees == null || Employees.Count == 0)
+            {
+                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 2. Cấu hình hộp thoại lưu file
+            SaveFileDialog sfd = new SaveFileDialog
+            {
+                Filter = "Excel CSV (*.csv)|*.csv",
+                FileName = $"DanhSachNhanVien_{DateTime.Now:yyyyMMdd}.csv"
+            };
+
+            if (sfd.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new StringBuilder();
+
+                    // 3. Tạo dòng tiêu đề (Header)
+                    sb.AppendLine("Ma NV,Ho Ten,Email,Phong Ban,Chuc Vu,Trang Thai");
+
+                    // 4. Duyệt danh sách nhân viên để lấy dữ liệu
+                    foreach (var emp in Employees)
+                    {
+                        string department = emp.Department?.DepartmentName ?? "N/A";
+                        string position = emp.Position?.PositionName ?? "N/A";
+
+                        // Gom dữ liệu thành một dòng, phân cách bằng dấu phẩy
+                        sb.AppendLine($"{emp.EmployeeID},{emp.FullName},{emp.Email},{department},{position},{emp.Status}");
+                    }
+
+                    // 5. Ghi file với định dạng UTF-8 để không lỗi font tiếng Việt
+                    File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+
+                    MessageBox.Show("Xuất danh sách nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

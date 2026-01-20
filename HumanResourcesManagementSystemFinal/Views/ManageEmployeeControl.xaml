@@ -16,6 +16,10 @@
     <UserControl.Resources>
         <cnv:BinaryImageConverter x:Key="BinaryImageConverter"/>
 
+        <Geometry x:Key="ExportExcelIconData">
+            M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64z
+        </Geometry>
+        
         <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
             <Grid>
                 <Border x:Name="Border" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" />
@@ -23,6 +27,29 @@
             </Grid>
         </ControlTemplate>
 
+        <Style x:Key="ExcelButton" TargetType="Button">
+            <Setter Property="Background" Value="#22C55E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#16A34A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
         <Style x:Key="BlueComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Height" Value="40"/>
             <Setter Property="FontSize" Value="14"/>
@@ -141,6 +168,8 @@
                 <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="White" CornerRadius="6" BorderBrush="#E2E8F0" BorderThickness="1" Height="40">
@@ -149,13 +178,11 @@
                         <ColumnDefinition Width="35"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
                     <Path Data="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" 
-                          Stroke="#A0AEC0" StrokeThickness="2" Width="14" Height="14" Margin="10,0,0,0" Stretch="Uniform"/>
-
-                    <TextBlock Grid.Column="1" Text="Tìm kiếm..." 
-                               Foreground="#A0AEC0" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="13"
-                               IsHitTestVisible="False">
+                  Stroke="#A0AEC0" StrokeThickness="2" Width="14" Height="14" Margin="10,0,0,0" Stretch="Uniform"/>
+                    <TextBox x:Name="txtSearch" Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                     VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" Padding="5,0,10,0" FontSize="13"/>
+                    <TextBlock Grid.Column="1" Text="Tìm kiếm..." Foreground="#A0AEC0" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="13" IsHitTestVisible="False">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -167,32 +194,50 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-
-                    <TextBox x:Name="txtSearch" Grid.Column="1" 
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                             VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" Padding="5,0,10,0" FontSize="13"/>
                 </Grid>
             </Border>
 
-            <ComboBox Grid.Column="2" 
-                      ItemsSource="{Binding Departments}" 
-                      SelectedItem="{Binding SelectedDepartment}" 
-                      DisplayMemberPath="DepartmentName"
-                      Style="{StaticResource BlueComboBoxStyle}" />
+            <ComboBox Grid.Column="2" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" 
+              DisplayMemberPath="DepartmentName" Style="{StaticResource BlueComboBoxStyle}" />
 
-            <Button Grid.Column="4" Command="{Binding AddEmployeeCommand}" 
-                    Background="#1A3D64" Foreground="White" Height="40" Padding="15,0" Cursor="Hand">
+            <Button Grid.Column="4" 
+        Command="{Binding ExportToExcelCommand}" 
+        Background="#22C55E" 
+        Foreground="White" 
+        Height="40" 
+        Padding="15,0" 
+        Cursor="Hand">
+    <Button.Resources>
+        <Style TargetType="Border">
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+    </Button.Resources>
+    
+    <StackPanel Orientation="Horizontal">
+        <Path Data="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64z" 
+              Fill="White" 
+              Width="14" 
+              Height="14" 
+              Stretch="Uniform" 
+              Margin="0,0,10,0" 
+              VerticalAlignment="Center"/>
+        
+        <TextBlock Text="Xuất EXCEL" 
+                   FontWeight="Bold" 
+                   FontSize="13" 
+                   VerticalAlignment="Center"/>
+    </StackPanel>
+</Button>
+
+            <Button Grid.Column="6" Command="{Binding AddEmployeeCommand}" Background="#1A3D64" Foreground="White" Height="40" Padding="18,0" Cursor="Hand">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="6"/>
                     </Style>
                 </Button.Resources>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="+ Thêm Mới" FontWeight="Bold" FontSize="13"/>
-                </StackPanel>
+                <TextBlock Text="+ Thêm Mới" FontWeight="Bold" FontSize="13"/>
             </Button>
         </Grid>
-
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="0" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
             <DataGrid x:Name="dgEmployees"
               ItemsSource="{Binding Employees}" 

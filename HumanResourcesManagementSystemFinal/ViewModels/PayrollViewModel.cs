@@ -130,19 +130,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (string.IsNullOrEmpty(_targetEmployeeId)) return;
 
-            using var context = new DataContext();
-
-            DateTime endDate = new DateTime(SelectedYear, SelectedMonth, 1);
-            DateTime startDate = endDate.AddMonths(-4);
-
             var values = new LiveCharts.ChartValues<decimal>();
             var labels = new List<string>();
 
-            for (int i = 0; i < 5; i++)
+            using var context = new DataContext();
+
+            for (int i = 4; i >= 0; i--)
             {
-                DateTime currentPoint = startDate.AddMonths(i);
-                int m = currentPoint.Month;
-                int y = currentPoint.Year;
+                DateTime targetDate = new DateTime(SelectedYear, SelectedMonth, 1).AddMonths(-i);
+                int m = targetDate.Month;
+                int y = targetDate.Year;
 
                 var monthData = await context.Payrolls
                     .AsNoTracking()
@@ -150,21 +147,19 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                                          && p.Month == m
                                          && p.Year == y);
 
-                decimal salary = monthData?.NetSalary ?? 0;
-                values.Add(salary);
+                values.Add(monthData?.NetSalary ?? 0);
                 labels.Add($"T{m}/{y}");
             }
 
             IncomeSeries = new LiveCharts.SeriesCollection
-    {
-        new LiveCharts.Wpf.ColumnSeries
         {
-            Title = "Thực lĩnh",
-            Values = values,
-            Fill = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#67E8F9"),
-            MaxColumnWidth = 25
-        }
-    };
+            new LiveCharts.Wpf.ColumnSeries {
+                Title = "Thực lĩnh",
+                Values = values,
+                Fill = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#67E8F9"),
+                MaxColumnWidth = 25
+            }
+        };
             IncomeLabels = labels.ToArray();
         }
         public Func<double, string> YFormatter { get; set; } = value => value.ToString("N0") + " đ";
@@ -198,14 +193,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
+                int targetMonth = SelectedMonth;
+                int targetYear = SelectedYear;
+                string empId = _targetEmployeeId?.ToUpper(); 
+
                 using var context = new DataContext();
 
                 var dbPayrolls = await context.Payrolls
-                .AsNoTracking()
-                .Where(p => p.EmployeeID.ToUpper() == _targetEmployeeId.ToUpper()
-                         && p.Month == SelectedMonth
-                         && p.Year == SelectedYear)
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(p => p.Month == targetMonth && p.Year == targetYear)
+                    .ToListAsync();
 
                 var resultList = new List<PayrollDTO>();
                 decimal grandTotal = 0;

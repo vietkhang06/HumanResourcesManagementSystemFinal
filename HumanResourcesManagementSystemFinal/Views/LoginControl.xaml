@@ -166,7 +166,7 @@
                                     </ControlTemplate>
                                 </Button.Template>
                                 <Button.Foreground>
-                                    <SolidColorBrush Color="{Binding Color, Source={StaticResource SecondaryColor}}"/>
+                                    <SolidColorBrush Color="{Binding Color, Source={StaticResource GrayText}}"/>
                                 </Button.Foreground>
                             </Button>
                         </Grid>

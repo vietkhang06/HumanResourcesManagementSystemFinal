@@ -9,12 +9,15 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.IO;
-
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
     public partial class ManageEmployeeViewModel : ObservableObject
@@ -38,7 +41,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 using var context = new DataContext();
 
-                // 1. Tải danh sách phòng ban
                 var deptList = context.Departments.ToList();
                 deptList.Insert(0, new Department
                 {
@@ -53,27 +55,23 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (SelectedDepartment == null)
                     SelectedDepartment = Departments.FirstOrDefault();
 
-                // 2. Tải danh sách nhân viên
-                // --- SỬA LỖI QUAN TRỌNG Ở ĐÂY ---
+
                 _allEmployees = context.Employees
                     .AsNoTracking()
                     .Include(e => e.Department)
                     .Include(e => e.Position)
                     .Include(e => e.Manager)
                     .Include(e => e.WorkContracts)
-                    .Include(e => e.Account) // <--- BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ LẤY ẢNH
+                    .Include(e => e.Account)
                     .OrderByDescending(e => e.EmployeeID)
                     .ToList();
-                // -------------------------------
 
-                // 3. LẤY DỮ LIỆU CHẤM CÔNG HÔM NAY
                 var today = DateTime.Today;
 
                 var todayTimeSheets = context.TimeSheets
                     .Where(t => t.WorkDate == today)
                     .ToList();
 
-                // 4. CẬP NHẬT TRẠNG THÁI HIỂN THỊ
                 foreach (var emp in _allEmployees)
                 {
                     if (emp.Status == "Resigned" || emp.Status == "Đã nghỉ việc")
@@ -220,48 +218,114 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         private void ExportToExcel()
         {
-            // 1. Kiểm tra danh sách có dữ liệu không
             if (Employees == null || Employees.Count == 0)
             {
-                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 2. Cấu hình hộp thoại lưu file
             SaveFileDialog sfd = new SaveFileDialog
             {
-                Filter = "Excel CSV (*.csv)|*.csv",
-                FileName = $"DanhSachNhanVien_{DateTime.Now:yyyyMMdd}.csv"
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                FileName = $"DanhSachNhanVien_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
-            if (sfd.ShowDialog() == true)
+            if (sfd.ShowDialog() != true) return;
+
+            try
             {
-                try
+                using (var package = new ExcelPackage())
                 {
-                    var sb = new StringBuilder();
+                    var worksheet = package.Workbook.Worksheets.Add("Danh Sách Nhân Viên");
 
-                    // 3. Tạo dòng tiêu đề (Header)
-                    sb.AppendLine("Ma NV,Ho Ten,Email,Phong Ban,Chuc Vu,Trang Thai");
+                    worksheet.Cells["A1:F1"].Merge = true;
+                    worksheet.Cells["A1"].Value = "DANH SÁCH NHÂN VIÊN";
+                    worksheet.Cells["A1"].Style.Font.Size = 18;
+                    worksheet.Cells["A1"].Style.Font.Bold = true;
+                    worksheet.Cells["A1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells["A1"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    worksheet.Row(1).Height = 32;
 
-                    // 4. Duyệt danh sách nhân viên để lấy dữ liệu
-                    foreach (var emp in Employees)
+                    worksheet.Cells["A2:F2"].Merge = true;
+                    worksheet.Cells["A2"].Value = $"Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm}";
+                    worksheet.Cells["A2"].Style.Font.Italic = true;
+                    worksheet.Cells["A2"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Row(2).Height = 22;
+
+                    string[] headers = { "Mã NV", "Họ Tên", "Email", "Phòng Ban", "Chức Vụ", "Trạng Thái" };
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        string department = emp.Department?.DepartmentName ?? "N/A";
-                        string position = emp.Position?.PositionName ?? "N/A";
-
-                        // Gom dữ liệu thành một dòng, phân cách bằng dấu phẩy
-                        sb.AppendLine($"{emp.EmployeeID},{emp.FullName},{emp.Email},{department},{position},{emp.Status}");
+                        worksheet.Cells[3, i + 1].Value = headers[i];
                     }
 
-                    // 5. Ghi file với định dạng UTF-8 để không lỗi font tiếng Việt
-                    File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                    using (var range = worksheet.Cells["A3:F3"])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Font.Size = 12;
+                        range.Style.Font.Color.SetColor(Color.White);
 
-                    MessageBox.Show("Xuất danh sách nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(
+                            ColorTranslator.FromHtml("#22C55E"));
+
+                        range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        range.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    }
+
+                    worksheet.Row(3).Height = 26;
+
+                    int rowIndex = 4;
+                    foreach (var emp in Employees)
+                    {
+                        worksheet.Cells[rowIndex, 1].Value = emp.EmployeeID;
+                        worksheet.Cells[rowIndex, 2].Value = emp.FullName;
+                        worksheet.Cells[rowIndex, 3].Value = emp.Email;
+                        worksheet.Cells[rowIndex, 4].Value = emp.Department?.DepartmentName ?? "N/A";
+                        worksheet.Cells[rowIndex, 5].Value = emp.Position?.PositionName ?? "N/A";
+                        worksheet.Cells[rowIndex, 6].Value = emp.Status;
+
+                        if (emp.Status == "Chưa vào làm")
+                        {
+                            worksheet.Cells[rowIndex, 6].Style.Font.Color.SetColor(Color.Red);
+                            worksheet.Cells[rowIndex, 6].Style.Font.Italic = true;
+                        }
+                        else if (emp.Status == "Đang làm việc")
+                        {
+                            worksheet.Cells[rowIndex, 6].Style.Font.Color.SetColor(Color.Green);
+                        }
+
+                        rowIndex++;
+                    }
+
+                    var dataRange = worksheet.Cells[3, 1, rowIndex - 1, 6];
+                    var borderColor = ColorTranslator.FromHtml("#CBD5E1");
+
+                    dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                    dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                    dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+
+                    dataRange.Style.Border.Top.Color.SetColor(borderColor);
+                    dataRange.Style.Border.Bottom.Color.SetColor(borderColor);
+                    dataRange.Style.Border.Left.Color.SetColor(borderColor);
+                    dataRange.Style.Border.Right.Color.SetColor(borderColor);
+
+                    worksheet.Cells.AutoFitColumns();
+                    worksheet.Column(1).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Column(6).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                    FileInfo fileInfo = new FileInfo(sfd.FileName);
+                    package.SaveAs(fileInfo);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+
+                MessageBox.Show("Xuất danh sách nhân viên sang Excel thành công!",
+                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất file: {ex.Message}",
+                    "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

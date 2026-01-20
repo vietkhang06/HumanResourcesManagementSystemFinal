@@ -41,9 +41,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void InitializeFilters()
         {
             StatusOptions.Add("Tất cả");
-            StatusOptions.Add("Active");
             StatusOptions.Add("Đang làm việc");
-            StatusOptions.Add("Resigned");
             StatusOptions.Add("Nghỉ phép");
 
             FilterStatus = "Tất cả";

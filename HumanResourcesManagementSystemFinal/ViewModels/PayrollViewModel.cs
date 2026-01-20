@@ -131,33 +131,40 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (string.IsNullOrEmpty(_targetEmployeeId)) return;
 
             using var context = new DataContext();
-            var yearData = await context.Payrolls
-            .Where(p => p.EmployeeID == _targetEmployeeId
-                     && p.Year == SelectedYear) // Lấy đúng năm đang chọn trên giao diện
-            .OrderBy(p => p.Month)
-            .ToListAsync();
+
+            DateTime endDate = new DateTime(SelectedYear, SelectedMonth, 1);
+            DateTime startDate = endDate.AddMonths(-4);
 
             var values = new LiveCharts.ChartValues<decimal>();
             var labels = new List<string>();
 
-            for (int m = 1; m <= 5; m++)
+            for (int i = 0; i < 5; i++)
             {
-                var monthSalary = yearData.FirstOrDefault(p => p.Month == m)?.NetSalary ?? 0;
-                values.Add(monthSalary);
-                labels.Add($"Tháng {m}");
+                DateTime currentPoint = startDate.AddMonths(i);
+                int m = currentPoint.Month;
+                int y = currentPoint.Year;
+
+                var monthData = await context.Payrolls
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.EmployeeID == _targetEmployeeId
+                                         && p.Month == m
+                                         && p.Year == y);
+
+                decimal salary = monthData?.NetSalary ?? 0;
+                values.Add(salary);
+                labels.Add($"T{m}/{y}");
             }
 
-            // Làm mới Series để tránh trùng lặp
             IncomeSeries = new LiveCharts.SeriesCollection
-            {
-                new LiveCharts.Wpf.ColumnSeries
-            {
+    {
+        new LiveCharts.Wpf.ColumnSeries
+        {
             Title = "Thực lĩnh",
             Values = values,
             Fill = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#67E8F9"),
             MaxColumnWidth = 25
-            }
-        };
+        }
+    };
             IncomeLabels = labels.ToArray();
         }
         public Func<double, string> YFormatter { get; set; } = value => value.ToString("N0") + " đ";
@@ -193,16 +200,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 using var context = new DataContext();
 
-                // 1. Lấy dữ liệu từ bảng Payrolls theo tháng/năm đã chọn
                 var dbPayrolls = await context.Payrolls
-                    .AsNoTracking()
-                    .Where(p => p.Month == SelectedMonth && p.Year == SelectedYear)
-                    .ToListAsync();
+                .AsNoTracking()
+                .Where(p => p.EmployeeID.ToUpper() == _targetEmployeeId.ToUpper()
+                         && p.Month == SelectedMonth
+                         && p.Year == SelectedYear)
+                .ToListAsync();
 
                 var resultList = new List<PayrollDTO>();
                 decimal grandTotal = 0;
 
-                // 2. Map dữ liệu từ DB vào List hiển thị
                 foreach (var p in dbPayrolls)
                 {
                     var emp = await context.Employees

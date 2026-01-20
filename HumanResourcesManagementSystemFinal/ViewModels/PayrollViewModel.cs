@@ -5,6 +5,7 @@ using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,141 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         [ObservableProperty] private bool _isAdmin = true;
         [ObservableProperty] private PayrollDTO _currentEmployeePayroll;
-        [ObservableProperty] private decimal _advancePayment = 1000000;
+        [ObservableProperty] private decimal _advancePayment = 0;
+
+        [ObservableProperty] private LiveCharts.SeriesCollection _incomeSeries;
+        [ObservableProperty] private string[] _incomeLabels;
+        public PayrollViewModel() : this(null) { }
+
+        public PayrollViewModel(string employeeId)
+        {
+            _targetEmployeeId = employeeId;
+            IsAdmin = string.IsNullOrEmpty(employeeId);
+
+            PayrollList = new ObservableCollection<PayrollDTO>();
+            Months = new ObservableCollection<int>();
+            Years = new ObservableCollection<int>();
+
+            for (int i = 1; i <= 12; i++) Months.Add(i);
+            int currentYear = DateTime.Now.Year;
+            for (int i = currentYear; i >= 2015; i--) Years.Add(i);
+
+            _selectedMonth = DateTime.Now.Month;
+            _selectedYear = DateTime.Now.Year;
+
+            _ = CalculatePayrollAsync();
+        }
+
+        private bool _isFilterPopupOpen;
+        public bool IsFilterPopupOpen
+        {
+            get => _isFilterPopupOpen;
+            set => SetProperty(ref _isFilterPopupOpen, value);
+        }
+
+        private string _minSalary;
+        public string MinSalary
+        {
+            get => _minSalary;
+            set => SetProperty(ref _minSalary, value);
+        }
+
+        private string _maxSalary;
+        public string MaxSalary
+        {
+            get => _maxSalary;
+            set => SetProperty(ref _maxSalary, value);
+        }
+
+        // Lưu trữ danh sách gốc để phục vụ lọc dữ liệu
+        private List<PayrollDTO> _allPayrolls = new List<PayrollDTO>();
+
+
+        [RelayCommand]
+        private void ToggleFilter()
+        {
+            IsFilterPopupOpen = !IsFilterPopupOpen;
+        }
+
+        [RelayCommand]
+        private void ApplyFilter()
+        {
+            if (decimal.TryParse(MinSalary, out decimal min) && decimal.TryParse(MaxSalary, out decimal max))
+            {
+                var filtered = _allPayrolls.Where(p => p.NetSalary >= min && p.NetSalary <= max).ToList();
+                PayrollList = new ObservableCollection<PayrollDTO>(filtered);
+            }
+            IsFilterPopupOpen = false;
+        }
+
+        [RelayCommand]
+        private void ResetFilter()
+        {
+            MinSalary = string.Empty;
+            MaxSalary = string.Empty;
+            PayrollList = new ObservableCollection<PayrollDTO>(_allPayrolls);
+            IsFilterPopupOpen = false;
+        }
+
+        [RelayCommand]
+        private void PreviousMonth()
+        {
+            if (SelectedMonth > 1)
+                SelectedMonth--;
+            else
+            {
+                SelectedMonth = 12;
+                SelectedYear--;
+            }
+        }
+
+        [RelayCommand]
+        private void NextMonth()
+        {
+            if (SelectedMonth < 12)
+                SelectedMonth++;
+            else
+            {
+                SelectedMonth = 1;
+                SelectedYear++;
+            }
+        }
+
+        private async Task LoadChartDataAsync()
+        {
+            if (string.IsNullOrEmpty(_targetEmployeeId)) return;
+
+            using var context = new DataContext();
+            var yearData = await context.Payrolls
+            .Where(p => p.EmployeeID == _targetEmployeeId
+                     && p.Year == SelectedYear) // Lấy đúng năm đang chọn trên giao diện
+            .OrderBy(p => p.Month)
+            .ToListAsync();
+
+            var values = new LiveCharts.ChartValues<decimal>();
+            var labels = new List<string>();
+
+            for (int m = 1; m <= 5; m++)
+            {
+                var monthSalary = yearData.FirstOrDefault(p => p.Month == m)?.NetSalary ?? 0;
+                values.Add(monthSalary);
+                labels.Add($"Tháng {m}");
+            }
+
+            // Làm mới Series để tránh trùng lặp
+            IncomeSeries = new LiveCharts.SeriesCollection
+            {
+                new LiveCharts.Wpf.ColumnSeries
+            {
+            Title = "Thực lĩnh",
+            Values = values,
+            Fill = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#67E8F9"),
+            MaxColumnWidth = 25
+            }
+        };
+            IncomeLabels = labels.ToArray();
+        }
+        public Func<double, string> YFormatter { get; set; } = value => value.ToString("N0") + " đ";
 
         private int _selectedMonth;
         public int SelectedMonth
@@ -51,146 +186,94 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
 
         private readonly string _targetEmployeeId;
 
-        public PayrollViewModel() : this(null) { }
-
-        public PayrollViewModel(string employeeId)
-        {
-            _targetEmployeeId = employeeId;
-            IsAdmin = string.IsNullOrEmpty(employeeId);
-
-            PayrollList = new ObservableCollection<PayrollDTO>();
-            Months = new ObservableCollection<int>();
-            Years = new ObservableCollection<int>();
-
-            for (int i = 1; i <= 12; i++) Months.Add(i);
-
-            int currentYear = DateTime.Now.Year;
-            for (int i = currentYear; i >= 2015; i--) Years.Add(i);
-
-            _selectedMonth = DateTime.Now.Month;
-            _selectedYear = DateTime.Now.Year;
-
-            _ = CalculatePayrollAsync();
-        }
 
         private async Task CalculatePayrollAsync()
         {
             try
             {
-                var now = DateTime.Now;
-                if (SelectedYear > now.Year || (SelectedYear == now.Year && SelectedMonth > now.Month))
-                {
-                    PayrollList = new ObservableCollection<PayrollDTO>();
-                    TotalSalaryFund = 0;
-                    PayrollStatus = "Chưa đến kỳ lương";
-                    StatusColor = "#F59E0B";
-                    return;
-                }
-
                 using var context = new DataContext();
-                var startOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
-                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
-                var query = context.Employees.AsNoTracking()
-                    .Include(e => e.Department)
-                    .Include(e => e.Position)
-                    .Include(e => e.WorkContracts)
-                    .Include(e => e.Account)
-                    .AsQueryable();
-
-                if (!string.IsNullOrEmpty(_targetEmployeeId))
-                {
-                    query = query.Where(e => e.EmployeeID == _targetEmployeeId);
-                }
-
-                var employees = await query.ToListAsync();
-
-                var allTimeSheets = await context.TimeSheets
+                // 1. Lấy dữ liệu từ bảng Payrolls theo tháng/năm đã chọn
+                var dbPayrolls = await context.Payrolls
                     .AsNoTracking()
-                    .Where(t => t.WorkDate >= startOfMonth && t.WorkDate <= endOfMonth)
+                    .Where(p => p.Month == SelectedMonth && p.Year == SelectedYear)
                     .ToListAsync();
 
-                var resultList = new ObservableCollection<PayrollDTO>();
+                var resultList = new List<PayrollDTO>();
                 decimal grandTotal = 0;
 
-                foreach (var emp in employees)
+                // 2. Map dữ liệu từ DB vào List hiển thị
+                foreach (var p in dbPayrolls)
                 {
-                    var historicalContract = emp.WorkContracts
-                        .Where(c => c.StartDate <= endOfMonth)
-                        .OrderByDescending(c => c.StartDate)
-                        .FirstOrDefault();
+                    var emp = await context.Employees
+                        .Include(e => e.Account)
+                        .Include(e => e.Department)
+                        .Include(e => e.Position)
+                        .FirstOrDefaultAsync(e => e.EmployeeID == p.EmployeeID);
 
-                    if (historicalContract == null) continue;
-                    if (historicalContract.EndDate.HasValue && historicalContract.EndDate.Value < startOfMonth) continue;
-
-                    decimal baseSalary = historicalContract.Salary ?? 0;
-                    var empTimeSheets = allTimeSheets.Where(t => t.EmployeeID == emp.EmployeeID).ToList();
-                    double workDays = empTimeSheets.Count;
-
-                    decimal actualSalary = baseSalary > 0 ? (baseSalary / 26m) * (decimal)workDays : 0;
-                    decimal totalIncome = Math.Round(actualSalary, 0);
-                    decimal netSalary = totalIncome;
-
-                    grandTotal += netSalary;
-
-                    resultList.Add(new PayrollDTO
+                    if (emp == null) continue;
+                    var dto = new PayrollDTO
                     {
-                        EmployeeID = emp.EmployeeID,
+                        EmployeeID = p.EmployeeID,
                         FullName = emp.FullName,
-                        DepartmentName = emp.Department?.DepartmentName ?? "N/A",
-                        PositionName = emp.Position?.PositionName ?? "N/A",
-                        ContractSalary = Math.Round(baseSalary, 0),
-                        ActualWorkDays = workDays,
-                        TotalIncome = totalIncome,
-                        NetSalary = netSalary,
+                        ContractSalary = p.BasicSalary,
+                        ActualWorkDays = p.WorkingDays,
+                        AllowanceAndBonus = p.Allowance + p.Bonus,
+
+                        TotalDeduction = p.Deductions,
+                        TotalIncome = Math.Round((p.BasicSalary / 26m * (decimal)p.WorkingDays) + p.Allowance + p.Bonus, 0),
+                        NetSalary = Math.Round(((p.BasicSalary / 26m * (decimal)p.WorkingDays) + p.Allowance + p.Bonus) - p.Deductions - AdvancePayment, 0),
+
                         AvatarData = emp.Account?.AvatarData
-                    });
+                    };
+                    resultList.Add(dto);
+                    grandTotal += p.NetSalary;
                 }
 
-                PayrollList = resultList;
+                // 3. Cập nhật danh sách hiển thị cho Admin
+                _allPayrolls = resultList;
+                PayrollList = new ObservableCollection<PayrollDTO>(resultList);
                 TotalSalaryFund = grandTotal;
 
-                if (!IsAdmin && resultList.Count > 0)
+                // 4. LIÊN KẾT DATA VÀO PHIẾU LƯƠNG CÁ NHÂN (CurrentEmployeePayroll)
+                if (!string.IsNullOrEmpty(_targetEmployeeId))
                 {
+                    var myPayroll = resultList.FirstOrDefault(p => p.EmployeeID == _targetEmployeeId);
+
+                    CurrentEmployeePayroll = myPayroll ?? new PayrollDTO
+                    {
+                        EmployeeID = _targetEmployeeId,
+                        FullName = "N/A",
+                        NetSalary = 0,
+                        ContractSalary = 0,
+                        TotalIncome = 0,
+                        TotalDeduction = 0,
+                        ActualWorkDays = 0
+                    };
+                }
+                else if (resultList.Count > 0)
+                {
+                    // Nếu là Admin, xem mặc định người đầu tiên
                     CurrentEmployeePayroll = resultList[0];
                 }
 
-                if (PayrollList.Count > 0)
-                {
-                    PayrollStatus = (SelectedMonth == now.Month && SelectedYear == now.Year) ? "Dự tính" : "Đã tính toán";
-                    StatusColor = (SelectedMonth == now.Month && SelectedYear == now.Year) ? "#10B981" : "#3B82F6";
-                }
-                else
-                {
-                    PayrollStatus = "Không có dữ liệu";
-                    StatusColor = "#94A3B8";
-                }
+                // 5. Cập nhật trạng thái
+                PayrollStatus = dbPayrolls.Any() ? "Đã chốt lương" : "Dự tính (Chưa nạp)";
+                StatusColor = dbPayrolls.Any() ? "#3B82F6" : "#F59E0B";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show("Lỗi hiển thị lương: " + ex.Message);
             }
+            await LoadChartDataAsync();
         }
 
-        [RelayCommand]
-        private void PreviousMonth()
-        {
-            if (SelectedMonth == 1) { SelectedMonth = 12; SelectedYear--; }
-            else SelectedMonth--;
-        }
-
-        [RelayCommand]
-        private void NextMonth()
-        {
-            if (SelectedMonth == 12) { SelectedMonth = 1; SelectedYear++; }
-            else SelectedMonth++;
-        }
 
         [RelayCommand]
         private void ExportToExcel()
         {
             if (PayrollList == null || PayrollList.Count == 0) return;
-
+            // Giữ nguyên logic export cũ...
             SaveFileDialog sfd = new SaveFileDialog { Filter = "CSV (*.csv)|*.csv", FileName = $"Payroll_{SelectedMonth}_{SelectedYear}.csv" };
             if (sfd.ShowDialog() == true)
             {

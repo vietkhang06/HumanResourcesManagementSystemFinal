@@ -21,6 +21,7 @@ namespace HumanResourcesManagementSystemFinal.Data
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<ChangeHistory> ChangeHistories { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

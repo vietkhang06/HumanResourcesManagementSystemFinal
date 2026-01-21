@@ -198,15 +198,15 @@
             </Border>
 
             <ComboBox Grid.Column="2" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" 
-              DisplayMemberPath="DepartmentName" Style="{StaticResource BlueComboBoxStyle}" />
+                      DisplayMemberPath="DepartmentName" Style="{StaticResource BlueComboBoxStyle}" />
 
             <Button Grid.Column="4" 
-        Command="{Binding ExportToExcelCommand}" 
-        Background="#22C55E" 
-        Foreground="White" 
-        Height="40" 
-        Padding="15,0" 
-        Cursor="Hand">
+                    Command="{Binding ExportToExcelCommand}" 
+                    Background="#22C55E" 
+                    Foreground="White" 
+                    Height="40" 
+                    Padding="15,0" 
+                    Cursor="Hand">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="6"/>
@@ -215,18 +215,18 @@
 
                 <StackPanel Orientation="Horizontal">
                     <Path Data="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64z" 
-              Fill="White" 
-              Width="14" 
-              Height="14" 
-              Stretch="Uniform" 
-              Margin="0,0,10,0" 
-              VerticalAlignment="Center"/>
+                          Fill="White" 
+                          Width="14" 
+                          Height="14" 
+                          Stretch="Uniform" 
+                          Margin="0,0,10,0" 
+                          VerticalAlignment="Center"/>
 
                     <TextBlock Text="Xuất EXCEL" 
-                   FontWeight="Bold" 
-                   FontSize="13" 
-                   VerticalAlignment="Center"/>
-                </StackPanel>
+                               FontWeight="Bold" 
+                               FontSize="13" 
+                               VerticalAlignment="Center"/>
+                    </StackPanel>
             </Button>
 
             <Button Grid.Column="6" Command="{Binding AddEmployeeCommand}" Background="#1A3D64" Foreground="White" Height="40" Padding="18,0" Cursor="Hand">
@@ -240,24 +240,24 @@
         </Grid>
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="0" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
             <DataGrid x:Name="dgEmployees"
-              ItemsSource="{Binding Employees}" 
-              SelectedItem="{Binding SelectedEmployee}"
+                      ItemsSource="{Binding Employees}" 
+                      SelectedItem="{Binding SelectedEmployee}"
               
-              IsReadOnly="True"
-              CanUserAddRows="False"
-              CanUserDeleteRows="False"
-              CanUserResizeColumns="False"
-              CanUserResizeRows="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      CanUserResizeColumns="False"
+                      CanUserResizeRows="False"
               
-              AutoGenerateColumns="False" 
-              HeadersVisibility="Column"
-              GridLinesVisibility="Horizontal"
+                      AutoGenerateColumns="False" 
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
               
-              HorizontalGridLinesBrush="#EDF2F7"
-              VerticalGridLinesBrush="Transparent"
-              Background="Transparent"
-              BorderThickness="0"
-              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                      HorizontalGridLinesBrush="#EDF2F7"
+                      VerticalGridLinesBrush="Transparent"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
@@ -425,14 +425,14 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
                                     <Button Style="{StaticResource ActionButton}" Background="White" ToolTip="Sửa" Margin="0,0,8,0"
-                                Command="{Binding DataContext.EditEmployeeCommand, ElementName=dgEmployees}"
-                                CommandParameter="{Binding}">
+                                            Command="{Binding DataContext.EditEmployeeCommand, ElementName=dgEmployees}"
+                                            CommandParameter="{Binding}">
                                         <Path Data="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
                                   Stroke="#3182CE" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>
                                     <Button Style="{StaticResource ActionButton}" Background="White" ToolTip="Xóa"
-                                Command="{Binding DataContext.DeleteEmployeeCommand, ElementName=dgEmployees}"
-                                CommandParameter="{Binding}">
+                                            Command="{Binding DataContext.DeleteEmployeeCommand, ElementName=dgEmployees}"
+                                            CommandParameter="{Binding}">
                                         <Path Data="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" 
                                   Stroke="#E53E3E" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>

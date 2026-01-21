@@ -23,7 +23,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private bool _isLoading;
 
         public ObservableCollection<string> ActionTypes { get; } =
-            new() { "Tất cả", "CREATE", "UPDATE", "DELETE", "LOGIN" };
+            new() { "Tất cả", "CREATE", "UPDATE", "DELETE"};
 
         public ChangeHistoryViewModel()
         {
@@ -43,37 +43,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 await Task.Run(async () =>
                 {
                     using var context = new DataContext();
-
-                    var query = context.ChangeHistories
-                        .AsNoTracking()
-                        .Include(h => h.ChangeByUser)
-                        .AsQueryable();
-
-                    if (StartDate.HasValue)
-                        query = query.Where(h => h.ChangeTime.Date >= StartDate.Value.Date);
-
-                    if (EndDate.HasValue)
-                        query = query.Where(h => h.ChangeTime.Date <= EndDate.Value.Date);
-
-                    if (!string.IsNullOrEmpty(SelectedActionType) &&
-                        SelectedActionType != "Tất cả")
-                        query = query.Where(h => h.ActionType == SelectedActionType);
-
+                    var query = context.ChangeHistories.AsNoTracking().Include(h => h.ChangeByUser).AsQueryable();
+                    if (StartDate.HasValue) query = query.Where(h => h.ChangeTime.Date >= StartDate.Value.Date);
+                    if (EndDate.HasValue) query = query.Where(h => h.ChangeTime.Date <= EndDate.Value.Date);
+                    if (!string.IsNullOrEmpty(SelectedActionType) && SelectedActionType != "Tất cả") query = query.Where(h => h.ActionType == SelectedActionType);
                     if (!string.IsNullOrWhiteSpace(Keyword))
                     {
                         string k = Keyword.ToLower();
-                        query = query.Where(h =>
-                            (h.ChangeByUser != null && h.ChangeByUser.FullName.ToLower().Contains(k)) ||
-                            (h.ChangeByUserID != null && h.ChangeByUserID.ToLower().Contains(k)) ||
-                            (h.TableName != null && h.TableName.ToLower().Contains(k)) ||
-                            (h.Details != null && h.Details.ToLower().Contains(k)));
+                        query = query.Where(h => (h.ChangeByUser != null && h.ChangeByUser.FullName.ToLower().Contains(k)) || (h.ChangeByUserID != null && h.ChangeByUserID.ToLower().Contains(k)) || (h.TableName != null && h.TableName.ToLower().Contains(k)) || (h.Details != null && h.Details.ToLower().Contains(k)));
                     }
-
-                    var list = await query
-                        .OrderByDescending(h => h.ChangeTime)
-                        .Take(200)
-                        .ToListAsync();
-
+                    var list = await query.OrderByDescending(h => h.ChangeTime).Take(200).ToListAsync();
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         Histories = new ObservableCollection<ChangeHistory>(list);

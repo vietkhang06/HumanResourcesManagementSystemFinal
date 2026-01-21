@@ -10,7 +10,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _title = "Thêm Chức Vụ Mới";
         [ObservableProperty] private string _posTitle;
         [ObservableProperty] private string _jobDescription;
-
         public AddPositionViewModel(){}
 
         public AddPositionViewModel(Position existingPos)

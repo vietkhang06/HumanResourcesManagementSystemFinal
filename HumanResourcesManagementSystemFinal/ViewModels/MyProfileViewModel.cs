@@ -109,7 +109,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             try
             {
-                // Kiểm tra Account trước
                 if (CurrentUser.Account == null)
                 {
                     MessageBox.Show("Tài khoản chưa được liên kết, không thể đổi ảnh!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -126,11 +125,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 {
                     byte[] fileBytes = File.ReadAllBytes(openFileDialog.FileName);
 
-                    // Cập nhật trực tiếp vào Model trong ViewModel này
                     CurrentUser.Account.AvatarData = fileBytes;
                     OnPropertyChanged(nameof(CurrentUser));
 
-                    // Lưu vào DB luôn vì đây là đổi ảnh
                     using var context = new DataContext();
                     var accInDb = context.Accounts.Find(CurrentUser.Account.UserID);
                     if (accInDb != null)
@@ -139,7 +136,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                         context.SaveChanges();
                     }
 
-                    // Gửi tín hiệu để các màn hình khác (như MainViewModel) cập nhật ảnh
                     WeakReferenceMessenger.Default.Send(new ValueChangedMessage<string>("RefreshUser"));
                     MessageBox.Show("Đổi ảnh đại diện thành công!", "Thông báo");
                 }

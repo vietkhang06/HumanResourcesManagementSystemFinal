@@ -12,7 +12,6 @@ namespace HumanResourcesManagementSystemFinal.Data
     {
         public static void Seed(DataContext context)
         {
-            //context.Database.EnsureCreated();
 
             if (!context.Roles.Any())
             {

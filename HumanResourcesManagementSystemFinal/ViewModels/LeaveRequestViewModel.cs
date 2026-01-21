@@ -137,8 +137,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
 
                 var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
-
-                // FIX: Sort Pending/Đang chờ to top (0), others to bottom (1)
                 list = list.OrderBy(r => (r.Status == "Pending" || r.Status == "Đang chờ") ? 0 : 1)
                            .ThenByDescending(r => r.StartDate)
                            .ToList();
@@ -256,8 +254,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (item == null) return;
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
-
-            // Cho phép thay đổi quyết định nếu đơn đã bị từ chối trước đó
             string message = (request.Status == "Rejected" || request.Status == "Từ chối")
                 ? $"Thay đổi quyết định: CHẤP THUẬN đơn của {empName}?"
                 : $"Duyệt đơn của {empName}?";
@@ -267,9 +263,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 try
                 {
                     if (string.IsNullOrEmpty(request.RequestID)) return;
-
-                    // --- ĐÃ XÓA ĐOẠN CODE CHẶN TRẠNG THÁI PENDING Ở ĐÂY ---
-
                     if (await _leaveService.UpdateStatusAsync(request.RequestID, "Approved"))
                     {
                         await LoadDataAsync();
@@ -288,8 +281,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             if (item == null) return;
             var request = item.Request;
             string empName = request.Requester?.FullName ?? "Nhân viên";
-
-            // Cho phép thay đổi quyết định nếu đơn đã được duyệt trước đó
             string message = (request.Status == "Approved" || request.Status == "Đã duyệt")
                 ? $"Thay đổi quyết định: TỪ CHỐI đơn của {empName}?"
                 : $"Từ chối đơn của {empName}?";
@@ -299,9 +290,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 try
                 {
                     if (string.IsNullOrEmpty(request.RequestID)) return;
-
-                    // --- ĐÃ XÓA ĐOẠN CODE CHẶN TRẠNG THÁI PENDING Ở ĐÂY ---
-
                     if (await _leaveService.UpdateStatusAsync(request.RequestID, "Rejected"))
                     {
                         await LoadDataAsync();
@@ -396,14 +384,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [RelayCommand]
         public void ExportToWord()
         {
-            // 1. Kiểm tra dữ liệu
             if (string.IsNullOrWhiteSpace(Reason))
             {
                 MessageBox.Show("Vui lòng nhập lý do trước khi xuất đơn.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 2. Mở hộp thoại lưu file
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "Word Document (*.docx)|*.docx",
@@ -414,45 +400,32 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 try
                 {
-                    // 3. Tạo file Word
                     using (var doc = DocX.Create(saveFileDialog.FileName))
                     {
-                        // Tiêu đề
                         doc.InsertParagraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM")
                            .FontSize(14).Bold().Alignment = Alignment.center;
                         doc.InsertParagraph("Độc lập - Tự do - Hạnh phúc")
                            .FontSize(14).Bold().UnderlineStyle(UnderlineStyle.singleLine).Alignment = Alignment.center;
                         doc.InsertParagraph("").SpacingAfter(20);
-
                         doc.InsertParagraph("ĐƠN XIN NGHỈ PHÉP")
                            .FontSize(20).Bold().Alignment = Alignment.center;
                         doc.InsertParagraph("").SpacingAfter(20);
-
-                        // Kính gửi
                         doc.InsertParagraph($"Kính gửi: Ban Giám Đốc Công ty")
                            .FontSize(14).SpacingAfter(10);
-
-                        // Nội dung
                         var pInfo = doc.InsertParagraph();
-                        pInfo.FontSize(14).SpacingBefore(10); // Đã sửa từ LineSpacingBefore thành SpacingBefore                        pInfo.Append($"Tôi tên là: {CurrentUserId}\n"); // Nếu có tên thật thì thay vào đây
+                        pInfo.FontSize(14).SpacingBefore(10);
                         pInfo.Append($"Chức vụ: Nhân viên\n");
                         pInfo.Append($"Nay tôi làm đơn này để xin phép được nghỉ loại: {LeaveType}\n");
                         pInfo.Append($"Từ ngày: {StartDate:dd/MM/yyyy}   Đến ngày: {EndDate:dd/MM/yyyy}\n");
                         pInfo.Append($"Lý do: {Reason}\n");
-
                         doc.InsertParagraph("").SpacingAfter(20);
-
-                        // Chữ ký
                         var table = doc.AddTable(1, 2);
                         table.Design = TableDesign.None;
                         table.Alignment = Alignment.center;
                         table.Rows[0].Cells[0].Paragraphs[0].Append("").Alignment = Alignment.center;
                         table.Rows[0].Cells[1].Paragraphs[0].Append($"Ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}\nNgười làm đơn")
                             .FontSize(14).Italic().Alignment = Alignment.center;
-
                         doc.InsertTable(table);
-
-                        // 4. Lưu file
                         doc.Save();
                     }
 
@@ -470,21 +443,16 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             try
             {
                 if (string.IsNullOrWhiteSpace(CurrentUserId)) return;
-
                 var list = await _leaveService.GetRequestsByRoleAsync(CurrentUserId, _currentUserRole);
-
-                // --- KHẮC PHỤC: THÊM LOGIC SẮP XẾP VÀO ĐÂY GIỐNG LOADDATAASYNC ---
                 list = list.OrderBy(r => (r.Status == "Pending" || r.Status == "Đang chờ") ? 0 : 1)
                            .ThenByDescending(r => r.StartDate)
                            .ToList();
-                // ------------------------------------------------------------------
 
                 if (list.Count == RequestItems.Count)
                 {
                     bool hasChange = false;
                     for (int i = 0; i < list.Count; i++)
                     {
-                        // So sánh Status hoặc ID để xem có thay đổi không
                         if (list[i].Status != RequestItems[i].Request.Status ||
                             list[i].RequestID != RequestItems[i].Request.RequestID)
                         {
@@ -502,8 +470,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     bool canEdit = (req.EmployeeID == CurrentUserId) && (req.Status == "Pending" || req.Status == "Đang chờ");
                     viewList.Add(new LeaveRequestItem { Request = req, CanApprove = canApprove, CanEdit = canEdit });
                 }
-
-                // Cập nhật lại UI trên Thread chính
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     RequestItems = new ObservableCollection<LeaveRequestItem>(viewList);

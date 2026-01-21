@@ -63,18 +63,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             }
         }
 
-        // Lấy ảnh Base64 từ Byte Array trong Account
         private string GetImageBase64()
         {
             try
             {
-                // Nếu Model Employee đã có Account và AvatarData
                 if (Employee.Account != null && Employee.Account.AvatarData != null && Employee.Account.AvatarData.Length > 0)
                 {
                     return "data:image/png;base64," + Convert.ToBase64String(Employee.Account.AvatarData);
                 }
-
-                // Nếu chưa có, thử query lại từ DB cho chắc chắn
                 using var context = new DataContext();
                 var acc = context.Accounts.FirstOrDefault(a => a.EmployeeID == Employee.EmployeeID);
                 if (acc != null && acc.AvatarData != null && acc.AvatarData.Length > 0)
@@ -83,7 +79,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
             }
             catch { }
-            return ""; // Trả về rỗng để hiện khung "No Photo"
+            return ""; 
         }
 
         private string GenerateHtmlContent()
@@ -99,8 +95,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             string imgTag = string.IsNullOrEmpty(imgBase64)
                 ? "<div style='height: 180px; background: #eee; text-align: center; line-height: 180px; color: #999;'>No Photo</div>"
                 : $"<img src='{imgBase64}' style='width: 100%; max-width: 200px; height: auto; border-radius: 8px; border: 2px solid #eee;' />";
-
-            // (Phần CSS và HTML phía dưới GIỮ NGUYÊN không đổi)
             string css = @"
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.5; color: #333; font-size: 11pt; }

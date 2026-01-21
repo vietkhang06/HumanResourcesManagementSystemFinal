@@ -11,7 +11,7 @@ using HumanResourcesManagementSystemFinal.Models;
 using HumanResourcesManagementSystemFinal.Services;
 using HumanResourcesManagementSystemFinal.Views;
 using Microsoft.EntityFrameworkCore;
-using HumanResourcesManagementSystemFinal.ViewModels; // Đảm bảo có namespace này
+using HumanResourcesManagementSystemFinal.ViewModels;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
 {
@@ -137,22 +137,18 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (IsAdmin)
             {
-                // Admin: Xem toàn bộ danh sách, dùng view quản lý lương
                 CurrentView = new PayrollControl();
-                // DataContext của PayrollControl thường được gán tự động là PayrollViewModel mặc định
+
                 PageTitle = "Quản Lý Bảng Lương";
             }
             else
             {
-                // Nhân viên: Truyền EmployeeID vào để lọc dữ liệu ngay từ đầu
                 string empId = CurrentUser?.EmployeeID;
 
                 if (!string.IsNullOrEmpty(empId))
                 {
-                    // Tạo ViewModel mới và truyền ID vào constructor
                     var viewModel = new PayrollViewModel(empId);
 
-                    // Tạo View xem phiếu lương cá nhân
                     var view = new EmployeePayrollControl();
                     view.DataContext = viewModel;
 
@@ -224,16 +220,12 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             PageTitle = "Thông Báo Chung";
             CurrentPageName = "Notification";
 
-            // 1. Tạo ViewModel và truyền quyền Admin vào
             var viewModel = new NotificationsViewModel(IsAdmin);
 
-            // 2. Tạo View
             var view = new NotificationsControl();
 
-            // 3. Gán ViewModel vào DataContext của View
             view.DataContext = viewModel;
 
-            // 4. Hiển thị View
             CurrentView = view;
         }
 

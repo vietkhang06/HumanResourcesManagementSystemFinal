@@ -10,11 +10,8 @@ namespace HumanResourcesManagementSystemFinal.Views
         public NotificationsDetailWindow(Notification notification)
         {
             InitializeComponent();
-            // Gán ViewModel và truyền dữ liệu vào
             DataContext = new NotificationDetailViewModel(notification);
         }
-
-        // Hỗ trợ kéo thả cửa sổ khi không có thanh tiêu đề chuẩn
         private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)

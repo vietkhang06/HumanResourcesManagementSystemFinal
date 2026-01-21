@@ -5,7 +5,7 @@ using HumanResourcesManagementSystemFinal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic; // Cần thêm cái này để dùng List<>
+using System.Collections.Generic; 
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -62,8 +62,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         public string Address { get => _address; set => SetProperty(ref _address, value); }
         public DateTime BirthDate { get => _birthDate; set => SetProperty(ref _birthDate, value); }
         public string Gender { get => _gender; set => SetProperty(ref _gender, value); }
-
-
 
         public AddEmployeeViewModel()
         {
@@ -145,20 +143,15 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             var window = (Window)values[0];
             var pBox = (PasswordBox)values[1];
             var pBoxConfirm = (PasswordBox)values[2];
-
-            // Validation
             if (string.IsNullOrWhiteSpace(FullName)) { MessageBox.Show("Vui lòng nhập Họ và Tên!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (string.IsNullOrWhiteSpace(CCCD)) { MessageBox.Show("Vui lòng nhập số CCCD/CMND!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (string.IsNullOrWhiteSpace(Email)) { MessageBox.Show("Vui lòng nhập Email!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (string.IsNullOrWhiteSpace(Phone)) { MessageBox.Show("Vui lòng nhập Số điện thoại!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (string.IsNullOrWhiteSpace(Address)) { MessageBox.Show("Vui lòng nhập Địa chỉ thường trú!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-
             if (SelectedDepartment == null) { MessageBox.Show("Vui lòng chọn Phòng ban!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (SelectedPosition == null) { MessageBox.Show("Vui lòng chọn Chức vụ!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-
             if (string.IsNullOrWhiteSpace(SalaryString)) { MessageBox.Show("Vui lòng nhập Lương cơ bản!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (!decimal.TryParse(SalaryString, out decimal salary)) { MessageBox.Show("Lương cơ bản phải là số hợp lệ!", "Lỗi định dạng", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-
             if (!IsEditMode)
             {
                 if (string.IsNullOrWhiteSpace(Username)) { MessageBox.Show("Vui lòng nhập Tên đăng nhập!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
@@ -269,17 +262,14 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             using var context = new DataContext();
             Departments = new(context.Departments.ToList());
-
-            // Tải toàn bộ chức vụ vào danh sách gốc (chưa hiển thị ngay)
             _allPositions = context.Positions.ToList();
-
             Roles = new(context.Roles.ToList());
             Managers = new(context.Employees.ToList());
 
             if (!IsEditMode)
             {
                 SelectedRole = Roles.FirstOrDefault(r => r.RoleID == "R002");
-                IsPositionEnabled = false; // Mặc định chưa chọn phòng thì khóa chức vụ
+                IsPositionEnabled = false; 
             }
         }
 
@@ -312,16 +302,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 _selectedImageBytes = null;
             }
 
-
-
-            // Gán dữ liệu (Thứ tự quan trọng: gán Department trước để trigger lọc Position)
             SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentID == emp.DepartmentID);
-
-            // Sau khi SelectedDepartment gán xong, danh sách Positions đã được lọc. Giờ ta chọn đúng Position của user.
             SelectedPosition = Positions.FirstOrDefault(p => p.PositionID == emp.PositionID);
-
             SelectedManager = Managers.FirstOrDefault(m => m.EmployeeID == emp.ManagerID);
-
             if (fullEmp?.WorkContracts.Any() == true)
             {
                 var c = fullEmp.WorkContracts.OrderByDescending(x => x.StartDate).First();

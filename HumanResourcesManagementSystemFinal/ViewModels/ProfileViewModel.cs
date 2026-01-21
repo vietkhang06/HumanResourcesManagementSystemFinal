@@ -140,11 +140,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 if (openFileDialog.ShowDialog() == true)
                 {
                     byte[] fileBytes = File.ReadAllBytes(openFileDialog.FileName);
-
-                    // Gán dữ liệu ảnh vào Model
                     CurrentUser.Account.AvatarData = fileBytes;
-
-                    // Thông báo cho giao diện cập nhật lại vùng hình ảnh
                     OnPropertyChanged(nameof(CurrentUser));
 
                     MessageBox.Show("Đã chọn ảnh mới. Hãy nhấn 'Lưu Thay Đổi' để lưu vào CSDL.", "Thông báo");

@@ -6,7 +6,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-// Dòng này để tránh lỗi trùng tên Department với thư viện OpenXML
 using Department = HumanResourcesManagementSystemFinal.Models.Department;
 
 namespace HumanResourcesManagementSystemFinal.ViewModels
@@ -17,8 +16,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         [ObservableProperty] private string _content;
         [ObservableProperty] private string _selectedType = "Chung";
         [ObservableProperty] private string _selectedDepartment = "Tất cả";
-
-        // Danh sách phòng ban tải từ DB
         [ObservableProperty] private ObservableCollection<Department> _departments;
 
         public Action RequestClose;
@@ -35,17 +32,13 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 using var context = new DataContext();
                 var dbList = context.Departments.ToList();
-
                 var displayList = new ObservableCollection<Department>();
-                displayList.Add(new Department { DepartmentName = "Tất cả" }); // Thêm thủ công
-
+                displayList.Add(new Department { DepartmentName = "Tất cả" }); 
                 foreach (var d in dbList) displayList.Add(d);
-
                 Departments = displayList;
             }
             catch
             {
-                // Fallback nếu lỗi DB
                 Departments = new ObservableCollection<Department> { new Department { DepartmentName = "Tất cả" } };
             }
         }
@@ -69,7 +62,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     Date = DateTime.Now,
                     Type = SelectedType,
                     Department = SelectedDepartment,
-                    SenderID = "Admin" // Có thể sửa thành User ID hiện tại
+                    SenderID = "Admin" 
                 };
                 context.Notifications.Add(notif);
                 context.SaveChanges();

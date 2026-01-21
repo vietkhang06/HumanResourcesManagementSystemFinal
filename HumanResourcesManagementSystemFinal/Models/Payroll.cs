@@ -16,21 +16,21 @@ namespace HumanResourcesManagementSystemFinal.Models
         public int Year { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal BasicSalary { get; set; } // Lương cơ bản từ hợp đồng
+        public decimal BasicSalary { get; set; } 
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Allowance { get; set; }   // Phụ cấp
+        public decimal Allowance { get; set; }  
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Bonus { get; set; }       // Thưởng
+        public decimal Bonus { get; set; }     
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Deductions { get; set; }  // Tổng chi (Bảo hiểm, phạt...)
+        public decimal Deductions { get; set; }  
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal NetSalary { get; set; }   // Thực lĩnh cuối cùng
+        public decimal NetSalary { get; set; }  
 
-        public double WorkingDays { get; set; }  // Số ngày công tính được
+        public double WorkingDays { get; set; }  
 
         [ForeignKey("EmployeeID")]
         public virtual Employee Employee { get; set; }

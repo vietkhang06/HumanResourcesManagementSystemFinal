@@ -129,21 +129,21 @@
                 </StackPanel>
 
                 <DataGrid Grid.Row="1" ItemsSource="{Binding HistoryList}" 
-          AutoGenerateColumns="False" 
-          CanUserAddRows="False" 
-          CanUserDeleteRows="False"
-          CanUserReorderColumns="False"
-          CanUserResizeRows="False"
-          IsReadOnly="True" 
-          HeadersVisibility="Column"
-          GridLinesVisibility="Horizontal"
-          HorizontalGridLinesBrush="#F1F5F9"
-          VerticalGridLinesBrush="Transparent"
-          Background="White" 
-          BorderThickness="0" 
-          RowHeight="60"
-          VerticalScrollBarVisibility="Auto"
-          ScrollViewer.CanContentScroll="True">
+                          AutoGenerateColumns="False" 
+                          CanUserAddRows="False" 
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserResizeRows="False"
+                          IsReadOnly="True" 
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="#F1F5F9"
+                          VerticalGridLinesBrush="Transparent"
+                          Background="White" 
+                          BorderThickness="0" 
+                          RowHeight="60"
+                          VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.CanContentScroll="True">
 
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">

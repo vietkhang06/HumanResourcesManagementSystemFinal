@@ -10,9 +10,9 @@ namespace HumanResourcesManagementSystemFinal.Converters
         {
             if (value is bool isVisible && isVisible)
             {
-                return "👁️"; // Icon Mắt Mở (Show)
+                return "👁️"; 
             }
-            return "🔒"; // Icon Khóa (Hide) - Hoặc 👁️/
+            return "🔒"; 
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

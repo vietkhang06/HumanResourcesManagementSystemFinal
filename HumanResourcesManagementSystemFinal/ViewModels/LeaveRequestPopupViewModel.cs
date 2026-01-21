@@ -12,7 +12,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
     public partial class LeaveRequestPopupViewModel : ObservableObject
     {
         private readonly string _employeeId;
-        public Action? CloseAction { get; set; } // Allows VM to close the Window
+        public Action? CloseAction { get; set; } 
 
         [ObservableProperty] private DateTime _startDate = DateTime.Today;
         [ObservableProperty] private DateTime _endDate = DateTime.Today;
@@ -62,7 +62,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 await context.SaveChangesAsync();
 
                 MessageBox.Show("Gửi đơn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                CloseAction?.Invoke(); // Close the window
+                CloseAction?.Invoke(); 
             }
             catch (Exception ex)
             {

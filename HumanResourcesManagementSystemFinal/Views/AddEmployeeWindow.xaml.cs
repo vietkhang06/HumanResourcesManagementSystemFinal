@@ -6,7 +6,6 @@ namespace HumanResourcesManagementSystemFinal.Views
 {
     public partial class AddEmployeeWindow : Window
     {
-        // 1. Dùng cho nút THÊM MỚI
         public AddEmployeeWindow()
         {
             InitializeComponent();
@@ -17,22 +16,17 @@ namespace HumanResourcesManagementSystemFinal.Views
         {
             if (DataContext is AddEmployeeViewModel vm)
             {
-                // If we are in Edit Mode (modifying an existing employee)
                 if (vm.IsEditMode)
                 {
-                    // Set a dummy string of 5 characters. 
-                    // Because it's a PasswordBox, these will appear as dots (●●●●●).
                     pBox.Password = ".....";
                     pBoxConfirm.Password = ".....";
                 }
             }
         }
 
-        // 2. Dùng cho nút SỬA (Quan trọng!)
         public AddEmployeeWindow(Employee employeeEdit)
         {
             InitializeComponent();
-            // Truyền nhân viên cần sửa vào ViewModel
             this.DataContext = new AddEmployeeViewModel(employeeEdit);
         }
 

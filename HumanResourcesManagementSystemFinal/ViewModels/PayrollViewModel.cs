@@ -72,7 +72,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             set => SetProperty(ref _maxSalary, value);
         }
 
-        // Lưu trữ danh sách gốc để phục vụ lọc dữ liệu
         private List<PayrollDTO> _allPayrolls = new List<PayrollDTO>();
 
 
@@ -144,8 +143,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 var monthData = await context.Payrolls
                     .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.EmployeeID == _targetEmployeeId
-                                         && p.Month == m
-                                         && p.Year == y);
+                                           && p.Month == m
+                                           && p.Year == y);
 
                 values.Add(monthData?.NetSalary ?? 0);
                 labels.Add($"T{m}/{y}");
@@ -195,7 +194,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             {
                 int targetMonth = SelectedMonth;
                 int targetYear = SelectedYear;
-                string empId = _targetEmployeeId?.ToUpper(); 
+                string empId = _targetEmployeeId?.ToUpper();
 
                 using var context = new DataContext();
 
@@ -234,12 +233,10 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                     grandTotal += p.NetSalary;
                 }
 
-                // 3. Cập nhật danh sách hiển thị cho Admin
                 _allPayrolls = resultList;
                 PayrollList = new ObservableCollection<PayrollDTO>(resultList);
                 TotalSalaryFund = grandTotal;
 
-                // 4. LIÊN KẾT DATA VÀO PHIẾU LƯƠNG CÁ NHÂN (CurrentEmployeePayroll)
                 if (!string.IsNullOrEmpty(_targetEmployeeId))
                 {
                     var myPayroll = resultList.FirstOrDefault(p => p.EmployeeID == _targetEmployeeId);
@@ -257,11 +254,9 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
                 }
                 else if (resultList.Count > 0)
                 {
-                    // Nếu là Admin, xem mặc định người đầu tiên
                     CurrentEmployeePayroll = resultList[0];
                 }
 
-                // 5. Cập nhật trạng thái
                 PayrollStatus = dbPayrolls.Any() ? "Đã chốt lương" : "Dự tính (Chưa nạp)";
                 StatusColor = dbPayrolls.Any() ? "#3B82F6" : "#F59E0B";
             }
@@ -277,7 +272,6 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         private void ExportToExcel()
         {
             if (PayrollList == null || PayrollList.Count == 0) return;
-            // Giữ nguyên logic export cũ...
             SaveFileDialog sfd = new SaveFileDialog { Filter = "CSV (*.csv)|*.csv", FileName = $"Payroll_{SelectedMonth}_{SelectedYear}.csv" };
             if (sfd.ShowDialog() == true)
             {

@@ -10,7 +10,6 @@ namespace HumanResourcesManagementSystemFinal.Views
             InitializeComponent();
         }
 
-        // Giữ lại chức năng kéo thả cửa sổ vì đây là hành vi giao diện thuần túy
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)

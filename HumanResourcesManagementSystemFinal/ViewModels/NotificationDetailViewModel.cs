@@ -15,10 +15,7 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
             CurrentNotification = notification;
         }
 
-        public NotificationDetailViewModel()
-        {
-            // Constructor mặc định cho Design View (nếu cần)
-        }
+        public NotificationDetailViewModel(){}
 
         [RelayCommand]
         private void CloseWindow(Window window)
@@ -38,10 +35,8 @@ namespace HumanResourcesManagementSystemFinal.ViewModels
         {
             if (window != null)
             {
-                if (window.WindowState == WindowState.Maximized)
-                    window.WindowState = WindowState.Normal;
-                else
-                    window.WindowState = WindowState.Maximized;
+                if (window.WindowState == WindowState.Maximized) window.WindowState = WindowState.Normal;
+                else window.WindowState = WindowState.Maximized;
             }
         }
     }

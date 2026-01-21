@@ -27,7 +27,7 @@ III. Công nghệ sử dụng
 + LiveCharts: Vẽ biểu đồ thống kê trực quan.
 + MaterialDesignInXaml: Thiết kế giao diện người dùng hiện đại (UI/UX).
 
-IV 4. Thành viên thực hiện
+IV. Thành viên thực hiện
 1. Đoàn Việt Khang - 24520730
 2. Phạm Ngọc Gia Khang - 24520765
 3. Bùi Vạn Khải - 24520719 
